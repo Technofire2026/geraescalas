@@ -458,14 +458,14 @@
     </div>
   </section>
 
-  <footer><span class="noprint">Confira a escala antes de publicar.<br>© 2026 <b>Gera Escalas</b> · <span class="lnk" onclick="openAbout()">Sobre &amp; Política de Privacidade</span> · <span style="color:var(--mut2)">v3.0</span></span></footer>
+  <footer><span class="noprint">Confira a escala antes de publicar.<br>© 2026 <b>Gera Escalas</b> · <span class="lnk" onclick="openAbout()">Sobre &amp; Política de Privacidade</span> · <span style="color:var(--mut2)">v3.1</span></span></footer>
 </main>
 
 <div id="aboutmodal" class="modal" style="display:none" onclick="if(event.target===this)closeAbout()">
   <div class="mbox">
     <button class="xbtn" onclick="closeAbout()">Fechar ✕</button>
     <h2>Gera Escalas</h2>
-    <p class="muted">Escalas de plantão, turno e giro · Versão 3.0 · 2026</p>
+    <p class="muted">Escalas de plantão, turno e giro · Versão 3.1 · 2026</p>
 
     <h3>Autoria e direitos autorais</h3>
     <p>© 2026 <b>Gera Escalas</b> — desenvolvido por Luís Cesar. Todos os direitos reservados.</p>
@@ -509,7 +509,7 @@ const DIAS=["Domingo","Segunda","Terça","Quarta","Quinta","Sexta","Sábado"];
 const ABREV=["Dom","Seg","Ter","Qua","Qui","Sex","Sáb"];
 const FERIAS_DIAS=35;
 const EXT_SAT=2; // dias extras de folga p/ quem entra no sábado (Sát 1º + Dom 2º)
-function extSat(N){return 0;} // sem folga extra: a rotação de fim de semana já evita repetição
+function extSat(N){return EXT_SAT;} // folga estendida de sábado (2 dias) — só p/ quem entra no sábado
 const pad=n=>String(n).padStart(2,"0");
 const addDays=(d,n)=>{const x=new Date(d);x.setDate(x.getDate()+n);return x;};
 const ymd=d=>d.getFullYear()+"-"+pad(d.getMonth()+1)+"-"+pad(d.getDate());
@@ -1102,13 +1102,14 @@ function gerarEscala(militares,year,month,seed,modo,tipo){
     if(modo==="fixa"){
       chosen=pool.sort((a,b)=>a.lastEnter-b.lastEnter||a.order-b.order)[0];
     }else if(we){
-      // giro: no fim de semana (sáb OU dom) entra quem fez fim de semana há mais tempo, entre os bem descansados
-      // fim de semana (sáb OU dom): entra quem fez fim de semana há mais tempo -> nunca repete se houver >=2 disponíveis
-      chosen=pool.sort((a,b)=>a.lastSatDay-b.lastSatDay||a.lastEnter-b.lastEnter||a.order-b.order)[0];
+      // FIM DE SEMANA (sáb ou dom): gira entre quem fez fim de semana há mais tempo, bem descansado (piso de descanso evita puxar alguém com 24h)
+      let spool=pool.filter(s=>D-s.lastEnter>=5);if(!spool.length)spool=pool;
+      chosen=spool.sort((a,b)=>a.lastSatDay-b.lastSatDay||a.lastEnter-b.lastEnter||a.order-b.order)[0];
     }else{
+      // dias úteis: rodízio normal (sempre o mais descansado)
       chosen=pool.sort((a,b)=>a.lastEnter-b.lastEnter||a.order-b.order)[0];
     }
-    // folga estendida p/ quem entra no sábado (Sáb 1º + Dom 2º); rotação de fds vale p/ qualquer efetivo
+    // folga estendida (descanso maior p/ não emendar) SÓ p/ quem entra no SÁBADO; domingo entra normal
     chosen.lastEnter=(modo==="giro"&&sat)?(D+extSat(N)):D;
     if(we)chosen.lastSatDay=D;
     return chosen;
@@ -1190,7 +1191,8 @@ function _chooseFree(st,D,dateOf,modo){
   if(!pool.length)return null;
   var sat=date.getDay()===6,we=(date.getDay()===0||date.getDay()===6);var ch;
   if(modo==="fixa"){ch=pool.sort(function(a,b){return a.lastEnter-b.lastEnter||a.order-b.order;})[0];}
-  else if(we){ch=pool.sort(function(a,b){return a.lastSatDay-b.lastSatDay||a.lastEnter-b.lastEnter||a.order-b.order;})[0];
+  else if(we){var spool=pool.filter(function(s){return D-s.lastEnter>=5;});if(!spool.length)spool=pool;
+    ch=spool.sort(function(a,b){return a.lastSatDay-b.lastSatDay||a.lastEnter-b.lastEnter||a.order-b.order;})[0];
   }else ch=pool.sort(function(a,b){return a.lastEnter-b.lastEnter||a.order-b.order;})[0];
   return ch;
 }
