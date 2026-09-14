@@ -362,6 +362,7 @@
       <h3 style="margin:0 0 8px;font-size:15px">Assinatura</h3>
       <div id="assin_box"><span class="tiny">—</span></div>
       <div id="assin_pix" style="display:none;margin-top:10px;text-align:center"></div>
+      <div id="docbox" style="margin-top:12px"><label class="fld"><span>CNPJ ou CPF da organização (para a cobrança)</span><input id="cfg_doc" placeholder="somente números" inputmode="numeric"></label><button class="btn ghost" onclick="salvarDoc()">Salvar documento</button> <span class="tiny" id="doc_msg"></span></div>
       <hr style="border:none;border-top:1px solid var(--line);margin:18px 0">
       <h3 style="margin:0 0 8px;font-size:15px">Compartilhar o aplicativo</h3>
       <p class="tiny">Envie o link para os militares fazerem o cadastro e login e consultarem a escala.</p>
@@ -458,14 +459,14 @@
     </div>
   </section>
 
-  <footer><span class="noprint">Confira a escala antes de publicar.<br>© 2026 <b>Gera Escalas</b> · <span class="lnk" onclick="openAbout()">Sobre &amp; Política de Privacidade</span> · <span style="color:var(--mut2)">v3.1</span></span></footer>
+  <footer><span class="noprint">Confira a escala antes de publicar.<br>© 2026 <b>Gera Escalas</b> · <span class="lnk" onclick="openAbout()">Sobre &amp; Política de Privacidade</span> · <span style="color:var(--mut2)">v3.2</span></span></footer>
 </main>
 
 <div id="aboutmodal" class="modal" style="display:none" onclick="if(event.target===this)closeAbout()">
   <div class="mbox">
     <button class="xbtn" onclick="closeAbout()">Fechar ✕</button>
     <h2>Gera Escalas</h2>
-    <p class="muted">Escalas de plantão, turno e giro · Versão 3.1 · 2026</p>
+    <p class="muted">Escalas de plantão, turno e giro · Versão 3.2 · 2026</p>
 
     <h3>Autoria e direitos autorais</h3>
     <p>© 2026 <b>Gera Escalas</b> — desenvolvido por Luís Cesar. Todos os direitos reservados.</p>
@@ -795,6 +796,16 @@ function bloqueadoPro(){
   try{showErro&&showErro("Seu acesso Pro terminou. Assine para continuar.");}catch(e){}
   irParaAssinatura();return true;
 }
+function renderDoc(){var el=document.getElementById("cfg_doc");if(el)el.value=(state.user&&state.user.orgCnpj)||"";var db2=document.getElementById("docbox");if(db2)db2.style.display=isOwner()?"":"none";}
+async function salvarDoc(){
+  if(!isOwner()||!db)return;var m=document.getElementById("doc_msg");
+  var doc=(val("cfg_doc")||"").replace(/\D/g,"");
+  if(doc&&doc.length!==11&&doc.length!==14){if(m){m.textContent="CNPJ (14) ou CPF (11) inv\u00e1lido.";m.style.color="#b91c1c";}return;}
+  var r=await db.from("organizations").update({cnpj:doc||null}).eq("id",state.user.orgId);
+  if(r.error){if(m){m.textContent="Falha: "+r.error.message;m.style.color="#b91c1c";}return;}
+  state.user.orgCnpj=doc;log("Documento de cobran\u00e7a atualizado","");
+  if(m){m.textContent="Documento salvo.";m.style.color="#15803d";setTimeout(function(){m.textContent="";},2500);}
+}
 function renderAssinatura(){
   var box=document.getElementById("assin_box");if(!box)return;
   var st=_proAtivo(),owner=isOwner();
@@ -815,6 +826,7 @@ function renderAssinatura(){
 }
 async function assinarPro(){
   if(!isOwner()||!db)return;
+  var _doc=(state.user&&state.user.orgCnpj||"").replace(/\D/g,"");if(_doc.length!==11&&_doc.length!==14){var mm=document.getElementById("assin_msg");if(mm){mm.textContent="Antes de assinar, informe o CNPJ/CPF da organiza\u00e7\u00e3o (campo abaixo) e salve.";mm.style.color="#b91c1c";}var el=document.getElementById("cfg_doc");if(el&&el.scrollIntoView)el.scrollIntoView({behavior:"smooth"});return;}
   var m=document.getElementById("assin_msg");if(m){m.textContent="Gerando cobrança Pix...";m.style.color="var(--mut)";}
   var pix=document.getElementById("assin_pix");if(pix)pix.style.display="none";
   try{
@@ -842,7 +854,7 @@ async function atualizarAssinatura(){
   renderAssinatura();renderProBanner();
   var pix=document.getElementById("assin_pix");if(pix&&_proAtivo().motivo==="assinatura"){pix.style.display="none";}
 }
-function renderConfigForm(){if(document.getElementById("horbox"))renderHorarios();if(document.getElementById("assin_box"))renderAssinatura();
+function renderConfigForm(){if(document.getElementById("horbox"))renderHorarios();if(document.getElementById("assin_box"))renderAssinatura();if(document.getElementById("docbox"))renderDoc();
   document.getElementById("cfg_dirnome").value=state.config.diretorNome||"";
   document.getElementById("cfg_dirposto").value=state.config.diretorPosto||"";
   var selHtml='<option value="auto">Automático (maior patente/antiguidade da escala)</option>';
@@ -1519,19 +1531,20 @@ function renderCloudGate(mode){
   }
   var isC=mode==="criar";
   var tabs=`<div style="display:flex;gap:8px;margin:6px 0 14px"><button class="btn ${isC?'ghost':'primary'}" style="flex:1;justify-content:center" onclick="renderCloudGate('entrar')">Entrar</button><button class="btn ${isC?'primary':'ghost'}" style="flex:1;justify-content:center" onclick="renderCloudGate('criar')">Criar conta</button></div>`;
-  var form=isC?`<label class="fld"><span>Seu nome</span><input id="cg_nome"></label><label class="fld"><span>Nome da organiza\u00e7\u00e3o</span><input id="cg_org" placeholder="ex.: CBMMA \u2014 CIOPS"></label><label class="fld"><span>E-mail</span><input id="cg_email" type="email"></label><label class="fld"><span>Senha (m\u00edn. 6)</span><div class="pwwrap"><input id="cg_senha" type="password"><button type="button" class="eye" onclick="togglePw('cg_senha',this)">\U0001F441</button></div></label><button class="btn primary" style="width:100%;justify-content:center;margin-top:6px" onclick="cloudSignup()">Criar conta e organiza\u00e7\u00e3o</button>`:`<label class="fld"><span>E-mail</span><input id="cg_email" type="email"></label><label class="fld"><span>Senha</span><div class="pwwrap"><input id="cg_senha" type="password"><button type="button" class="eye" onclick="togglePw('cg_senha',this)">\U0001F441</button></div></label><button class="btn primary" style="width:100%;justify-content:center;margin-top:6px" onclick="cloudLogin()">Entrar</button><button class="btn ghost" style="width:100%;justify-content:center;margin-top:8px" onclick="cloudRecover()">Esqueci minha senha</button>`;
+  var form=isC?`<label class="fld"><span>Seu nome</span><input id="cg_nome"></label><label class="fld"><span>Nome da organiza\u00e7\u00e3o</span><input id="cg_org" placeholder="ex.: Hospital X / CBMMA \u2014 CIOPS"></label><label class="fld"><span>CNPJ ou CPF (para cobran\u00e7a)</span><input id="cg_doc" placeholder="somente n\u00fameros" inputmode="numeric"></label><label class="fld"><span>E-mail</span><input id="cg_email" type="email"></label><label class="fld"><span>Senha (m\u00edn. 6)</span><div class="pwwrap"><input id="cg_senha" type="password"><button type="button" class="eye" onclick="togglePw('cg_senha',this)">\U0001F441</button></div></label><button class="btn primary" style="width:100%;justify-content:center;margin-top:6px" onclick="cloudSignup()">Criar conta e organiza\u00e7\u00e3o</button>`:`<label class="fld"><span>E-mail</span><input id="cg_email" type="email"></label><label class="fld"><span>Senha</span><div class="pwwrap"><input id="cg_senha" type="password"><button type="button" class="eye" onclick="togglePw('cg_senha',this)">\U0001F441</button></div></label><button class="btn primary" style="width:100%;justify-content:center;margin-top:6px" onclick="cloudLogin()">Entrar</button><button class="btn ghost" style="width:100%;justify-content:center;margin-top:8px" onclick="cloudRecover()">Esqueci minha senha</button>`;
   box.innerHTML=`<div style="max-width:380px;margin:0 auto;text-align:left">${AUTH_BRAND}${tabs}${form}<div id="cg_msg" class="tiny" style="margin-top:12px"></div>${AUTH_HIST}</div>`;
 }
 async function cloudSignup(){
   if(!cloudReady())return;
-  var nome=(val("cg_nome")||"").trim(),org=(val("cg_org")||"").trim(),email=(val("cg_email")||"").trim(),senha=val("cg_senha")||"";
+  var nome=(val("cg_nome")||"").trim(),org=(val("cg_org")||"").trim(),email=(val("cg_email")||"").trim(),senha=val("cg_senha")||"";var doc=(val("cg_doc")||"").replace(/\D/g,"");
   if(!nome||!org||!email||!senha){cgmsg("Preencha todos os campos.","#b91c1c");return;}
   if(senha.length<6){cgmsg("A senha precisa de ao menos 6 caracteres.","#b91c1c");return;}
   cgmsg("Criando conta...");
   var r=await db.auth.signUp({email:email,password:senha,options:{data:{nome:nome}}});
   if(r.error){cgmsg("N\u00e3o foi poss\u00edvel: "+r.error.message,"#b91c1c");return;}
   if(!r.data.session){cgmsg("Conta criada. Confirme pelo e-mail para entrar (ou desligue 'Confirm email' no Supabase para testar).","#1d4ed8");return;}
-  var r2=await db.rpc("create_organization",{p_nome:org});
+  if(doc&&doc.length!==11&&doc.length!==14){cgmsg("Informe um CNPJ (14 d\u00edgitos) ou CPF (11 d\u00edgitos) v\u00e1lido, s\u00f3 n\u00fameros.","#b91c1c");return;}
+  var r2=await db.rpc("create_organization",{p_nome:org,p_cnpj:doc||null});
   if(r2.error){cgmsg("Conta criada, mas falhou a organiza\u00e7\u00e3o: "+r2.error.message,"#b91c1c");return;}
   await cloudEnter();
 }
@@ -1554,21 +1567,22 @@ async function cloudRecover(){
 async function cloudCreateOrg(){
   if(!cloudReady())return;
   var org=(val("cg_org")||"").trim();if(!org){cgmsg("Digite o nome da organiza\u00e7\u00e3o.","#b91c1c");return;}
-  var r=await db.rpc("create_organization",{p_nome:org});
+  var doc=(val("cg_doc")||"").replace(/\D/g,"");if(doc&&doc.length!==11&&doc.length!==14){cgmsg("CNPJ (14) ou CPF (11) inv\u00e1lido.","#b91c1c");return;}
+  var r=await db.rpc("create_organization",{p_nome:org,p_cnpj:doc||null});
   if(r.error){cgmsg("Falha: "+r.error.message,"#b91c1c");return;}
   await cloudEnter();
 }
 async function cloudEnter(){
   var u=(await db.auth.getUser()).data.user;
-  var q=await db.from("members").select("role, org_id, nome, posto, email, organizations(nome,status,trial_ends_at,assinatura_expira_em)").eq("user_id",u.id);
+  var q=await db.from("members").select("role, org_id, nome, posto, email, organizations(nome,cnpj,status,trial_ends_at,assinatura_expira_em)").eq("user_id",u.id);
   if(q.error){cgmsg("Erro ao ler seus dados: "+q.error.message,"#b91c1c");return;}
   if(!q.data||!q.data.length){
     var box=document.getElementById("authbox");
-    box.innerHTML=`<div style="max-width:380px;margin:0 auto;text-align:left">${AUTH_BRAND}<p class="tiny">Sua conta ainda n\u00e3o tem uma organiza\u00e7\u00e3o. Crie uma para come\u00e7ar:</p><label class="fld"><span>Nome da organiza\u00e7\u00e3o</span><input id="cg_org"></label><button class="btn primary" style="width:100%;justify-content:center;margin-top:6px" onclick="cloudCreateOrg()">Criar organiza\u00e7\u00e3o</button><button class="btn ghost" style="width:100%;justify-content:center;margin-top:8px" onclick="logout()">Sair</button><div id="cg_msg" class="tiny" style="margin-top:10px"></div></div>`;
+    box.innerHTML=`<div style="max-width:380px;margin:0 auto;text-align:left">${AUTH_BRAND}<p class="tiny">Sua conta ainda n\u00e3o tem uma organiza\u00e7\u00e3o. Crie uma para come\u00e7ar:</p><label class="fld"><span>Nome da organiza\u00e7\u00e3o</span><input id="cg_org"></label><label class="fld"><span>CNPJ ou CPF (para cobran\u00e7a)</span><input id="cg_doc" placeholder="somente n\u00fameros" inputmode="numeric"></label><button class="btn primary" style="width:100%;justify-content:center;margin-top:6px" onclick="cloudCreateOrg()">Criar organiza\u00e7\u00e3o</button><button class="btn ghost" style="width:100%;justify-content:center;margin-top:8px" onclick="logout()">Sair</button><div id="cg_msg" class="tiny" style="margin-top:10px"></div></div>`;
     return;
   }
   var m=q.data[0];
-  var _o=m.organizations||{};state.user={login:u.email,uid:u.id,nome:m.nome||u.email,posto:m.posto||"",role:m.role||"view",orgId:m.org_id,orgNome:_o.nome||"",orgStatus:_o.status||"trial",trialEnds:_o.trial_ends_at||null,assinaturaExpira:_o.assinatura_expira_em||null};
+  var _o=m.organizations||{};state.user={login:u.email,uid:u.id,nome:m.nome||u.email,posto:m.posto||"",role:m.role||"view",orgId:m.org_id,orgNome:_o.nome||"",orgCnpj:_o.cnpj||"",orgStatus:_o.status||"trial",trialEnds:_o.trial_ends_at||null,assinaturaExpira:_o.assinatura_expira_em||null};
   try{if(!m.email){await db.from("members").update({email:u.email}).eq("org_id",m.org_id).eq("user_id",u.id);}}catch(e){}
   await cloudPullAll();
   loadConfig();loadLog();load();if(typeof restoreSchedule==="function")restoreSchedule();
