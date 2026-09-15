@@ -485,14 +485,14 @@
     </div>
   </section>
 
-  <footer><span class="noprint">Confira a escala antes de publicar.<br>© 2026 <b>Gera Escalas</b> · <span class="lnk" onclick="openAbout()">Sobre &amp; Política de Privacidade</span> · <span style="color:var(--mut2)">v3.6</span></span></footer>
+  <footer><span class="noprint">Confira a escala antes de publicar.<br>© 2026 <b>Gera Escalas</b> · <span class="lnk" onclick="openAbout()">Sobre &amp; Política de Privacidade</span> · <span style="color:var(--mut2)">v3.7</span></span></footer>
 </main>
 
 <div id="aboutmodal" class="modal" style="display:none" onclick="if(event.target===this)closeAbout()">
   <div class="mbox">
     <button class="xbtn" onclick="closeAbout()">Fechar ✕</button>
     <h2>Gera Escalas</h2>
-    <p class="muted">Escalas de plantão, turno e giro · Versão 3.6 · 2026</p>
+    <p class="muted">Escalas de plantão, turno e giro · Versão 3.7 · 2026</p>
 
     <h3>Autoria e direitos autorais</h3>
     <p>© 2026 <b>Gera Escalas</b> — desenvolvido por Luís Cesar. Todos os direitos reservados.</p>
@@ -1178,6 +1178,7 @@ function gerarEscala(militares,year,month,seed,modo,tipo){
   const N=new Date(year,month+1,0).getDate();
   const dateOf=D=>new Date(year,month,D);
   const st=militares.map((m,i)=>{const sd=seed&&seed.per&&seed.per[m.id];return{ref:m,order:i,lastEnter:sd?(sd.lastEnter===null?-Infinity:sd.lastEnter):-Infinity,lastSatDay:(sd&&sd.lastSatDay!=null)?sd.lastSatDay:-Infinity,wkHist:sd?(sd.wkHist||[]).slice():[],selWknd:0};});
+  if(seed&&seed.lastEntererId!=null){var _le=st.find(function(x){return x.ref.id===seed.lastEntererId;});if(_le&&_le.lastEnter===-Infinity)_le.lastEnter=0;} // robustez: último do mês anterior conta como recém-entrado
   const byId=id=>st.find(s=>s.ref.id===id);
   const enter={};
   function choose(D){
