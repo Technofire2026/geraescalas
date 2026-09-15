@@ -313,6 +313,7 @@
     <button class="tab active" id="tab-efetivo" onclick="showTab('efetivo')">👥 Efetivo</button>
     <button class="tab" id="tab-escala" onclick="showTab('escala')">📅 Escala</button>
     <button class="tab" id="tab-stat" onclick="showTab('stat')">📊 Estatística</button>
+    <button class="tab" id="tab-mapa" onclick="showTab('mapa')">🗺️ Mapa do dia</button>
   </div>
   <div class="tabpane" id="pane-efetivo">
     <section class="card" id="efetivo">
@@ -353,6 +354,17 @@
         <div class="hd"><span class="ico">📊</span> Estatística de serviço por militar</div>
         <div class="summary" id="statsummary"></div>
         <div class="tblwrap" id="stats"></div>
+      </section>
+  </div>
+  <div class="tabpane" id="pane-mapa" style="display:none">
+      <section class="card">
+        <div class="hd"><span class="ico">🗺️</span> Mapa do dia — serviço por setor</div>
+        <div class="row" style="align-items:flex-end">
+          <label class="fld" style="min-width:150px"><span>Data</span><input type="date" id="mapa_data" onchange="renderMapa()"></label>
+          <button class="btn ghost" onclick="renderMapa()">↻ Atualizar</button>
+          <button class="btn ghost noprint" onclick="window.print()">🖨️ Imprimir</button>
+        </div>
+        <div id="mapa_body" style="margin-top:8px"><div class="tiny">Selecione uma data.</div></div>
       </section>
   </div>
 
@@ -466,14 +478,14 @@
     </div>
   </section>
 
-  <footer><span class="noprint">Confira a escala antes de publicar.<br>© 2026 <b>Gera Escalas</b> · <span class="lnk" onclick="openAbout()">Sobre &amp; Política de Privacidade</span> · <span style="color:var(--mut2)">v3.3</span></span></footer>
+  <footer><span class="noprint">Confira a escala antes de publicar.<br>© 2026 <b>Gera Escalas</b> · <span class="lnk" onclick="openAbout()">Sobre &amp; Política de Privacidade</span> · <span style="color:var(--mut2)">v3.4</span></span></footer>
 </main>
 
 <div id="aboutmodal" class="modal" style="display:none" onclick="if(event.target===this)closeAbout()">
   <div class="mbox">
     <button class="xbtn" onclick="closeAbout()">Fechar ✕</button>
     <h2>Gera Escalas</h2>
-    <p class="muted">Escalas de plantão, turno e giro · Versão 3.3 · 2026</p>
+    <p class="muted">Escalas de plantão, turno e giro · Versão 3.4 · 2026</p>
 
     <h3>Autoria e direitos autorais</h3>
     <p>© 2026 <b>Gera Escalas</b> — desenvolvido por Luís Cesar. Todos os direitos reservados.</p>
@@ -1517,7 +1529,49 @@ function exportCSV(){
 function _mkRipple(e){try{var b=e.target&&e.target.closest?e.target.closest(".btn"):null;if(!b||b.classList.contains("loading")||b.disabled)return;var rect=b.getBoundingClientRect();var size=Math.max(rect.width,rect.height);var r=document.createElement("span");r.className="rip";r.style.width=r.style.height=size+"px";var cx=(e.clientX||(rect.left+rect.width/2));var cy=(e.clientY||(rect.top+rect.height/2));r.style.left=(cx-rect.left-size/2)+"px";r.style.top=(cy-rect.top-size/2)+"px";b.appendChild(r);setTimeout(function(){if(r.parentNode)r.parentNode.removeChild(r);},520);}catch(_){}}
 document.addEventListener("pointerdown",_mkRipple,true);
 function _btnLoad(id,fn){var b=document.getElementById(id);if(b)b.classList.add("loading");setTimeout(function(){try{fn();}finally{if(b)b.classList.remove("loading");}},30);}
-function showTab(t){["efetivo","escala","stat"].forEach(function(n){var p=document.getElementById("pane-"+n);if(p)p.style.display=(n===t)?"":"none";var b=document.getElementById("tab-"+n);if(b)b.classList.toggle("active",n===t);});if(t==="stat"){var se=document.getElementById("statempty");if(se)se.style.display=state.schedule?"none":"";}state._tab=t;window.scrollTo({top:0,behavior:"smooth"});}
+async function fetchMapaData(){
+  var map={};
+  try{var q=await db.from("app_state").select("chave,dados").eq("org_id",state.user.orgId);(q.data||[]).forEach(function(r){map[r.chave]=r.dados;});}catch(e){}
+  return map;
+}
+function _mapaRow(s,sched,mils,Y,Mo,Dy){
+  if(!sched||sched.year!==Y||sched.month!==Mo){
+    return '<tr><td><b>'+esc(s.nome)+'</b></td><td class="tiny" style="color:var(--mut)">sem escala gerada para este mês</td></tr>';
+  }
+  var byId={};(mils||[]).forEach(function(m){byId[m.id]=m;});
+  var cols=(sched.cols&&sched.cols.length)?sched.cols:_colsOf(sched);
+  var gmaps=[sched.g1||{},sched.g2||{},sched.g3||{}];
+  var parts=[];
+  for(var ci=0;ci<cols.length;ci++){
+    var id=gmaps[ci]?gmaps[ci][Dy]:null;
+    var cov=sched.cover&&sched.cover[Dy]&&sched.cover[Dy][ci+1];
+    var usouCob=false;if(cov&&cov.sub!=null){id=cov.sub;usouCob=true;}
+    var nome=(id!=null&&byId[id])?((byId[id].posto?byId[id].posto+" ":"")+byId[id].nome):"\u2014";
+    parts.push('<b>'+esc(cols[ci].lab)+':</b> '+esc(nome)+(usouCob?' <span class="tiny" style="color:var(--cbm)">(cobertura)</span>':''));
+  }
+  return '<tr><td><b>'+esc(s.nome)+'</b></td><td>'+parts.join(' &nbsp;\u00b7&nbsp; ')+'</td></tr>';
+}
+async function renderMapa(){
+  var body=document.getElementById("mapa_body");if(!body)return;
+  if(!_proAtivo().ativo){body.innerHTML='<div class="placeholder">🗺️ O <b>Mapa do dia</b> é um recurso Pro. Assine para liberar.'+(isOwner()?' <button class="btn primary" style="margin-top:8px" onclick="irParaAssinatura()">Assinar</button>':'')+'</div>';return;}
+  var di=document.getElementById("mapa_data");var dstr=di&&di.value;
+  if(!dstr){var t=new Date();dstr=t.getFullYear()+"-"+("0"+(t.getMonth()+1)).slice(-2)+"-"+("0"+t.getDate()).slice(-2);if(di)di.value=dstr;}
+  var pp=dstr.split("-");var Y=+pp[0],Mo=+pp[1]-1,Dy=+pp[2];
+  body.innerHTML='<div class="tiny">Carregando…</div>';
+  var map=await fetchMapaData();
+  var lista=state.setores||[{id:"principal",nome:"Setor principal"}];
+  var rows=lista.map(function(s){
+    var sched=map["schedule@"+s.id],mils=map["militares@"+s.id];
+    if(sched==null&&s.id==="principal")sched=map["schedule"];
+    if(mils==null&&s.id==="principal")mils=map["militares"];
+    if(s.id===setorAtual()){var cur=serializeSchedule();if(cur)sched=cur;if(state.militares&&state.militares.length)mils=state.militares;}
+    return _mapaRow(s,sched,mils,Y,Mo,Dy);
+  });
+  var wd=new Date(Y,Mo,Dy).getDay();
+  var dtLabel=("0"+Dy).slice(-2)+"/"+("0"+(Mo+1)).slice(-2)+"/"+Y+" \u00b7 "+DIAS[wd];
+  body.innerHTML='<div class="summary">Serviço de <b>'+dtLabel+'</b></div><div class="tblwrap"><table class="esc"><thead><tr><th style="width:28%">Setor</th><th>De serviço no dia</th></tr></thead><tbody>'+rows.join("")+'</tbody></table></div>';
+}
+function showTab(t){["efetivo","escala","stat","mapa"].forEach(function(n){var p=document.getElementById("pane-"+n);if(p)p.style.display=(n===t)?"":"none";var b=document.getElementById("tab-"+n);if(b)b.classList.toggle("active",n===t);});if(t==="stat"){var se=document.getElementById("statempty");if(se)se.style.display=state.schedule?"none":"";}if(t==="mapa"){renderMapa();}state._tab=t;window.scrollTo({top:0,behavior:"smooth"});}
 function openAbout(){var m=document.getElementById("aboutmodal");if(m)m.style.display="flex";}
 function closeAbout(){var m=document.getElementById("aboutmodal");if(m)m.style.display="none";}
 /* ================== LOGIN NA NUVEM (Supabase) ================== */
