@@ -302,7 +302,7 @@
       <div class="cont">
         <label><input type="checkbox" id="continuidade" checked> 🔗 Aproveitar o fim da escala do mês anterior (continuidade)</label>
         <a id="limparcont" onclick="limparContinuidade()" style="display:none">limpar histórico de continuidade</a>
-        <span id="tipoBox" class="ctlgrp" style="display:inline-flex;align-items:center;gap:6px;border-left:1px solid var(--line);padding-left:12px"><span class="tiny lbl-nowrap" style="font-weight:600">Tipo de escala:</span><select id="tipo" onchange="setTipo()" style="font:inherit;padding:3px 6px;border:1px solid var(--line2);border-radius:6px"><option value="giro">Giro — supervisores (2 giros/dia)</option><option value="3giros">3 Giros — 3 turnos/dia</option><option value="24h">Plantão 24h — 1 militar/dia</option><option value="turno">Turno (dia ou noite) — 1 militar/dia</option></select></span><span id="turnoBox" class="ctlgrp" style="display:none;align-items:center;gap:6px;border-left:1px solid var(--line);padding-left:12px"><span class="tiny lbl-nowrap" style="font-weight:600">Turno:</span><select id="turnosel" onchange="setTurno()" style="font:inherit;padding:3px 6px;border:1px solid var(--line2);border-radius:6px"><option value="dia">Dia</option><option value="noite">Noite</option></select></span>
+        <span id="tipoBox" class="ctlgrp" style="display:inline-flex;align-items:center;gap:6px;border-left:1px solid var(--line);padding-left:12px"><span class="tiny lbl-nowrap" style="font-weight:600">Tipo de escala:</span><select id="tipo" onchange="setTipo()" style="font:inherit;padding:3px 6px;border:1px solid var(--line2);border-radius:6px"><option value="giro">Giro — 2 giros/dia</option><option value="3giros">3 Giros — 3 turnos/dia</option><option value="24h">Plantão 24h — 1 pessoa/dia</option><option value="turno">Turno (dia ou noite) — 1 pessoa/dia</option><option value="ciclo">Ciclo por turmas (24×48, 24×72…)</option></select></span><span id="turnoBox" class="ctlgrp" style="display:none;align-items:center;gap:6px;border-left:1px solid var(--line);padding-left:12px"><span class="tiny lbl-nowrap" style="font-weight:600">Turno:</span><select id="turnosel" onchange="setTurno()" style="font:inherit;padding:3px 6px;border:1px solid var(--line2);border-radius:6px"><option value="dia">Dia</option><option value="noite">Noite</option></select></span><span id="cicloBox" class="ctlgrp" style="display:none;align-items:center;gap:6px;border-left:1px solid var(--line);padding-left:12px"><span class="tiny lbl-nowrap" style="font-weight:600">Regime:</span><select id="ciclosel" onchange="setCicloRegime()" style="font:inherit;padding:3px 6px;border:1px solid var(--line2);border-radius:6px"><option value="24h">24h (1 turma/dia)</option><option value="12h">12h (dia e noite)</option></select></span>
         <span id="rotacaoBox" class="ctlgrp" style="display:inline-flex;align-items:center;gap:10px;border-left:1px solid var(--line);padding-left:12px;flex-wrap:wrap"><span class="tiny lbl-nowrap" style="font-weight:600">Rotação:</span><label style="display:inline-flex;gap:5px;align-items:center;cursor:pointer"><input type="radio" name="modo" value="auto" onchange="setModo()"> Automático</label><label style="display:inline-flex;gap:5px;align-items:center;cursor:pointer"><input type="radio" name="modo" value="fixa" onchange="setModo()"> Escala fixa</label><label style="display:inline-flex;gap:5px;align-items:center;cursor:pointer"><input type="radio" name="modo" value="giro" onchange="setModo()"> Com giro</label><span class="tiny" style="cursor:help" title="Automático: usa Com giro quando o efetivo é múltiplo de 7 (que trava), e Fixa nos demais casos. Fixa: rodízio simples — cada militar recua um dia da semana a cada ciclo. Com giro: estende a folga de quem tira sábado+domingo para as posições girarem nos dias da semana.">ⓘ</span> <span id="modohint" class="tiny" style="color:#b45309;font-weight:600"></span></span>
       </div>
       <div id="erro"></div>
@@ -310,22 +310,22 @@
   </section>
 
   <div class="tabs" id="maintabs">
-    <button class="tab active" id="tab-efetivo" onclick="showTab('efetivo')">👥 Efetivo</button>
+    <button class="tab active" id="tab-efetivo" onclick="showTab('efetivo')">👥 Equipe</button>
     <button class="tab" id="tab-escala" onclick="showTab('escala')">📅 Escala</button>
     <button class="tab" id="tab-stat" onclick="showTab('stat')">📊 Estatística</button>
     <button class="tab" id="tab-mapa" onclick="showTab('mapa')">🗺️ Mapa do dia</button>
   </div>
   <div class="tabpane" id="pane-efetivo">
     <section class="card" id="efetivo">
-      <div class="hd"><span class="ico">👥</span> Efetivo <span class="tiny" id="qtd" style="margin-left:auto"></span></div>
+      <div class="hd"><span class="ico">👥</span> Equipe <span class="tiny" id="qtd" style="margin-left:auto"></span></div>
       <div class="bd">
         <div class="addform">
-          <input id="nome" placeholder="Nome do militar" onkeydown="if(event.key==='Enter')addMilitar()">
+          <input id="nome" placeholder="Nome da pessoa" onkeydown="if(event.key==='Enter')addMilitar()">
           <div class="two">
-            <input id="posto" placeholder="Posto/Grad. (ex.: 1º Sgt)" onkeydown="if(event.key==='Enter')addMilitar()">
+            <input id="posto" placeholder="Cargo/função (ex.: Enfermeiro)" onkeydown="if(event.key==='Enter')addMilitar()">
             <label class="fld" style="width:50%">1º período de férias (opcional)<input type="date" id="fer" style="width:100%"></label>
           </div>
-          <button class="btn dark" style="width:100%;justify-content:center;margin-top:4px" onclick="addMilitar()">➕ Adicionar militar</button>
+          <button class="btn dark" style="width:100%;justify-content:center;margin-top:4px" onclick="addMilitar()">➕ Adicionar pessoa</button>
         </div>
         <div id="lista"></div>
         <p class="tiny" style="margin-top:12px">ℹ Setas = ordem inicial da rotação. Férias = 35 dias. Atestado = nº de dias informado. Afastamento no meio de um mês já gerado: registre o atestado e clique em <b>Aplicar afastamento</b> — o sucessor assume e a folga do efetivo é reduzida no período (dias já cumpridos ficam intactos).</p>
@@ -346,12 +346,13 @@
           </span>
         </div>
         <div id="escala"><div class="placeholder">📅 Escolha o período, confira o efetivo e clique em <b>Gerar escala</b>.</div></div>
+        <div id="turmasLegend" style="display:none;margin-top:10px"></div>
       </section>
   </div>
   <div class="tabpane" id="pane-stat" style="display:none">
-      <div id="statempty" class="card"><div class="placeholder">📊 Gere uma escala para ver a estatística por militar.</div></div>
+      <div id="statempty" class="card"><div class="placeholder">📊 Gere uma escala para ver a estatística por pessoa.</div></div>
       <section class="card" id="statcard" style="display:none">
-        <div class="hd"><span class="ico">📊</span> Estatística de serviço por militar</div>
+        <div class="hd"><span class="ico">📊</span> Estatística de serviço por pessoa</div>
         <div class="summary" id="statsummary"></div>
         <div class="tblwrap" id="stats"></div>
       </section>
@@ -383,6 +384,12 @@
       <div id="setor_add" style="display:flex;gap:8px;margin-top:8px;flex-wrap:wrap"><input id="novo_setor" placeholder="Nome do novo setor" style="flex:1;min-width:160px"><button class="btn dark" onclick="addSetor()">Adicionar setor</button></div>
       <div class="tiny" id="setor_msg" style="margin-top:6px"></div>
       <hr style="border:none;border-top:1px solid var(--line);margin:18px 0">
+      <h3 style="margin:0 0 8px;font-size:15px">Turmas (escala por ciclo)</h3>
+      <p class="tiny">Para o tipo <b>Ciclo por turmas</b>. Crie as turmas e atribua os militares. O nº de turmas define o ciclo: <b>3 turmas = 24×48</b>, <b>4 = 24×72</b>, <b>5 = 24×96</b>.</p>
+      <div id="turmas_list"></div>
+      <div id="turma_add" style="display:flex;gap:8px;margin-top:8px;flex-wrap:wrap"><input id="nova_turma" placeholder="Nome da turma (ex.: A)" style="flex:1;min-width:150px"><button class="btn dark" onclick="addTurma()">Adicionar turma</button></div>
+      <div id="turma_assign" style="margin-top:10px"></div>
+      <hr style="border:none;border-top:1px solid var(--line);margin:18px 0">
       <h3 style="margin:0 0 8px;font-size:15px">Compartilhar o aplicativo</h3>
       <p class="tiny">Envie o link para os militares fazerem o cadastro e login e consultarem a escala.</p>
       <div style="display:flex;gap:10px;align-items:center;flex-wrap:wrap;margin-bottom:6px"><button class="btn primary" onclick="shareApp()">🔗 Compartilhar link</button><button class="btn ghost" onclick="copiarLink()">📋 Copiar mensagem</button><span class="tiny" id="sharemsg"></span></div>
@@ -395,11 +402,11 @@
       <hr style="border:none;border-top:1px solid var(--line);margin:18px 0">
       <h3 style="margin:0 0 8px;font-size:15px">Assinaturas da escala</h3>
       <div class="row">
-        <label class="fld"><span>Diretor do CIOPS/CBMMA — posto</span><input id="cfg_dirposto" placeholder="ex.: Cel BM"></label>
+        <label class="fld"><span>Responsável pela escala — cargo</span><input id="cfg_dirposto" placeholder="ex.: Cel BM"></label>
         <label class="fld" style="flex:1;min-width:200px"><span>Diretor — nome</span><input id="cfg_dirnome" placeholder="Nome do diretor" style="width:100%"></label>
       </div>
-      <label class="fld" style="display:block;margin-top:10px"><span>Militar que assina pela escala</span><select id="cfg_signatario" style="width:100%;max-width:100%"></select></label>
-      <p class="tiny">No modo automático assina o militar de maior patente presente na escala; havendo empate, o mais acima no efetivo (ordene por antiguidade com as setas). Também é possível fixar um militar específico.</p>
+      <label class="fld" style="display:block;margin-top:10px"><span>Quem assina a escala</span><select id="cfg_signatario" style="width:100%;max-width:100%"></select></label>
+      <p class="tiny">No modo automático assina a pessoa de maior antiguidade presente na escala; havendo empate, a que estiver mais acima na equipe (ordene por antiguidade com as setas). Também é possível fixar um militar específico.</p>
       <div style="display:flex;gap:8px;align-items:center"><button class="btn primary" onclick="salvarAssinaturas()">Salvar assinaturas</button><span class="tiny" id="cfg_msg"></span></div>
       <hr style="border:none;border-top:1px solid var(--line);margin:18px 0">
       <h3 style="margin:0 0 8px;font-size:15px">Referência do mês anterior (continuidade)</h3>
@@ -478,14 +485,14 @@
     </div>
   </section>
 
-  <footer><span class="noprint">Confira a escala antes de publicar.<br>© 2026 <b>Gera Escalas</b> · <span class="lnk" onclick="openAbout()">Sobre &amp; Política de Privacidade</span> · <span style="color:var(--mut2)">v3.4</span></span></footer>
+  <footer><span class="noprint">Confira a escala antes de publicar.<br>© 2026 <b>Gera Escalas</b> · <span class="lnk" onclick="openAbout()">Sobre &amp; Política de Privacidade</span> · <span style="color:var(--mut2)">v3.6</span></span></footer>
 </main>
 
 <div id="aboutmodal" class="modal" style="display:none" onclick="if(event.target===this)closeAbout()">
   <div class="mbox">
     <button class="xbtn" onclick="closeAbout()">Fechar ✕</button>
     <h2>Gera Escalas</h2>
-    <p class="muted">Escalas de plantão, turno e giro · Versão 3.4 · 2026</p>
+    <p class="muted">Escalas de plantão, turno e giro · Versão 3.6 · 2026</p>
 
     <h3>Autoria e direitos autorais</h3>
     <p>© 2026 <b>Gera Escalas</b> — desenvolvido por Luís Cesar. Todos os direitos reservados.</p>
@@ -575,7 +582,7 @@ function serializeSchedule(){
   var g1={},g2={},g3={};for(var d=1;d<=r.N;d++){g1[d]=idOf(r.g1[d]);g2[d]=idOf(r.g2[d]);g3[d]=idOf(r.g3?r.g3[d]:null);}
   var cover={};for(var k in (r.cover||{})){var c=r.cover[k];cover[k]={};for(var gi in c){cover[k][gi]={was:idOf(c[gi].was),sub:idOf(c[gi].sub)};}}
   var stats=(r.stats||[]).map(function(s){return {id:s.ref.id,order:s.order,servicos:s.servicos,g1:s.g1,g2:s.g2,sab:s.sab,dom:s.dom,wknd:s.wknd,cob:s.cob,horas:s.horas,folgao:s.folgao,lastDay:s.lastDay,feriasNoMes:s.feriasNoMes,atestadoNoMes:s.atestadoNoMes};});
-  return {year:state.schedule.year,month:state.schedule.month,N:r.N,tipo:r.tipo||"giro",seed:r.seed||null,g1:g1,g2:g2,g3:g3,cols:r.cols||null,durs:r.durs||null,cover:cover,changed:r.changed||{},vacant:r.vacant||[],stats:stats,contInfo:state.contInfo||null};
+  return {year:state.schedule.year,month:state.schedule.month,N:r.N,tipo:r.tipo||"giro",seed:r.seed||null,g1:g1,g2:g2,g3:g3,cols:r.cols||null,durs:r.durs||null,cover:cover,changed:r.changed||{},vacant:r.vacant||[],stats:stats,contInfo:state.contInfo||null,turmas:r.turmas||null,turmasMembros:r.turmasMembros||null};
 }
 function saveSchedule(){try{var o=serializeSchedule();if(o)localStorage.setItem("ciops:schedule",JSON.stringify(o));else localStorage.removeItem("ciops:schedule");}catch(e){}cloudPush("schedule");}
 function restoreSchedule(){
@@ -627,7 +634,7 @@ function _authEnter(){var a=loadAuth();if(a.users.length===0)setupOperador();els
 function renderAuthGate(){
   var a=loadAuth();var box=document.getElementById("authbox");
   if(a.users.length===0){
-    box.innerHTML=AUTH_BRAND+'<h2>Primeiro acesso</h2><p class="tiny">Crie a conta do militar responsável pela escala.</p>'+ain("su_nome","Nome")+ain("su_posto","Posto/Graduação")+ain("su_login","Login")+ain("su_senha","Senha","password")+ain("su_senha2","Confirmar senha","password")+'<button class="btn primary" style="width:100%;justify-content:center;margin-top:6px" onclick="setupOperador()">Criar conta e entrar</button><div id="authmsg"></div>'+AUTH_HIST;
+    box.innerHTML=AUTH_BRAND+'<h2>Primeiro acesso</h2><p class="tiny">Crie a conta da pessoa responsável pela escala.</p>'+ain("su_nome","Nome")+ain("su_posto","Cargo/função")+ain("su_login","Login")+ain("su_senha","Senha","password")+ain("su_senha2","Confirmar senha","password")+'<button class="btn primary" style="width:100%;justify-content:center;margin-top:6px" onclick="setupOperador()">Criar conta e entrar</button><div id="authmsg"></div>'+AUTH_HIST;
   }else{
     box.innerHTML=AUTH_BRAND+'<h2>Acesso restrito</h2><p class="tiny">Gestão de Escalas — Corpos de Bombeiros Militares</p>'+ain("li_login","Login")+ain("li_senha","Senha","password")+'<button class="btn primary" style="width:100%;justify-content:center;margin-top:6px" onclick="doLogin()">Entrar</button><div id="authmsg"></div>'+AUTH_HIST;
   }
@@ -710,7 +717,7 @@ function exportLog(){
 }
 
 /* ===== CONFIGURAÇÕES / ASSINATURAS ===== */
-function loadConfig(){try{var c=localStorage.getItem("ciops:config");state.config=c?JSON.parse(c):{};}catch(e){state.config={};}if(!state.config.tipo)state.config.tipo="giro";if(state.config.satFolga2c===undefined)state.config.satFolga2c=false;if(!state.config.hor)state.config.hor={};var _H=state.config.hor;if(!_H.giro2)_H.giro2=[["07:00","19:00"],["19:00","07:00"]];if(!_H.giro3)_H.giro3=[["07:00","15:00"],["15:00","23:00"],["23:00","07:00"]];if(!_H.h24)_H.h24=[["08:00","08:00"]];if(!_H.turno)_H.turno={dia:["07:00","19:00"],noite:["19:00","07:00"],sel:"dia"};if(state.config.cabecalho===undefined)state.config.cabecalho="ESTADO DO MARANHÃO\nSECRETARIA DE ESTADO DA SEGURANÇA PÚBLICA\nCORPO DE BOMBEIROS MILITAR\nCENTRO INTEGRADO DE OPERAÇÕES DE SEGURANÇA PÚBLICA";}
+function loadConfig(){try{var c=localStorage.getItem("ciops:config");state.config=c?JSON.parse(c):{};}catch(e){state.config={};}if(!state.config.tipo)state.config.tipo="giro";if(!state.config.turmas)state.config.turmas=[];if(!state.config.cicloRegime)state.config.cicloRegime="24h";if(state.config.satFolga2c===undefined)state.config.satFolga2c=false;if(!state.config.hor)state.config.hor={};var _H=state.config.hor;if(!_H.giro2)_H.giro2=[["07:00","19:00"],["19:00","07:00"]];if(!_H.giro3)_H.giro3=[["07:00","15:00"],["15:00","23:00"],["23:00","07:00"]];if(!_H.h24)_H.h24=[["08:00","08:00"]];if(!_H.turno)_H.turno={dia:["07:00","19:00"],noite:["19:00","07:00"],sel:"dia"};if(state.config.cabecalho===undefined)state.config.cabecalho="";}
 function saveConfig(){try{localStorage.setItem("ciops:config",JSON.stringify(state.config));}catch(e){}cloudPush("config");}
 var RANKS=[["coronel",13],["cel",13],["tenente-coronel",12],["ten cel",12]," ",["major",11],["maj",11],["capit",10],["cap",10],["1º ten",9],["1 ten",9],["2º ten",8],["2 ten",8],["aspir",7],["asp",7],["subten",6],["sub ten",6],["1º sgt",5],["1 sgt",5],["2º sgt",4],["2 sgt",4],["3º sgt",3],["3 sgt",3],["sargento",3],["sgt",3],["cabo",2],["cb",2],["soldado",1],["sd",1]].filter(function(x){return Array.isArray(x);});
 function rankWeight(posto){if(!posto)return 0;var p=" "+posto.toLowerCase().replace(/[\u00ba\u00aa]/g,"").replace(/[.\-]/g," ").replace(/\s+/g," ")+" ";var pats=[[/\b(ten(ente)? ?cel|tenente ?coronel|tc)\b/,12],[/\b(cel|coronel)\b/,13],[/\b(maj|major)\b/,11],[/\b(cap|capitao|capit\u00e3o)\b/,10],[/\b(1 ?ten|primeiro tenente)\b/,9],[/\b(2 ?ten|segundo tenente)\b/,8],[/\b(asp|aspirante)\b/,7],[/\b(sub ?ten|subtenente)\b/,6],[/\b(1 ?sgt)\b/,5],[/\b(2 ?sgt)\b/,4],[/\b(3 ?sgt|sgt|sargento)\b/,3],[/\b(cb|cabo)\b/,2],[/\b(sd|soldado)\b/,1]];for(var i=0;i<pats.length;i++){if(pats[i][0].test(p))return pats[i][1];}return 0;}
@@ -732,7 +739,7 @@ function signatureBlockHTML(){
   var oper=state.user?((state.user.posto?state.user.posto+" ":"")+state.user.nome):"";
   return '<div class="assin">'+
     '<div class="assbox"><div class="assline"></div><div class="assname">'+esc(dir)+'</div><div class="assrole">Diretor do CIOPS/CBMMA</div></div>'+
-    '<div class="assbox"><div class="assline"></div><div class="assname">'+esc(sigNome)+'</div><div class="assrole">Militar da escala — maior antiguidade/patente</div></div>'+
+    '<div class="assbox"><div class="assline"></div><div class="assname">'+esc(sigNome)+'</div><div class="assrole">Responsável pela escala — maior antiguidade</div></div>'+
     '</div>'+(oper?'<div class="confec">Confeccionada por: '+esc(oper)+' · '+new Date().toLocaleDateString("pt-BR")+'</div>':'');
 }
 async function renderOperadoresCloud(){
@@ -874,7 +881,55 @@ async function atualizarAssinatura(){
   renderAssinatura();renderProBanner();
   var pix=document.getElementById("assin_pix");if(pix&&_proAtivo().motivo==="assinatura"){pix.style.display="none";}
 }
-function renderConfigForm(){if(document.getElementById("horbox"))renderHorarios();if(document.getElementById("assin_box"))renderAssinatura();if(document.getElementById("docbox"))renderDoc();if(document.getElementById("setores_list"))renderSetoresList();
+function _uidTurma(){return "t"+Date.now().toString(36)+Math.floor(Math.random()*1000);}
+function renderTurmas(){
+  var box=document.getElementById("turmas_list");if(!box)return;
+  var ts=state.config.turmas||[];var owner=isAdmin();
+  box.innerHTML=ts.map(function(t){var n=(state.militares||[]).filter(function(m){return m.turmaId===t.id;}).length;
+    return '<div class="oprow"><b>'+esc(t.nome)+'</b> <span class="tiny">('+n+' pessoa'+(n===1?'':'s')+')</span>'+(owner?(' <button class="mini" onclick="renameTurma(\''+t.id+'\')">✏️</button> <button class="mini" onclick="removeTurma(\''+t.id+'\')">🗑</button>'):'')+'</div>';
+  }).join("")||'<span class="tiny">nenhuma turma</span>';
+  var add=document.getElementById("turma_add");if(add)add.style.display=isAdmin()?"flex":"none";
+  var asg=document.getElementById("turma_assign");
+  if(asg){
+    if(!ts.length){asg.innerHTML="";}
+    else{
+      var opts=function(sel){return '<option value="">— sem turma —</option>'+ts.map(function(t){return '<option value="'+t.id+'"'+(t.id===sel?' selected':'')+'>'+esc(t.nome)+'</option>';}).join("");};
+      asg.innerHTML='<div class="tiny" style="font-weight:700;margin-bottom:4px">Atribuir pessoas às turmas</div>'+(state.militares||[]).map(function(m){
+        return '<div class="oprow" style="justify-content:space-between">'+esc((m.posto?m.posto+" ":"")+m.nome)+' <select onchange="setMilitarTurma('+m.id+',this.value)" style="font:inherit;padding:4px 6px;border:1px solid var(--line2);border-radius:6px">'+opts(m.turmaId||"")+'</select></div>';
+      }).join("")||'<span class="tiny">cadastre militares no efetivo</span>';
+    }
+  }
+}
+function addTurma(){
+  if(!isAdmin())return;var nome=(val("nova_turma")||"").trim();if(!nome)return;
+  state.config.turmas=state.config.turmas||[];state.config.turmas.push({id:_uidTurma(),nome:nome});saveConfig();
+  var el=document.getElementById("nova_turma");if(el)el.value="";renderTurmas();log("Criação de turma",nome);
+}
+function renameTurma(id){
+  if(!isAdmin())return;var t=(state.config.turmas||[]).find(function(x){return x.id===id;});if(!t)return;
+  var nv=null;try{nv=prompt("Novo nome da turma:",t.nome);}catch(e){}if(nv==null)return;nv=(""+nv).trim();if(!nv)return;
+  t.nome=nv;saveConfig();renderTurmas();
+}
+function removeTurma(id){
+  if(!isAdmin())return;var ok=true;try{ok=confirm("Remover esta turma? Os militares dela ficarão sem turma.");}catch(e){}if(!ok)return;
+  state.config.turmas=(state.config.turmas||[]).filter(function(x){return x.id!==id;});
+  (state.militares||[]).forEach(function(m){if(m.turmaId===id)m.turmaId=null;});
+  saveConfig();saveMil();renderTurmas();
+}
+function setMilitarTurma(militarId,turmaId){
+  if(!isAdmin())return;var m=(state.militares||[]).find(function(x){return x.id===militarId;});if(!m)return;
+  m.turmaId=turmaId||null;saveMil();renderTurmas();
+}
+function renderTurmasLegend(){
+  var el=document.getElementById("turmasLegend");if(!el)return;
+  var sch=state.schedule&&state.schedule.result;
+  if(!sch||sch.tipo!=="ciclo"||!sch.turmasMembros){el.style.display="none";el.innerHTML="";return;}
+  var ts=sch.turmas||state.config.turmas||[];
+  var html='<div class="card" style="padding:12px"><div class="tiny" style="font-weight:700;margin-bottom:6px">Composição das turmas</div>';
+  html+=ts.map(function(t){var mem=(sch.turmasMembros[t.id]||[]);return '<div style="margin:3px 0"><b>'+esc(t.nome)+':</b> '+(mem.length?esc(mem.join(", ")):'<span class="tiny" style="color:var(--mut)">sem militares</span>')+'</div>';}).join("");
+  html+='</div>';el.innerHTML=html;el.style.display="";
+}
+function renderConfigForm(){if(document.getElementById("horbox"))renderHorarios();if(document.getElementById("assin_box"))renderAssinatura();if(document.getElementById("docbox"))renderDoc();if(document.getElementById("setores_list"))renderSetoresList();if(document.getElementById("turmas_list"))renderTurmas();
   document.getElementById("cfg_dirnome").value=state.config.diretorNome||"";
   document.getElementById("cfg_dirposto").value=state.config.diretorPosto||"";
   var selHtml='<option value="auto">Automático (maior patente/antiguidade da escala)</option>';
@@ -942,7 +997,7 @@ function gerarDiasRef(){
     return;
   }
   var r=reconstructRef(refY,refM,lastId);
-  if(!r||!lastId){document.getElementById("ref_preview").textContent="Cadastre o efetivo e selecione o militar do último dia (serve para pré-preencher os dias).";return;}
+  if(!r||!lastId){document.getElementById("ref_preview").textContent="Cadastre a equipe e selecione a pessoa do último dia (serve para pré-preencher os dias).";return;}
   state._refEntradas={};for(var d=1;d<=r.N;d++){state._refEntradas[d]=r.enterByDay[d]?r.enterByDay[d].id:null;}
   state._refShowAll=false;
   renderRefGrid(refY,refM);
@@ -1076,7 +1131,9 @@ function trocarSenha(){
 function _hh(t){var q=(t||"").split(":");var h=q[0]||"00",m=q[1]||"00";return m==="00"?(h+"h"):(h+"h"+m);}
 function horLabel(a,b){return _hh(a)+"\u2013"+_hh(b);}
 function durH(a,b){function mm(t){var q=(t||"0:0").split(":");return (+q[0])*60+(+(q[1]||0));}var x=mm(a),y=mm(b),d=y-x;if(d<=0)d+=1440;return d/60;}
+function gerarCiclo12(ents,year,month,phase){var N=new Date(year,month+1,0).getDate(),T=ents.length||1,g1={},g2={},idx=phase||0;for(var d=1;d<=N;d++){g1[d]=ents[idx%T];idx++;g2[d]=ents[idx%T];idx++;}return {N:N,g1:g1,g2:g2,g3:{},tipo:"ciclo",cover:{},changed:{},vacant:[],_phase:idx%T};}
 function schemaFor(tipo){var H=(state.config&&state.config.hor)||{};
+  if(tipo==="ciclo"){var _reg=(state.config&&state.config.cicloRegime)||"24h";var nt=((state.config&&state.config.turmas)||[]).length||0;if(_reg==="12h"){var tn=H.turno||{dia:["07:00","19:00"],noite:["19:00","07:00"]};return {cols:[{lab:"Dia (turma)",hhmm:horLabel(tn.dia[0],tn.dia[1])},{lab:"Noite (turma)",hhmm:horLabel(tn.noite[0],tn.noite[1])}],durs:[durH(tn.dia[0],tn.dia[1]),durH(tn.noite[0],tn.noite[1])]};}var ini=(H.h24||[["08:00","08:00"]])[0][0];var ciclo=nt>0?("24\u00d7"+((nt-1)*24)):"por turmas";return {cols:[{lab:"Plant\u00e3o (turma)",hhmm:"24h ("+ini+") \u00b7 "+ciclo}],durs:[24]};}
   if(tipo==="3giros"){var a=H.giro3||[["07:00","15:00"],["15:00","23:00"],["23:00","07:00"]];return {cols:a.map(function(x,i){return {lab:(i+1)+"\u00ba Giro",hhmm:horLabel(x[0],x[1])};}),durs:a.map(function(x){return durH(x[0],x[1]);})};}
   if(tipo==="24h"){var t=(H.h24||[["08:00","08:00"]])[0];return {cols:[{lab:"Servi\u00e7o",hhmm:"24 horas ("+_hh(t[0])+")"}],durs:[24]};}
   if(tipo==="turno"){var tn=H.turno||{dia:["07:00","19:00"],noite:["19:00","07:00"],sel:"dia"};var sel=tn.sel||"dia";var tt=tn[sel]||["07:00","19:00"];return {cols:[{lab:"Turno ("+(sel==="dia"?"Dia":"Noite")+")",hhmm:horLabel(tt[0],tt[1])}],durs:[durH(tt[0],tt[1])]};}
@@ -1253,18 +1310,18 @@ function recalcularAfastamento(res0,militares,year,month,modo,tipo){
 
 function addMilitar(){if(!isAdmin())return;if(bloqueadoPro())return;
   const nome=val("nome").trim();
-  if(!nome){showErro("Informe o nome do militar.");return;}
+  if(!nome){showErro("Informe o nome da pessoa.");return;}
   showMsg("");
   const posto=val("posto").trim();const fer=val("fer");
   state.militares.push({id:uid(),nome:nome,posto:posto,ferias:fer?[{id:uid(),start:fer}]:[],atestados:[]});
   document.getElementById("nome").value="";document.getElementById("posto").value="";document.getElementById("fer").value="";
-  saveMil();renderRoster();log("Cadastro de militar",(posto?posto+" ":"")+nome+(fer?" (férias em "+fer+")":""));document.getElementById("nome").focus();
+  saveMil();renderRoster();log("Cadastro de pessoa",(posto?posto+" ":"")+nome+(fer?" (férias em "+fer+")":""));document.getElementById("nome").focus();
 }
 function removeMilitar(id){
   const m=byMil(id);
   if(m){var ok=true;try{ok=confirm("Excluir "+((m.posto?m.posto+" ":"")+m.nome)+" do efetivo?");}catch(e){ok=true;}if(!ok)return;}
   state.militares=state.militares.filter(x=>x.id!==id);saveMil();renderRoster();
-  if(m)log("Exclusão de militar",(m.posto?m.posto+" ":"")+m.nome);
+  if(m)log("Exclusão de pessoa",(m.posto?m.posto+" ":"")+m.nome);
 }
 function move(idx,dir){const a=state.militares,j=idx+dir;if(j<0||j>=a.length)return;const t=a[idx];a[idx]=a[j];a[j]=t;saveMil();renderRoster();log("Reordenação do efetivo","");}
 function editMilitar(id){state.editing=id;renderRoster();}
@@ -1275,7 +1332,7 @@ function saveEdit(id){
   if(!nome){var el=document.getElementById("edit_nome_"+id);if(el)el.focus();return;}
   const antes=(m.posto?m.posto+" ":"")+m.nome;m.nome=nome;m.posto=posto;const depois=(m.posto?m.posto+" ":"")+m.nome;
   state.editing=null;saveMil();renderRoster();if(state.schedule)renderSchedule();
-  log("Edição de militar",antes+" → "+depois);
+  log("Edição de pessoa",antes+" → "+depois);
 }
 function addPeriodo(id){const m=byMil(id);if(!m)return;m.ferias=m.ferias||[];m.ferias.push({id:uid(),start:"",dias:FERIAS_DIAS});saveMil();renderRoster();}
 function setPeriodo(id,pid,val_){const m=byMil(id);if(!m)return;m.ferias=(m.ferias||[]).map(f=>f.id===pid?Object.assign({},f,{start:val_}):f);saveMil();renderRoster();log("Férias definidas",((m.posto?m.posto+" ":"")+m.nome)+": início "+val_);}
@@ -1293,7 +1350,7 @@ function showMsg(msg){document.getElementById("erro").innerHTML=msg?('<div class
 /* ===== GERAR ===== */
 function gerar(){if(!isAdmin())return;if(bloqueadoPro())return;_btnLoad("btngerar",_gerarCore);}
 function _gerarCore(){
-  if(state.militares.length===0){showErro("Cadastre pelo menos um militar antes de gerar a escala.");return;}
+  if(state.militares.length===0){showErro("Cadastre pelo menos uma pessoa antes de gerar a escala.");return;}
   showMsg("");
   const year=parseInt(val("ano"),10),month=parseInt(val("mes"),10);
   const cont=document.getElementById("continuidade").checked;
@@ -1301,21 +1358,32 @@ function _gerarCore(){
   const modoSel=(document.querySelector('input[name="modo"]:checked')||{}).value||state.config.modo||"auto";state.config.modo=modoSel;saveConfig();
   const modo=(tipo==="giro")?modoEfetivo():"fixa";
   const seed=cont?state.carry[mkey(year,month)]:null;
-  const result=gerarEscala(state.militares,year,month,seed,modo,tipo);
+  var _entidades=state.militares, _tipoGer=tipo, _modo=modo, _ciclo12=false, result;
+  if(tipo==="ciclo"){
+    var _turmas=(state.config.turmas||[]).filter(function(t){return state.militares.some(function(m){return m.turmaId===t.id;});});
+    if(_turmas.length<2){showErro("Para o tipo Ciclo, crie pelo menos 2 turmas e atribua pessoas (em Configurações → Turmas).");return;}
+    _entidades=_turmas.map(function(t){return {id:t.id,nome:t.nome,posto:"",ferias:[],atestados:[]};});
+    if((state.config.cicloRegime||"24h")==="12h"){_ciclo12=true;}else{_tipoGer="24h";_modo="fixa";}
+  }
+  if(_ciclo12){result=gerarCiclo12(_entidades,year,month,(seed&&seed.ciclo12Phase)||0);}
+  else{result=gerarEscala(_entidades,year,month,seed,_modo,_tipoGer);}
+  result.tipo=tipo;
   const _sch=schemaFor(tipo);result.cols=_sch.cols;result.durs=_sch.durs;
-  computeStats(result,state.militares,year,month);
+  computeStats(result,(tipo==="ciclo"?_entidades:state.militares),year,month);
+  if(tipo==="ciclo"){result.turmas=(state.config.turmas||[]).slice();result.turmasMembros={};state.militares.forEach(function(m){if(m.turmaId){(result.turmasMembros[m.turmaId]=result.turmasMembros[m.turmaId]||[]).push((m.posto?m.posto+" ":"")+m.nome);}});}
   state.schedule={result:result,year:year,month:month};
   const pm=prevMonth(year,month);
   state.contInfo={applied:!!seed,source:MESES[pm.m]+"/"+pm.y,enabled:cont};
-  const nm=nextMonth(year,month);state.carry[mkey(nm.y,nm.m)]=buildCarry(result);saveCarry();
-  renderSchedule();renderStats();renderContControls();saveSchedule();showTab("escala");
+  const nm=nextMonth(year,month);state.carry[mkey(nm.y,nm.m)]=_ciclo12?{ciclo12Phase:result._phase}:buildCarry(result);saveCarry();
+  renderSchedule();renderStats();renderContControls();saveSchedule();renderTurmasLegend();showTab("escala");
   log("Geração de escala",MESES[month]+"/"+year+" · "+(modoSel==="auto"?"automático→":"")+(modo==="giro"?"com giro":"fixa")+(seed?" (continuidade)":""));
   if(modoSel==="auto"&&modo==="giro")showMsg("Efetivo múltiplo de 7: aplicado automaticamente o modo COM GIRO para as posições girarem nos dias da semana.");
 }
 function limparContinuidade(){state.carry={};saveCarry();state.contInfo=null;renderContControls();if(state.schedule)renderSchedule();log("Continuidade limpa","");}
 function setModo(){var r=document.querySelector('input[name="modo"]:checked');if(r){state.config.modo=r.value;saveConfig();}updateModoHint();}
 function setSatFolga(){var c=document.getElementById("satfolga");state.config.satFolga2c=!!(c&&c.checked);saveConfig();}
-function setTipo(){var t=(document.getElementById("tipo")||{}).value||"giro";state.config.tipo=t;saveConfig();var box=document.getElementById("rotacaoBox");if(box)box.style.display=(t==="giro")?"inline-flex":"none";var tb=document.getElementById("turnoBox");if(tb)tb.style.display=(t==="turno")?"inline-flex":"none";updateModoHint();}
+function setTipo(){var t=(document.getElementById("tipo")||{}).value||"giro";state.config.tipo=t;saveConfig();var box=document.getElementById("rotacaoBox");if(box)box.style.display=(t==="giro")?"inline-flex":"none";var tb=document.getElementById("turnoBox");if(tb)tb.style.display=(t==="turno")?"inline-flex":"none";var ab=document.getElementById("btncob");if(ab)ab.style.display=(t==="ciclo")?"none":"";var cb=document.getElementById("cicloBox");if(cb)cb.style.display=(t==="ciclo")?"inline-flex":"none";var cs=document.getElementById("ciclosel");if(cs)cs.value=state.config.cicloRegime||"24h";var tl=document.getElementById("turmasLegend");if(tl)tl.style.display=(t==="ciclo"&&state.schedule)?"":"none";renderTurmasLegend();updateModoHint();}
+function setCicloRegime(){var v=(document.getElementById("ciclosel")||{}).value||"24h";state.config.cicloRegime=v;saveConfig();}
 function setTurno(){var v=(document.getElementById("turnosel")||{}).value||"dia";state.config.hor=state.config.hor||{};if(!state.config.hor.turno)state.config.hor.turno={dia:["07:00","19:00"],noite:["19:00","07:00"],sel:"dia"};state.config.hor.turno.sel=v;saveConfig();}
 function modoEfetivo(){var sel=(document.querySelector('input[name="modo"]:checked')||{}).value||state.config.modo||"auto";if(sel==="auto")return (state.militares.length>0&&state.militares.length%7===0)?"giro":"fixa";return sel;}
 function updateModoHint(){var h=document.getElementById("modohint");if(!h)return;var sel=(document.querySelector('input[name="modo"]:checked')||{}).value||state.config.modo||"auto";if(state.militares.length>0&&state.militares.length%7===0){h.textContent=(sel==="auto"?"efetivo múltiplo de 7 → usando COM GIRO":"efetivo múltiplo de 7 — recomendado Com giro");}else h.textContent="";}
@@ -1324,7 +1392,7 @@ function _aplicarCoberturaCore(){
   if(!state.schedule){showErro("Gere a escala antes de aplicar afastamentos.");return;}
   const cur=state.schedule.result,year=state.schedule.year,month=state.schedule.month;
   const out=recalcularAfastamento(cur,state.militares,year,month,(cur.tipo==="giro"?modoEfetivo():"fixa"),cur.tipo);
-  if(!out){showMsg("Não há militar afastado nesta escala para recalcular.");return;}
+  if(!out){showMsg("Não há ninguém afastado nesta escala para recalcular.");return;}
   const _so=schemaFor(cur.tipo);out.res.cols=_so.cols;out.res.durs=_so.durs;
   computeStats(out.res,state.militares,year,month);
   state.schedule.result=out.res;
@@ -1339,7 +1407,7 @@ function renderContControls(){document.getElementById("limparcont").style.displa
 function renderRoster(){
   document.getElementById("qtd").textContent=state.militares.length+" cadastrado(s)";
   const box=document.getElementById("lista");
-  if(state.militares.length===0){box.innerHTML='<div class="empty">Nenhum militar cadastrado. Adicione o efetivo para montar a escala.</div>';return;}
+  if(state.militares.length===0){box.innerHTML='<div class="empty">Nenhuma pessoa cadastrada. Adicione a equipe para montar a escala.</div>';return;}
   if(!isAdmin()){
     let hv='<ul class="mil">';
     state.militares.forEach(function(m){
@@ -1359,7 +1427,7 @@ function renderRoster(){
       '<button onclick="move('+i+',1)" '+(i===state.militares.length-1?'disabled':'')+'>▼</button></div>'+
       '<div style="flex:1;min-width:0">';
     if(state.editing===m.id){
-      h+='<div class="editrow"><input id="edit_nome_'+m.id+'" value="'+esc(m.nome)+'" placeholder="Nome" style="flex:1;min-width:110px"><input id="edit_posto_'+m.id+'" value="'+esc(m.posto||"")+'" placeholder="Posto/Grad." style="width:120px"></div>'+
+      h+='<div class="editrow"><input id="edit_nome_'+m.id+'" value="'+esc(m.nome)+'" placeholder="Nome" style="flex:1;min-width:110px"><input id="edit_posto_'+m.id+'" value="'+esc(m.posto||"")+'" placeholder="Cargo/função" style="width:120px"></div>'+
         '<div style="margin-bottom:4px"><button class="addper" onclick="saveEdit('+m.id+')">✓ salvar</button> &nbsp; <button class="addper" style="color:var(--mut)" onclick="cancelEdit()">cancelar</button></div>';
     }else{
       h+='<div class="mname">'+(m.posto?'<span class="pg">'+esc(m.posto)+' </span>':'')+esc(m.nome)+' <button class="mini" title="Editar nome/posto" onclick="editMilitar('+m.id+')">✎</button></div>';
@@ -1399,7 +1467,7 @@ function renderSchedule(){
   document.getElementById("contChip").innerHTML=chip;
   var _logo=state.config.logo?('<img class="phlogo" src="'+state.config.logo+'">'):"";var _cab=(state.config.cabecalho||"").split("\n").filter(function(x){return x.trim();}).map(function(l){return '<div class="phcab">'+esc(l)+'</div>';}).join("");
   var _cols=_colsOf(res);
-  var _defTit=(res.tipo==="3giros")?'Escala de Serviço — 3 Giros':(res.tipo==="24h")?'Escala de Serviço — Plantão de 24 horas':(res.tipo==="turno")?('Escala de Serviço — '+_cols[0].lab):'Escala de Serviço dos Supervisores de Operações';
+  var _defTit=(res.tipo==="3giros")?'Escala de Serviço — 3 Giros':(res.tipo==="24h")?'Escala de Serviço — Plantão de 24 horas':(res.tipo==="turno")?('Escala de Serviço — '+_cols[0].lab):'Escala de Serviço';
   var _tit=(state.config.escalaTitulo&&state.config.escalaTitulo.trim())||_defTit;
   var _sub=_cols.map(function(c){return c.lab.replace("º Giro","º giro").replace("\u00ba Giro","\u00ba giro")+(c.hhmm?' '+c.hhmm:'');}).join(' · ');
   document.getElementById("printhdr").innerHTML=_logo+_cab+'<h2>'+esc(_tit)+'</h2><p>'+MESES[month]+' de '+year+' — '+_sub+'</p>';
@@ -1437,12 +1505,12 @@ function renderSchedule(){
 function renderAvisos(){
   const res=state.schedule.result,year=state.schedule.year,month=state.schedule.month;const out=[];
   const ativos=state.militares.filter(m=>{for(let d=1;d<=res.N;d++)if(!isUnavailable(m,new Date(year,month,d)))return true;return false;}).length;
-  if(ativos>0&&ativos<3)out.push("Efetivo disponível baixo ("+ativos+"): a folga entre serviços fica no mínimo.");
+  if(ativos>0&&ativos<3)out.push("Equipe disponível baixa ("+ativos+"): a folga entre serviços fica no mínimo.");
   var _un=(res.tipo==="24h"||res.tipo==="turno")?"dia(s)":"giro(s)";
-  if(res.vacant.length)out.push(res.vacant.length+" "+_un+" sem militar disponível: "+res.vacant.join(", ")+".");
+  if(res.vacant.length)out.push(res.vacant.length+" "+_un+" sem pessoa disponível: "+res.vacant.join(", ")+".");
   // afastamento não coberto na escala atual
   let pend=0;for(let d=1;d<=res.N;d++){const dt=new Date(year,month,d);[res.g1,res.g2,res.g3].forEach(function(gm){if(gm&&gm[d]&&isUnavailable(gm[d],dt))pend++;});}
-  if(pend>0)out.push(pend+" "+_un+" com militar afastado ainda na escala. Clique em \u201cAplicar afastamento\u201d para recalcular a partir do afastamento (o sucessor assume e a folga é reduzida), ou \u201cGerar escala\u201d para refazer o mês.");
+  if(pend>0)out.push(pend+" "+_un+" com pessoa afastada ainda na escala. Clique em \u201cAplicar afastamento\u201d para recalcular a partir do afastamento (o sucessor assume e a folga é reduzida), ou \u201cGerar escala\u201d para refazer o mês.");
   document.getElementById("avisos").innerHTML=out.length?('<div class="warn">'+out.map(a=>'<div>⚠ '+esc(a)+'</div>').join("")+'</div>'):"";
 }
 
@@ -1538,6 +1606,7 @@ function _mapaRow(s,sched,mils,Y,Mo,Dy){
   if(!sched||sched.year!==Y||sched.month!==Mo){
     return '<tr><td><b>'+esc(s.nome)+'</b></td><td class="tiny" style="color:var(--mut)">sem escala gerada para este mês</td></tr>';
   }
+  if(sched.tipo==="ciclo"){var has2=sched.g2&&Object.keys(sched.g2).length>0;var _slot=function(lbl,gm){var tid=(gm||{})[Dy];if(!tid)return null;var tnome=((sched.turmas||[]).find(function(t){return t.id===tid;})||{}).nome||"—";var mem=(sched.turmasMembros&&sched.turmasMembros[tid])||[];return (has2?('<b>'+lbl+':</b> '):'')+'Turma '+esc(tnome)+(mem.length?' ('+esc(mem.join(", "))+')':'');};var a=_slot("Dia",sched.g1),b=has2?_slot("Noite",sched.g2):null;var txt=[a,b].filter(Boolean).join(' &nbsp;·&nbsp; ')||'<span class="tiny" style="color:var(--mut)">—</span>';return '<tr><td><b>'+esc(s.nome)+'</b></td><td>'+txt+'</td></tr>';}
   var byId={};(mils||[]).forEach(function(m){byId[m.id]=m;});
   var cols=(sched.cols&&sched.cols.length)?sched.cols:_colsOf(sched);
   var gmaps=[sched.g1||{},sched.g2||{},sched.g3||{}];
