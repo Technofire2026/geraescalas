@@ -287,6 +287,7 @@
 
   <section class="card" id="config">
     <div class="bd">
+      <div class="setorbar" style="display:flex;align-items:center;gap:8px;margin-bottom:12px;flex-wrap:wrap;border-bottom:1px solid var(--line);padding-bottom:10px"><span class="tiny" style="font-weight:700">Setor:</span><select id="setorSel" onchange="switchSetor(this.value)" style="font:inherit;padding:6px 8px;border:1px solid var(--line2);border-radius:6px;min-width:170px"></select><span class="tiny" id="setorHint" style="color:var(--mut)"></span></div>
       <div class="row">
         <div style="display:flex;align-items:center;gap:8px;font-weight:600"><span class="ico" style="color:var(--cbm)">📅</span> Período</div>
         <label class="fld" style="flex:1;min-width:130px"><span>Mês</span><select id="mes" style="width:100%"></select></label>
@@ -363,6 +364,12 @@
       <div id="assin_box"><span class="tiny">—</span></div>
       <div id="assin_pix" style="display:none;margin-top:10px;text-align:center"></div>
       <div id="docbox" style="margin-top:12px"><label class="fld"><span>CNPJ ou CPF da organização (para a cobrança)</span><input id="cfg_doc" placeholder="somente números" inputmode="numeric"></label><button class="btn ghost" onclick="salvarDoc()">Salvar documento</button> <span class="tiny" id="doc_msg"></span></div>
+      <hr style="border:none;border-top:1px solid var(--line);margin:18px 0">
+      <h3 style="margin:0 0 8px;font-size:15px">Setores</h3>
+      <p class="tiny">Crie setores (ex.: UTI, Pronto-Socorro, Portaria). Cada setor tem seu próprio efetivo e escala. Alterne o setor no topo (em Período). <b>Recurso Pro.</b></p>
+      <div id="setores_list"></div>
+      <div id="setor_add" style="display:flex;gap:8px;margin-top:8px;flex-wrap:wrap"><input id="novo_setor" placeholder="Nome do novo setor" style="flex:1;min-width:160px"><button class="btn dark" onclick="addSetor()">Adicionar setor</button></div>
+      <div class="tiny" id="setor_msg" style="margin-top:6px"></div>
       <hr style="border:none;border-top:1px solid var(--line);margin:18px 0">
       <h3 style="margin:0 0 8px;font-size:15px">Compartilhar o aplicativo</h3>
       <p class="tiny">Envie o link para os militares fazerem o cadastro e login e consultarem a escala.</p>
@@ -459,14 +466,14 @@
     </div>
   </section>
 
-  <footer><span class="noprint">Confira a escala antes de publicar.<br>© 2026 <b>Gera Escalas</b> · <span class="lnk" onclick="openAbout()">Sobre &amp; Política de Privacidade</span> · <span style="color:var(--mut2)">v3.2</span></span></footer>
+  <footer><span class="noprint">Confira a escala antes de publicar.<br>© 2026 <b>Gera Escalas</b> · <span class="lnk" onclick="openAbout()">Sobre &amp; Política de Privacidade</span> · <span style="color:var(--mut2)">v3.3</span></span></footer>
 </main>
 
 <div id="aboutmodal" class="modal" style="display:none" onclick="if(event.target===this)closeAbout()">
   <div class="mbox">
     <button class="xbtn" onclick="closeAbout()">Fechar ✕</button>
     <h2>Gera Escalas</h2>
-    <p class="muted">Escalas de plantão, turno e giro · Versão 3.2 · 2026</p>
+    <p class="muted">Escalas de plantão, turno e giro · Versão 3.3 · 2026</p>
 
     <h3>Autoria e direitos autorais</h3>
     <p>© 2026 <b>Gera Escalas</b> — desenvolvido por Luís Cesar. Todos os direitos reservados.</p>
@@ -540,6 +547,7 @@ function trailingRun(wkHist,wk){let n=0,cur=wkMinus(wk,1);while(wkHist.includes(
 /* ===== ESTADO ===== */
 let state={militares:[],carry:{},seq:1,schedule:null,contInfo:null,user:null,editing:null,logArr:[],config:{}};
 function load(){
+  state.militares=[];state.carry={};
   try{const m=localStorage.getItem("ciops:militares");if(m){state.militares=JSON.parse(m).map(x=>{const o=Object.assign({},x);if(!o.ferias)o.ferias=o.feriasStart?[{id:uid(),start:o.feriasStart}]:[];o.ferias=(o.ferias||[]).map(f=>Object.assign({dias:FERIAS_DIAS},f));if(!o.atestados)o.atestados=[];return o;});}}catch(e){}
   try{const c=localStorage.getItem("ciops:carry");if(c)state.carry=JSON.parse(c);}catch(e){}
   let mx=0;state.militares.forEach(m=>{if(m.id>mx)mx=m.id;(m.ferias||[]).forEach(f=>{if(f.id>mx)mx=f.id;});(m.atestados||[]).forEach(a=>{if(a.id>mx)mx=a.id;});});
@@ -560,7 +568,7 @@ function serializeSchedule(){
 function saveSchedule(){try{var o=serializeSchedule();if(o)localStorage.setItem("ciops:schedule",JSON.stringify(o));else localStorage.removeItem("ciops:schedule");}catch(e){}cloudPush("schedule");}
 function restoreSchedule(){
   try{
-    var raw=localStorage.getItem("ciops:schedule");if(!raw)return;var o=JSON.parse(raw);if(!o||!o.N)return;
+    var raw=localStorage.getItem("ciops:schedule");if(!raw){state.schedule=null;return;}var o=JSON.parse(raw);if(!o||!o.N){state.schedule=null;return;}
     var byId={};state.militares.forEach(function(m){byId[m.id]=m;});
     var ref=function(id){return (id!=null&&byId[id])?byId[id]:null;};
     var g1={},g2={},g3={};for(var d=1;d<=o.N;d++){g1[d]=ref(o.g1[d]);g2[d]=ref(o.g2?o.g2[d]:null);g3[d]=ref(o.g3?o.g3[d]:null);}
@@ -653,7 +661,7 @@ function reiniciarApp(){
   try{location.reload();}catch(e){try{location.href=location.pathname;}catch(_){}}
 }
 async function logout(){try{if(db)await db.auth.signOut();}catch(e){}try{["ciops:militares","ciops:carry","ciops:config","ciops:log","ciops:schedule"].forEach(function(k){localStorage.removeItem(k);});}catch(e){}state.user=null;state.editing=null;state.militares=[];state.schedule=null;state.carry={};document.getElementById("app").style.display="none";document.getElementById("authgate").style.display="flex";renderCloudGate("entrar");}
-function showApp(){document.getElementById("authgate").style.display="none";document.getElementById("app").style.display="";var _cc=document.getElementById("configcard");if(_cc)_cc.style.display="none";renderUserbar();renderRoster();renderContControls();applyPerms();renderProBanner();var _m=state.config.modo||"auto";var _r=document.querySelector('input[name="modo"][value="'+_m+'"]');if(_r)_r.checked=true;var _sf=document.getElementById("satfolga");if(_sf)_sf.checked=!!state.config.satFolga2c;var _tp=document.getElementById("tipo");if(_tp)_tp.value=state.config.tipo||"giro";var _ts=document.getElementById("turnosel");if(_ts&&state.config.hor&&state.config.hor.turno)_ts.value=state.config.hor.turno.sel||"dia";setTipo();if(state.schedule){var _ms=document.getElementById("mes");if(_ms)_ms.value=state.schedule.month;var _an=document.getElementById("ano");if(_an)_an.value=state.schedule.year;renderSchedule();renderStats();}showTab(state.schedule?"escala":"efetivo");}
+function showApp(){document.getElementById("authgate").style.display="none";document.getElementById("app").style.display="";var _cc=document.getElementById("configcard");if(_cc)_cc.style.display="none";renderUserbar();renderSetorSel();renderRoster();renderContControls();applyPerms();renderProBanner();var _m=state.config.modo||"auto";var _r=document.querySelector('input[name="modo"][value="'+_m+'"]');if(_r)_r.checked=true;var _sf=document.getElementById("satfolga");if(_sf)_sf.checked=!!state.config.satFolga2c;var _tp=document.getElementById("tipo");if(_tp)_tp.value=state.config.tipo||"giro";var _ts=document.getElementById("turnosel");if(_ts&&state.config.hor&&state.config.hor.turno)_ts.value=state.config.hor.turno.sel||"dia";setTipo();if(state.schedule){var _ms=document.getElementById("mes");if(_ms)_ms.value=state.schedule.month;var _an=document.getElementById("ano");if(_an)_an.value=state.schedule.year;renderSchedule();renderStats();}showTab(state.schedule?"escala":"efetivo");}
 function isOwner(){return !!(state.user&&state.user.role==="owner");}
 function isAdmin(){return !!(state.user&&(state.user.role==="admin"||state.user.role==="owner"));}
 function applyPerms(){var admin=isAdmin();var cc=document.getElementById("configcard");if(cc&&!admin)cc.style.display="none";var g=document.getElementById("btngerar");if(g)g.style.display=admin?"":"none";var c=document.getElementById("btncob");if(c)c.style.display=admin?"":"none";var cont=document.querySelector(".card .cont");if(cont)cont.style.display=admin?"":"none";var af=document.querySelector("#efetivo .addform");if(af)af.style.display=admin?"":"none";}
@@ -854,7 +862,7 @@ async function atualizarAssinatura(){
   renderAssinatura();renderProBanner();
   var pix=document.getElementById("assin_pix");if(pix&&_proAtivo().motivo==="assinatura"){pix.style.display="none";}
 }
-function renderConfigForm(){if(document.getElementById("horbox"))renderHorarios();if(document.getElementById("assin_box"))renderAssinatura();if(document.getElementById("docbox"))renderDoc();
+function renderConfigForm(){if(document.getElementById("horbox"))renderHorarios();if(document.getElementById("assin_box"))renderAssinatura();if(document.getElementById("docbox"))renderDoc();if(document.getElementById("setores_list"))renderSetoresList();
   document.getElementById("cfg_dirnome").value=state.config.diretorNome||"";
   document.getElementById("cfg_dirposto").value=state.config.diretorPosto||"";
   var selHtml='<option value="auto">Automático (maior patente/antiguidade da escala)</option>';
@@ -1595,29 +1603,103 @@ async function cloudBoot(){
   if(s){await cloudEnter();}else{renderCloudGate("entrar");}
 }
 /* ---- Adaptador de dados: sincroniza os blocos do app com a nuvem ---- */
-const CLOUD_KEYS=["militares","config","carry","schedule","log"];
-async function cloudPush(chave){
+var SEC_KEYS={militares:1,config:1,carry:1,schedule:1};
+function setorAtual(){return state.setorAtivo||"principal";}
+async function cloudPush(base){
   if(!db||!state.user||!state.user.orgId)return;
   if(!isAdmin())return; /* visualização não grava */
   try{
-    var raw=localStorage.getItem("ciops:"+chave);
+    var ck = SEC_KEYS[base] ? (base+"@"+setorAtual()) : base;   /* dados de escala são por setor */
+    var raw=localStorage.getItem("ciops:"+base);
     var dados=raw?JSON.parse(raw):null;
-    await db.from("app_state").upsert({org_id:state.user.orgId,chave:chave,dados:dados,atualizado_em:new Date().toISOString()},{onConflict:"org_id,chave"});
+    await db.from("app_state").upsert({org_id:state.user.orgId,chave:ck,dados:dados,atualizado_em:new Date().toISOString()},{onConflict:"org_id,chave"});
   }catch(e){/* melhor-esforço */}
 }
 async function cloudPullAll(){
   if(!db||!state.user||!state.user.orgId)return;
   var map={};
   try{var q=await db.from("app_state").select("chave,dados").eq("org_id",state.user.orgId);(q.data||[]).forEach(function(r){map[r.chave]=r.dados;});}catch(e){}
-  for(var i=0;i<CLOUD_KEYS.length;i++){
-    var k=CLOUD_KEYS[i],ls="ciops:"+k,cloudVal=map[k];
-    if(cloudVal!==undefined&&cloudVal!==null){
-      try{localStorage.setItem(ls,JSON.stringify(cloudVal));}catch(e){}
-    }else{
+  /* setores (nível organização) */
+  var setores=map["setores"];
+  if(!setores||!setores.length)setores=[{id:"principal",nome:"Setor principal"}];
+  state.setores=setores;try{localStorage.setItem("ciops:setores",JSON.stringify(setores));}catch(e){}
+  var sa=localStorage.getItem("ciops:setorAtivo")||(setores[0]&&setores[0].id)||"principal";
+  if(!setores.some(function(x){return x.id===sa;}))sa=setores[0].id;
+  state.setorAtivo=sa;try{localStorage.setItem("ciops:setorAtivo",sa);}catch(e){}
+  /* dados do setor ativo */
+  var bases=["militares","config","carry","schedule"];
+  for(var i=0;i<bases.length;i++){
+    var b=bases[i],ls="ciops:"+b,v=map[b+"@"+sa];
+    if((v===undefined||v===null)&&sa==="principal")v=map[b]; /* migração: dados antigos (sem setor) = principal */
+    if(v!==undefined&&v!==null){try{localStorage.setItem(ls,JSON.stringify(v));}catch(e){}}
+    else{
       var local=localStorage.getItem(ls);
-      if(local&&isAdmin()){try{await db.from("app_state").upsert({org_id:state.user.orgId,chave:k,dados:JSON.parse(local),atualizado_em:new Date().toISOString()},{onConflict:"org_id,chave"});}catch(e){}}
+      if(local&&sa==="principal"&&isAdmin()){try{await db.from("app_state").upsert({org_id:state.user.orgId,chave:b+"@principal",dados:JSON.parse(local),atualizado_em:new Date().toISOString()},{onConflict:"org_id,chave"});}catch(e){}}
+      else{try{localStorage.removeItem(ls);}catch(e){}}
     }
   }
+  /* log (nível organização) */
+  var lg=map["log"];if(lg!==undefined&&lg!==null){try{localStorage.setItem("ciops:log",JSON.stringify(lg));}catch(e){}}
+  if(!map["setores"]&&isAdmin()){try{await db.from("app_state").upsert({org_id:state.user.orgId,chave:"setores",dados:setores,atualizado_em:new Date().toISOString()},{onConflict:"org_id,chave"});}catch(e){}}
+}
+/* ---- Setores ---- */
+function _uidSetor(){return "s"+Date.now().toString(36)+Math.floor(Math.random()*1000);}
+function renderSetorSel(){
+  var sel=document.getElementById("setorSel");if(!sel)return;
+  var lista=state.setores||[{id:"principal",nome:"Setor principal"}];
+  sel.innerHTML=lista.map(function(s){return '<option value="'+s.id+'"'+(s.id===setorAtual()?' selected':'')+'>'+esc(s.nome)+'</option>';}).join("");
+  var hint=document.getElementById("setorHint");if(hint)hint.textContent=lista.length>1?("("+lista.length+" setores)"):"";
+}
+function _refreshUI(){
+  renderSetorSel();renderRoster();renderContControls();applyPerms();renderProBanner();
+  var _tp=document.getElementById("tipo");if(_tp)_tp.value=state.config.tipo||"giro";
+  var _sf=document.getElementById("satfolga");if(_sf)_sf.checked=!!state.config.satFolga2c;
+  var _ts=document.getElementById("turnosel");if(_ts&&state.config.hor&&state.config.hor.turno)_ts.value=state.config.hor.turno.sel||"dia";
+  if(typeof setTipo==="function")setTipo();
+  if(state.schedule){var _ms=document.getElementById("mes");if(_ms)_ms.value=state.schedule.month;var _an=document.getElementById("ano");if(_an)_an.value=state.schedule.year;renderSchedule();renderStats();showTab("escala");}else{showTab("efetivo");}
+}
+async function switchSetor(id){
+  if(!id||id===setorAtual())return;
+  try{await Promise.all([cloudPush("militares"),cloudPush("config"),cloudPush("carry"),cloudPush("schedule")]);}catch(e){}
+  state.setorAtivo=id;try{localStorage.setItem("ciops:setorAtivo",id);}catch(e){}
+  await cloudPullAll();
+  loadConfig();loadLog();load();if(typeof restoreSchedule==="function")restoreSchedule();
+  _refreshUI();
+}
+function renderSetoresList(){
+  var box=document.getElementById("setores_list");if(!box)return;
+  var lista=state.setores||[];var owner=isOwner();
+  box.innerHTML=lista.map(function(s){
+    return '<div class="oprow">'+(s.id===setorAtual()?'▶ ':'')+esc(s.nome)+(owner?(' <button class="mini" title="Renomear" onclick="renameSetor(\''+s.id+'\')">✏️</button>'+(lista.length>1?' <button class="mini" title="Remover" onclick="removeSetor(\''+s.id+'\')">🗑</button>':'')):'')+'</div>';
+  }).join("")||'<span class="tiny">nenhum</span>';
+  var addbox=document.getElementById("setor_add");if(addbox)addbox.style.display=isOwner()?"flex":"none";
+}
+async function addSetor(){
+  if(!isOwner())return;var m=document.getElementById("setor_msg");
+  if(!_proAtivo().ativo){if(m){m.textContent="Múltiplos setores é um recurso Pro. Assine para liberar.";m.style.color="#b91c1c";}if(typeof irParaAssinatura==="function")irParaAssinatura();return;}
+  var nome=(val("novo_setor")||"").trim();if(!nome){return;}
+  var lista=state.setores||[];lista.push({id:_uidSetor(),nome:nome});state.setores=lista;
+  try{localStorage.setItem("ciops:setores",JSON.stringify(lista));}catch(e){}
+  await cloudPush("setores");
+  var el=document.getElementById("novo_setor");if(el)el.value="";
+  renderSetorSel();renderSetoresList();
+  if(m){m.textContent="Setor criado. Selecione-o no topo (em Período) para montar a escala dele.";m.style.color="#15803d";}
+  log("Criação de setor",nome);
+}
+async function renameSetor(id){
+  if(!isOwner())return;var lista=state.setores||[];var s=lista.find(function(x){return x.id===id;});if(!s)return;
+  var nv=null;try{nv=prompt("Novo nome do setor:",s.nome);}catch(e){}if(nv==null)return;nv=(""+nv).trim();if(!nv)return;
+  s.nome=nv;state.setores=lista;try{localStorage.setItem("ciops:setores",JSON.stringify(lista));}catch(e){}
+  await cloudPush("setores");renderSetorSel();renderSetoresList();log("Renomeou setor",nv);
+}
+async function removeSetor(id){
+  if(!isOwner())return;var lista=state.setores||[];if(lista.length<=1)return;
+  var ok=true;try{ok=confirm("Remover este setor e a escala dele? Não pode ser desfeito.");}catch(e){}if(!ok)return;
+  try{await Promise.all(["militares","config","carry","schedule"].map(function(b){return db.from("app_state").delete().eq("org_id",state.user.orgId).eq("chave",b+"@"+id);}));}catch(e){}
+  var novo=lista.filter(function(x){return x.id!==id;});state.setores=novo;try{localStorage.setItem("ciops:setores",JSON.stringify(novo));}catch(e){}
+  await cloudPush("setores");
+  if(setorAtual()===id){await switchSetor(novo[0].id);}
+  renderSetorSel();renderSetoresList();log("Removeu setor","");
 }
 /* =============================================================== */
 function init(){
