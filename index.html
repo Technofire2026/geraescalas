@@ -264,6 +264,9 @@
   }
   @media(max-width:380px){ header.app h1{letter-spacing:.10em} .brand-logo{width:50px;height:50px} .card .bd{padding:12px} }
 </style>
+<meta http-equiv="Cache-Control" content="no-cache, no-store, must-revalidate">
+<meta http-equiv="Pragma" content="no-cache">
+<meta http-equiv="Expires" content="0">
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 </head>
 <body>
@@ -485,14 +488,14 @@
     </div>
   </section>
 
-  <footer><span class="noprint">Confira a escala antes de publicar.<br>© 2026 <b>Gera Escalas</b> · <span class="lnk" onclick="openAbout()">Sobre &amp; Política de Privacidade</span> · <span style="color:var(--mut2)">v3.8</span></span></footer>
+  <footer><span class="noprint">Confira a escala antes de publicar.<br>© 2026 <b>Gera Escalas</b> · <span class="lnk" onclick="openAbout()">Sobre &amp; Política de Privacidade</span> · <span style="color:var(--mut2)">v3.9</span></span></footer>
 </main>
 
 <div id="aboutmodal" class="modal" style="display:none" onclick="if(event.target===this)closeAbout()">
   <div class="mbox">
     <button class="xbtn" onclick="closeAbout()">Fechar ✕</button>
     <h2>Gera Escalas</h2>
-    <p class="muted">Escalas de plantão, turno e giro · Versão 3.8 · 2026</p>
+    <p class="muted">Escalas de plantão, turno e giro · Versão 3.9 · 2026</p>
 
     <h3>Autoria e direitos autorais</h3>
     <p>© 2026 <b>Gera Escalas</b> — desenvolvido por Luís Cesar. Todos os direitos reservados.</p>
@@ -1846,11 +1849,33 @@ function init(){
   try{
     var mk=function(rel,href){var l=document.createElement("link");l.rel=rel;l.href=href;document.head.appendChild(l);};
     mk("icon",APP_ICON);mk("apple-touch-icon",APP_ICON);
-    var mani={name:"Gera Escalas \u2014 Gest\u00e3o de Escalas",short_name:"Gera Escalas",description:"Escalas de servi\u00e7o do Corpo de Bombeiros",start_url:".",scope:".",display:"standalone",orientation:"any",background_color:"#0f172a",theme_color:"#0f172a",icons:[{src:APP_ICON,sizes:"192x192",type:"image/jpeg",purpose:"any"},{src:APP_ICON,sizes:"512x512",type:"image/jpeg",purpose:"maskable"}]};
+    var mani={name:"Gera Escalas \u2014 Gest\u00e3o de Escalas",short_name:"Gera Escalas",description:"Monte escalas de servi\u00e7o (plant\u00f5es, turnos e giros) em minutos",start_url:".",scope:".",display:"standalone",orientation:"any",background_color:"#0f172a",theme_color:"#0f172a",icons:[{src:APP_ICON,sizes:"192x192",type:"image/jpeg",purpose:"any"},{src:APP_ICON,sizes:"512x512",type:"image/jpeg",purpose:"maskable"}]};
     var blob=new Blob([JSON.stringify(mani)],{type:"application/manifest+json"});mk("manifest",URL.createObjectURL(blob));
   }catch(e){}
   cloudBoot();
 }
+function _verAtual(){var f=document.querySelector("footer");var m=(f&&f.textContent||"").match(/v(\d+\.\d+)/);return m?m[1]:null;}
+var _updShown=false;
+function checkUpdate(){
+  try{
+    fetch(location.pathname+"?_nc="+Date.now(),{cache:"no-store"}).then(function(r){return r.text();}).then(function(t){
+      var m=t.match(/>v(\d+\.\d+)</);var atual=_verAtual();
+      if(m&&atual&&m[1]!==atual&&!_updShown){
+        _updShown=true;
+        var b=document.createElement("div");
+        b.style.cssText="position:fixed;left:12px;right:12px;bottom:12px;z-index:99999;background:#312e81;color:#fff;border-radius:12px;padding:12px 14px;display:flex;gap:10px;align-items:center;box-shadow:0 6px 20px rgba(0,0,0,.35);font:14px -apple-system,BlinkMacSystemFont,Segoe UI,Roboto,Arial;max-width:520px;margin:0 auto";
+        b.innerHTML='<span style="flex:1">🔄 Nova versão disponível ('+m[1]+'). Atualize para ver as novidades.</span>';
+        var btn=document.createElement("button");btn.textContent="Atualizar";btn.style.cssText="background:#4f46e5;color:#fff;border:none;border-radius:8px;padding:8px 14px;font-weight:700;cursor:pointer";
+        btn.onclick=function(){location.reload();};
+        var x=document.createElement("button");x.textContent="✕";x.title="Agora não";x.style.cssText="background:transparent;color:#c7d2fe;border:none;font-size:16px;cursor:pointer;padding:4px";
+        x.onclick=function(){b.remove();};
+        b.appendChild(btn);b.appendChild(x);document.body.appendChild(b);
+      }
+    }).catch(function(){});
+  }catch(e){}
+}
+setTimeout(checkUpdate,2500);
+document.addEventListener("visibilitychange",function(){if(!document.hidden)setTimeout(checkUpdate,300);});
 init();
 </script>
 </body>
