@@ -296,7 +296,7 @@
           <button class="btn primary" id="btngerar" onclick="gerar()" style="flex:1 1 160px;justify-content:center">↻ Gerar escala</button>
           <button class="btn ghost" id="btncob" onclick="aplicarCobertura()" disabled title="Recalcula a escala a partir do dia do afastamento: o sucessor assume (sobreaviso) e a folga do efetivo é reduzida no período" style="flex:1 1 160px;justify-content:center">🩺 Aplicar afastamento</button>
           <button class="btn dark" id="btncsv" onclick="exportCSV()" disabled style="flex:1 1 110px;justify-content:center">⬇ CSV</button>
-          <button class="btn ghost" id="btnprint" onclick="window.print()" disabled style="flex:1 1 110px;justify-content:center">🖨 Imprimir</button>
+          <button class="btn ghost" id="btnprint" onclick="imprimir()" disabled style="flex:1 1 110px;justify-content:center">🖨 Imprimir</button>
         </div>
       </div>
       <div class="cont">
@@ -363,7 +363,7 @@
         <div class="row" style="align-items:flex-end">
           <label class="fld" style="min-width:150px"><span>Data</span><input type="date" id="mapa_data" onchange="renderMapa()"></label>
           <button class="btn ghost" onclick="renderMapa()">↻ Atualizar</button>
-          <button class="btn ghost noprint" onclick="window.print()">🖨️ Imprimir</button>
+          <button class="btn ghost noprint" onclick="imprimir()">🖨️ Imprimir</button>
         </div>
         <div id="mapa_body" style="margin-top:8px"><div class="tiny">Selecione uma data.</div></div>
       </section>
@@ -485,14 +485,14 @@
     </div>
   </section>
 
-  <footer><span class="noprint">Confira a escala antes de publicar.<br>© 2026 <b>Gera Escalas</b> · <span class="lnk" onclick="openAbout()">Sobre &amp; Política de Privacidade</span> · <span style="color:var(--mut2)">v3.7</span></span></footer>
+  <footer><span class="noprint">Confira a escala antes de publicar.<br>© 2026 <b>Gera Escalas</b> · <span class="lnk" onclick="openAbout()">Sobre &amp; Política de Privacidade</span> · <span style="color:var(--mut2)">v3.8</span></span></footer>
 </main>
 
 <div id="aboutmodal" class="modal" style="display:none" onclick="if(event.target===this)closeAbout()">
   <div class="mbox">
     <button class="xbtn" onclick="closeAbout()">Fechar ✕</button>
     <h2>Gera Escalas</h2>
-    <p class="muted">Escalas de plantão, turno e giro · Versão 3.7 · 2026</p>
+    <p class="muted">Escalas de plantão, turno e giro · Versão 3.8 · 2026</p>
 
     <h3>Autoria e direitos autorais</h3>
     <p>© 2026 <b>Gera Escalas</b> — desenvolvido por Luís Cesar. Todos os direitos reservados.</p>
@@ -712,7 +712,7 @@ function exportLog(){
   arr.forEach(function(e){lines.push([fmtTs(e.ts),e.user,e.acao,e.detalhe]);});
   var csv=lines.map(function(r){return r.map(function(c){return '"'+String(c==null?"":c).replace(/"/g,'""')+'"';}).join(";");}).join("\n");
   var blob=new Blob(["\ufeff"+csv],{type:"text/csv;charset=utf-8;"}),url=URL.createObjectURL(blob),a=document.createElement("a");
-  a.href=url;a.download="auditoria_escala_ciops.csv";document.body.appendChild(a);a.click();a.remove();URL.revokeObjectURL(url);
+  a.href=url;a.download="Auditoria_"+ymd(new Date())+".csv";document.body.appendChild(a);a.click();a.remove();URL.revokeObjectURL(url);
   log("Exportação do log de auditoria","");
 }
 
@@ -1032,7 +1032,7 @@ function exportBackup(){
     militares:localStorage.getItem("ciops:militares"),carry:localStorage.getItem("ciops:carry"),
     config:localStorage.getItem("ciops:config"),log:localStorage.getItem("ciops:log"),auth:localStorage.getItem("ciops:auth"),schedule:localStorage.getItem("ciops:schedule")};
   var blob=new Blob([JSON.stringify(data,null,2)],{type:"application/json"});var url=URL.createObjectURL(blob);var a=document.createElement("a");
-  a.href=url;a.download="backup_escala_ciops_"+ymd(new Date())+".json";document.body.appendChild(a);a.click();a.remove();URL.revokeObjectURL(url);
+  a.href=url;a.download="Backup_GeraEscalas_"+ymd(new Date())+".json";document.body.appendChild(a);a.click();a.remove();URL.revokeObjectURL(url);
   log("Backup exportado","");var m=document.getElementById("bkmsg");if(m){m.textContent="Backup baixado.";setTimeout(function(){m.textContent="";},2500);}
 }
 function importBackup(input){if(!isAdmin())return;
@@ -1578,19 +1578,31 @@ function celTxt(ref,cov){
   if(cov)return (cov.sub?((cov.sub.posto?cov.sub.posto+" ":"")+cov.sub.nome):"SEM COBERTURA")+" [cobre "+cov.was.nome+"]";
   return ref?((ref.posto?ref.posto+" ":"")+ref.nome):"SEM ESCALA";
 }
+function _slug(x){return (x==null?"":x).toString().replace(/[\/:*?"<>|]+/g,"").replace(/\s+/g,"_").replace(/_+/g,"_").replace(/^_|_$/g,"");}
+function setorNome(){var l=state.setores||[];var s=l.find(function(x){return x.id===setorAtual();});return (s&&s.nome)||"";}
+function _periodoLabel(){var m,y;if(state.schedule){m=state.schedule.month;y=state.schedule.year;}else{var ms=document.getElementById("mes"),an=document.getElementById("ano");m=ms?+ms.value:new Date().getMonth();y=an?+an.value:new Date().getFullYear();}return (MESES[m]||"")+"-"+y;}
+function imprimir(){
+  var old=document.title;var sn=_slug(setorNome());var per=_periodoLabel();var t=state._tab||"escala";var nome;
+  if(t==="mapa"){var dd=document.getElementById("mapa_data");var dv=(dd&&dd.value)?dd.value.split("-").reverse().join("-"):per;nome="Mapa-do-dia_"+dv;}
+  else if(t==="stat"){nome="Estatistica"+(sn?"_"+sn:"")+"_"+per;}
+  else if(t==="efetivo"){nome="Equipe"+(sn?"_"+sn:"");}
+  else{nome="Escala"+(sn?"_"+sn:"")+"_"+per;}
+  document.title=nome;
+  setTimeout(function(){window.print();setTimeout(function(){document.title=old;},800);},30);
+}
 function exportCSV(){
   if(!state.schedule)return;
   const res=state.schedule.result,year=state.schedule.year,month=state.schedule.month;
   const cols=_colsOf(res),gm=[res.g1,res.g2,res.g3],isGiro=(res.tipo==="giro");
   const lines=[["Dia","Dia da semana"].concat(cols.map(function(c){return c.lab+(c.hhmm?" ("+c.hhmm+")":"");}))];
   for(let d=1;d<=res.N;d++){const dt=new Date(year,month,d),cov=res.cover[d]||{};lines.push([pad(d)+"/"+pad(month+1),DIAS[dt.getDay()]].concat(cols.map(function(c,ci){return celTxt(gm[ci]?gm[ci][d]:null,cov[ci+1]);})));}
-  lines.push([]);lines.push(["ESTATÍSTICA POR MILITAR"]);
-  lines.push(isGiro?["Militar","Serviços","Horas","Sábados","Domingos","Fins de semana","Folgão (sáb)","Coberturas","Dias de férias"]:["Militar","Serviços","Horas","Sábados","Domingos","Fins de semana","Coberturas","Dias de férias"]);
+  lines.push([]);lines.push(["ESTATÍSTICA POR PESSOA"]);
+  lines.push(isGiro?["Pessoa","Serviços","Horas","Sábados","Domingos","Fins de semana","Folgão (sáb)","Coberturas","Dias de férias"]:["Pessoa","Serviços","Horas","Sábados","Domingos","Fins de semana","Coberturas","Dias de férias"]);
   res.stats.slice().sort((a,b)=>b.servicos-a.servicos).forEach(s=>lines.push(isGiro?[(s.ref.posto?s.ref.posto+" ":"")+s.ref.nome,s.servicos,s.horas||0,s.sab,s.dom,s.wknd,s.folgao||0,s.cob,s.feriasNoMes||0]:[(s.ref.posto?s.ref.posto+" ":"")+s.ref.nome,s.servicos,s.horas||0,s.sab,s.dom,s.wknd,s.cob,s.feriasNoMes||0]));
   const csv=lines.map(row=>row.map(c=>'"'+String(c==null?"":c).replace(/"/g,'""')+'"').join(";")).join("\n");
   const blob=new Blob(["\ufeff"+csv],{type:"text/csv;charset=utf-8;"});
   const url=URL.createObjectURL(blob);const a=document.createElement("a");
-  a.href=url;a.download="escala_vigile_"+MESES[month].toLowerCase()+"_"+year+".csv";
+  a.href=url;a.download="Escala"+(setorNome()?"_"+_slug(setorNome()):"")+"_"+MESES[month]+"-"+year+".csv";
   document.body.appendChild(a);a.click();a.remove();URL.revokeObjectURL(url);
 }
 
