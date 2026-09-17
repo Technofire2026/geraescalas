@@ -493,14 +493,14 @@
     </div>
   </section>
 
-  <footer><span class="noprint">Confira a escala antes de publicar.<br>© 2026 <b>Gera Escalas</b> · <span class="lnk" onclick="openAbout()">Sobre &amp; Política de Privacidade</span> · <span style="color:var(--mut2)">v4.1</span></span></footer>
+  <footer><span class="noprint">Confira a escala antes de publicar.<br>© 2026 <b>Gera Escalas</b> · <span class="lnk" onclick="openAbout()">Sobre &amp; Política de Privacidade</span> · <span style="color:var(--mut2)">v4.2</span></span></footer>
 </main>
 
 <div id="aboutmodal" class="modal" style="display:none" onclick="if(event.target===this)closeAbout()">
   <div class="mbox">
     <button class="xbtn" onclick="closeAbout()">Fechar ✕</button>
     <h2>Gera Escalas</h2>
-    <p class="muted">Escalas de plantão, turno e giro · Versão 4.1 · 2026</p>
+    <p class="muted">Escalas de plantão, turno e giro · Versão 4.2 · 2026</p>
 
     <h3>Autoria e direitos autorais</h3>
     <p>© 2026 <b>Gera Escalas</b> — desenvolvido por Luís Cesar. Todos os direitos reservados.</p>
@@ -857,11 +857,28 @@ function renderAssinatura(){
     html='<div style="background:#fff7ed;border:1px solid #fed7aa;color:#9a3412;border-radius:8px;padding:10px 12px;font-size:13px">⚠ <b>Sem assinatura ativa.</b> Assine o Pro para continuar usando na nuvem.</div>';
   }
   if(owner){
-    html+='<div style="display:flex;gap:8px;flex-wrap:wrap;margin-top:10px"><button class="btn primary" onclick="assinarPro()">🔑 Assinar Pro (anual) via Pix</button><button class="btn ghost" onclick="atualizarAssinatura()">↻ Já paguei / Atualizar</button></div><div id="assin_msg" class="tiny" style="margin-top:8px"></div>';
+    html+='<div style="display:grid;gap:8px;margin-top:12px;grid-template-columns:1fr 1fr">'+
+      '<button class="btn primary" onclick="assinarMensal()">💳 Mensal (cartão)<br><span style="font-weight:500;font-size:12px">R$ 29,90/mês · automático</span></button>'+
+      '<button class="btn primary" style="background:var(--teal)" onclick="assinarPro()">📱 Anual (Pix)<br><span style="font-weight:500;font-size:12px">R$ 299/ano · economize 2 meses</span></button>'+
+      '</div><div style="margin-top:8px"><button class="btn ghost" onclick="atualizarAssinatura()">↻ Já paguei / Atualizar status</button></div><div id="assin_msg" class="tiny" style="margin-top:8px"></div>';
   }else{
     html+='<p class="tiny" style="margin-top:8px">Somente o Proprietário pode assinar.</p>';
   }
   box.innerHTML=html;
+}
+async function assinarMensal(){
+  if(!isOwner()||!db)return;
+  var _doc=(state.user&&state.user.orgCnpj||"").replace(/\D/g,"");
+  var mm=document.getElementById("assin_msg");
+  if(_doc.length!==11&&_doc.length!==14){if(mm){mm.textContent="Antes de assinar, informe o CNPJ/CPF da organização (campo abaixo) e salve.";mm.style.color="#b91c1c";}var el=document.getElementById("cfg_doc");if(el&&el.scrollIntoView)el.scrollIntoView({behavior:"smooth"});return;}
+  if(mm){mm.textContent="Abrindo o pagamento seguro do cartão...";mm.style.color="var(--mut)";}
+  try{
+    var r=await db.functions.invoke("criar-cobranca",{body:{plano:"mensal"}});
+    if(r.error){if(mm){mm.textContent="Falha: "+(r.error.message||r.error);mm.style.color="#b91c1c";}return;}
+    var d=r.data||{};
+    if(d.checkoutUrl){window.open(d.checkoutUrl,"_blank");if(mm){mm.textContent="Abrimos a página segura do cartão em outra aba. Após concluir, volte e clique em “Já paguei / Atualizar status”.";mm.style.color="#1d4ed8";}}
+    else{if(mm){mm.textContent="Não recebi o link do cartão: "+JSON.stringify(d);mm.style.color="#b91c1c";}}
+  }catch(e){if(mm){mm.textContent="Erro: "+e;mm.style.color="#b91c1c";}}
 }
 async function assinarPro(){
   if(!isOwner()||!db)return;
