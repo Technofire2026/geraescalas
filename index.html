@@ -106,8 +106,11 @@
   .chip{background:#fff;border:1px solid #c7d2fe;color:var(--indigo-d);font-weight:700;border-radius:999px;padding:10px 18px;font-size:14.5px}
 
   /* planos */
-  .plans{display:grid;grid-template-columns:1fr;gap:20px;margin-top:44px;max-width:760px;margin-left:auto;margin-right:auto}
-  @media(min-width:720px){.plans{grid-template-columns:1fr 1fr}}
+  .plans{display:grid;grid-template-columns:1fr;gap:20px;margin-top:44px;max-width:980px;margin-left:auto;margin-right:auto}
+  @media(min-width:840px){.plans{grid-template-columns:repeat(3,1fr)}}
+  .price .old{font-size:16px;color:#94a3b8;text-decoration:line-through;font-weight:600;display:block}
+  .promo{display:inline-block;background:#dcfce7;color:#15803d;font-weight:800;font-size:12px;border-radius:999px;padding:3px 10px;margin-bottom:6px}
+  .econ{background:#eef2ff;border:1px solid #c7d2fe;color:#3730a3;border-radius:12px;padding:12px 16px;margin:22px auto 0;max-width:640px;text-align:center;font-size:14.5px}
   .plan{border:1.5px solid var(--line);border-radius:20px;padding:30px 26px;background:#fff;position:relative}
   .plan.pro{border-color:var(--indigo);box-shadow:0 16px 40px rgba(79,70,229,.18)}
   .plan .badge{position:absolute;top:-13px;left:50%;transform:translateX(-50%);background:var(--indigo);color:#fff;font-size:12px;font-weight:800;padding:5px 14px;border-radius:999px}
@@ -252,7 +255,7 @@
   <div class="wrap">
     <div class="eyebrow reveal">Planos</div>
     <h2 class="reveal">Simples e sem pegadinha</h2>
-    <p class="lead reveal">Comece grátis. Se gostar, o Pro custa menos que um cafezinho por semana.</p>
+    <p class="lead reveal">Comece grátis por 14 dias. Depois, um preço simples e sem pegadinha — sem cobrar por funcionário.</p>
     <div class="plans">
       <div class="plan reveal">
         <h3>Teste grátis</h3>
@@ -264,19 +267,33 @@
         </ul>
         <a class="btn ghost" href="/app">Começar agora</a>
       </div>
-      <div class="plan pro reveal">
-        <span class="badge">MAIS ESCOLHIDO</span>
-        <h3>Pro</h3>
-        <div class="price">R$ 69,90 <small>/ ano</small></div>
+      <div class="plan reveal">
+        <span class="promo">LANÇAMENTO</span>
+        <h3>Mensal</h3>
+        <div class="price"><span class="old">R$ 39,90</span>R$ 29,90 <small>/ mês</small></div>
         <ul>
-          <li>Tudo do teste, sem limite</li>
+          <li>Tudo, sem limite</li>
           <li>Nuvem e multiusuário</li>
           <li>Setores ilimitados + Mapa do dia</li>
-          <li>Pagamento por <b>Pix</b></li>
+          <li>Cancele quando quiser</li>
         </ul>
-        <a class="btn primary" href="/app">Assinar o Pro</a>
+        <a class="btn ghost" href="/app">Assinar mensal</a>
+      </div>
+      <div class="plan pro reveal">
+        <span class="badge">MELHOR OFERTA</span>
+        <span class="promo">LANÇAMENTO · economize 2 meses</span>
+        <h3>Anual</h3>
+        <div class="price"><span class="old">R$ 358,80</span>R$ 299 <small>/ ano</small></div>
+        <ul>
+          <li>Tudo do mensal</li>
+          <li>Equivale a <b>R$ 24,90/mês</b></li>
+          <li>Pagamento por <b>Pix</b></li>
+          <li>2 meses de desconto</li>
+        </ul>
+        <a class="btn primary" href="/app">Assinar anual</a>
       </div>
     </div>
+    <div class="econ reveal">⏱️ <b>Pare de perder horas montando escala.</b> O que levava 2–3 horas na planilha (e ainda dava erro e reclamação) sai em <b>minutos</b> — esse tempo economizado, todo mês, paga a assinatura muitas vezes.</div>
     <div class="trust">
       <span class="t reveal">🔒 Conforme a LGPD</span>
       <span class="t reveal">🇧🇷 Dados no Brasil</span>
