@@ -323,6 +323,7 @@
       <div class="hd"><span class="ico">👥</span> Equipe <span class="tiny" id="qtd" style="margin-left:auto"></span></div>
       <div class="bd">
         <div class="addform">
+          <label class="fld" id="add_setor_wrap" style="margin-bottom:6px"><span>Cadastrando no setor:</span><select id="add_setor" onchange="mudarSetorCadastro(this.value)" style="width:100%;font:inherit;padding:8px;border:1px solid var(--line2);border-radius:8px;font-weight:600"></select></label>
           <input id="nome" placeholder="Nome da pessoa" onkeydown="if(event.key==='Enter')addMilitar()">
           <div class="two">
             <input id="posto" placeholder="Cargo/função (ex.: Enfermeiro)" onkeydown="if(event.key==='Enter')addMilitar()">
@@ -494,14 +495,14 @@
     </div>
   </section>
 
-  <footer><span class="noprint">Confira a escala antes de publicar.<br>© 2026 <b>Gera Escalas</b> · <span class="lnk" onclick="openAbout()">Sobre &amp; Política de Privacidade</span> · <span style="color:var(--mut2)">v4.3</span></span></footer>
+  <footer><span class="noprint">Confira a escala antes de publicar.<br>© 2026 <b>Gera Escalas</b> · <span class="lnk" onclick="openAbout()">Sobre &amp; Política de Privacidade</span> · <span style="color:var(--mut2)">v4.4</span></span></footer>
 </main>
 
 <div id="aboutmodal" class="modal" style="display:none" onclick="if(event.target===this)closeAbout()">
   <div class="mbox">
     <button class="xbtn" onclick="closeAbout()">Fechar ✕</button>
     <h2>Gera Escalas</h2>
-    <p class="muted">Escalas de plantão, turno e giro · Versão 4.3 · 2026</p>
+    <p class="muted">Escalas de plantão, turno e giro · Versão 4.4 · 2026</p>
 
     <h3>Autoria e direitos autorais</h3>
     <p>© 2026 <b>Gera Escalas</b> — desenvolvido por Luís Cesar. Todos os direitos reservados.</p>
@@ -691,7 +692,7 @@ function reiniciarApp(){
   try{location.reload();}catch(e){try{location.href=location.pathname;}catch(_){}}
 }
 async function logout(){try{if(db)await db.auth.signOut();}catch(e){}try{["ciops:militares","ciops:carry","ciops:config","ciops:log","ciops:schedule"].forEach(function(k){localStorage.removeItem(k);});}catch(e){}state.user=null;state.editing=null;state.militares=[];state.schedule=null;state.carry={};document.getElementById("app").style.display="none";document.getElementById("authgate").style.display="flex";renderCloudGate("entrar");}
-function showApp(){document.getElementById("authgate").style.display="none";document.getElementById("app").style.display="";var _cc=document.getElementById("configcard");if(_cc)_cc.style.display="none";renderUserbar();renderSetorSel();renderRoster();renderContControls();applyPerms();renderProBanner();var _m=state.config.modo||"auto";var _r=document.querySelector('input[name="modo"][value="'+_m+'"]');if(_r)_r.checked=true;var _sf=document.getElementById("satfolga");if(_sf)_sf.checked=!!state.config.satFolga2c;var _tp=document.getElementById("tipo");if(_tp)_tp.value=state.config.tipo||"giro";var _ts=document.getElementById("turnosel");if(_ts&&state.config.hor&&state.config.hor.turno)_ts.value=state.config.hor.turno.sel||"dia";setTipo();if(state.schedule){var _ms=document.getElementById("mes");if(_ms)_ms.value=state.schedule.month;var _an=document.getElementById("ano");if(_an)_an.value=state.schedule.year;renderSchedule();renderStats();}showTab(state.schedule?"escala":"efetivo");}
+function showApp(){document.getElementById("authgate").style.display="none";document.getElementById("app").style.display="";var _cc=document.getElementById("configcard");if(_cc)_cc.style.display="none";renderUserbar();renderSetorSel();renderAddSetor();renderRoster();renderContControls();applyPerms();renderProBanner();var _m=state.config.modo||"auto";var _r=document.querySelector('input[name="modo"][value="'+_m+'"]');if(_r)_r.checked=true;var _sf=document.getElementById("satfolga");if(_sf)_sf.checked=!!state.config.satFolga2c;var _tp=document.getElementById("tipo");if(_tp)_tp.value=state.config.tipo||"giro";var _ts=document.getElementById("turnosel");if(_ts&&state.config.hor&&state.config.hor.turno)_ts.value=state.config.hor.turno.sel||"dia";setTipo();if(state.schedule){var _ms=document.getElementById("mes");if(_ms)_ms.value=state.schedule.month;var _an=document.getElementById("ano");if(_an)_an.value=state.schedule.year;renderSchedule();renderStats();}showTab(state.schedule?"escala":"efetivo");}
 function isOwner(){return !!(state.user&&state.user.role==="owner");}
 function isAdmin(){return !!(state.user&&(state.user.role==="admin"||state.user.role==="owner"));}
 function applyPerms(){var admin=isAdmin();var cc=document.getElementById("configcard");if(cc&&!admin)cc.style.display="none";var g=document.getElementById("btngerar");if(g)g.style.display=admin?"":"none";var c=document.getElementById("btncob");if(c)c.style.display=admin?"":"none";var cont=document.querySelector(".card .cont");if(cont)cont.style.display=admin?"":"none";var af=document.querySelector("#efetivo .addform");if(af)af.style.display=admin?"":"none";}
@@ -913,6 +914,8 @@ async function atualizarAssinatura(){
   var pix=document.getElementById("assin_pix");if(pix&&_proAtivo().motivo==="assinatura"){pix.style.display="none";}
 }
 function _uidTurma(){return "t"+Date.now().toString(36)+Math.floor(Math.random()*1000);}
+function renderAddSetor(){var wrap=document.getElementById("add_setor_wrap"),sel=document.getElementById("add_setor");if(!wrap||!sel)return;var ls=(state.setores||[{id:"principal",nome:"Setor principal"}]);if(ls.length<=1){wrap.style.display="none";return;}wrap.style.display="";sel.innerHTML=ls.map(function(x){return '<option value="'+x.id+'"'+(x.id===setorAtual()?" selected":"")+'>'+esc(x.nome)+'</option>';}).join("");}
+async function mudarSetorCadastro(id){if(!id||id===setorAtual())return;await switchSetor(id);var e=document.getElementById("add_setor");if(e)e.value=setorAtual();}
 function renderAddTime(){var wrap=document.getElementById("add_time_wrap"),sel=document.getElementById("add_time");if(!wrap||!sel)return;var ts=(state.config&&state.config.turmas)||[];var isCiclo=(state.config&&state.config.tipo)==="ciclo";if(isCiclo&&ts.length){wrap.style.display="";sel.innerHTML='<option value="">— sem time —</option>'+ts.map(function(t){return '<option value="'+t.id+'">'+esc(t.nome)+'</option>';}).join("");}else{wrap.style.display="none";}}
 function renderTurmas(){
   var box=document.getElementById("turmas_list");if(!box)return;
@@ -1177,7 +1180,8 @@ function gerarFolga(mils,year,month,cfg,seed){
   function unav(m,d){return isUnavailable(m,new Date(year,month,d));}
   var folga={},excedeuMax=false,estourou=false;
   for(var d=1;d<=N;d++){
-    var date=new Date(year,month,d),isSun=date.getDay()===0,ehPermit=permit(d);
+    var date=new Date(year,month,d),isSun=date.getDay()===0;
+    var ehPermit=permit(d)||(gDom&&isSun); // domingo obrigatório entra como dia de folga mesmo fora dos permitidos
     st.forEach(function(s){if(unav(s.ref,d)){s.cons=0;s.until=0;}});
     var avail=st.filter(function(s){return !unav(s.ref,d);});
     var off=[];
@@ -1188,6 +1192,16 @@ function gerarFolga(mils,year,month,cfg,seed){
       // obrigatórios: se pular hoje, estouraria "work" antes do próximo dia permitido
       var prox=nextP[d];
       avail.forEach(function(s){if(off.indexOf(s)<0){var consAteProx=s.cons+(prox-d);if(s.cons>=work||consAteProx>work){s.until=d+flen-1;off.push(s);}}});
+      // domingo obrigatório (CLT): garante 1 domingo de folga/mês por pessoa
+      if(gDom&&isSun){
+        var semDom=avail.filter(function(s){return off.indexOf(s)<0&&!s.sunday;});
+        semDom.sort(function(a,b){return b.cons-a.cons||a.order-b.order;});
+        var domRest=0;for(var dq=d;dq<=N;dq++){if(new Date(year,month,dq).getDay()===0)domRest++;}
+        var precisaHoje=Math.ceil(semDom.length/Math.max(1,domRest)); // mínimo p/ caber todos até o fim do mês
+        var vagas=Math.max(0,maxDia-off.length);
+        var quota=Math.max(precisaHoje,Math.min(vagas,semDom.length)); // usa vagas livres; garante o mínimo (mesmo estourando maxDia)
+        for(var z=0;z<quota&&z<semDom.length;z++){semDom[z].until=d+flen-1;off.push(semDom[z]);}
+      }
       if(off.length>maxDia)excedeuMax=true;
       var slots=maxDia-off.length;
       if(slots>0){
@@ -1984,7 +1998,7 @@ function renderSetorSel(){
   var hint=document.getElementById("setorHint");if(hint)hint.textContent=lista.length>1?("("+lista.length+" setores)"):"";
 }
 function _refreshUI(){
-  renderSetorSel();renderRoster();renderContControls();applyPerms();renderProBanner();
+  renderSetorSel();renderAddSetor();renderRoster();renderContControls();applyPerms();renderProBanner();
   var _tp=document.getElementById("tipo");if(_tp)_tp.value=state.config.tipo||"giro";
   var _sf=document.getElementById("satfolga");if(_sf)_sf.checked=!!state.config.satFolga2c;
   var _ts=document.getElementById("turnosel");if(_ts&&state.config.hor&&state.config.hor.turno)_ts.value=state.config.hor.turno.sel||"dia";
