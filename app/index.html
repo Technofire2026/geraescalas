@@ -298,6 +298,7 @@
         <div class="actions" style="flex:1 1 100%;display:flex;gap:8px;flex-wrap:wrap;margin-top:4px">
           <button class="btn primary" id="btngerar" onclick="gerar()" style="flex:1 1 160px;justify-content:center">↻ Gerar escala</button>
           <button class="btn ghost" id="btncob" onclick="aplicarCobertura()" disabled title="Recalcula a escala a partir do dia do afastamento: o sucessor assume (sobreaviso) e a folga do efetivo é reduzida no período" style="flex:1 1 160px;justify-content:center">🩺 Aplicar afastamento</button>
+          <button class="btn ghost" id="btntroca" onclick="openTroca()" disabled title="Substituir alguém num dia ou permutar (trocar) entre dois dias" style="flex:1 1 160px;justify-content:center">🔁 Trocar / Substituir</button>
           <button class="btn dark" id="btncsv" onclick="exportCSV()" disabled style="flex:1 1 110px;justify-content:center">⬇ CSV</button>
           <button class="btn ghost" id="btnprint" onclick="imprimir()" disabled style="flex:1 1 110px;justify-content:center">🖨 Imprimir</button>
         </div>
@@ -305,7 +306,7 @@
       <div class="cont">
         <label><input type="checkbox" id="continuidade" checked> 🔗 Aproveitar o fim da escala do mês anterior (continuidade)</label>
         <a id="limparcont" onclick="limparContinuidade()" style="display:none">limpar histórico de continuidade</a>
-        <span id="tipoBox" class="ctlgrp" style="display:inline-flex;align-items:center;gap:6px;border-left:1px solid var(--line);padding-left:12px"><span class="tiny lbl-nowrap" style="font-weight:600">Tipo de escala:</span><select id="tipo" onchange="setTipo()" style="font:inherit;padding:3px 6px;border:1px solid var(--line2);border-radius:6px"><option value="giro">Giro — 2 giros/dia</option><option value="3giros">3 Giros — 3 turnos/dia</option><option value="24h">Plantão 24h — 1 pessoa/dia</option><option value="turno">Turno (dia ou noite) — 1 pessoa/dia</option><option value="ciclo">Ciclo por times (24×48, 24×72…)</option><option value="folga">Folga rotativa (6x1, 5x2…)</option></select></span><span id="turnoBox" class="ctlgrp" style="display:none;align-items:center;gap:6px;border-left:1px solid var(--line);padding-left:12px"><span class="tiny lbl-nowrap" style="font-weight:600">Turno:</span><select id="turnosel" onchange="setTurno()" style="font:inherit;padding:3px 6px;border:1px solid var(--line2);border-radius:6px"><option value="dia">Dia</option><option value="noite">Noite</option></select></span><span id="cicloBox" class="ctlgrp" style="display:none;align-items:center;gap:6px;border-left:1px solid var(--line);padding-left:12px"><span class="tiny lbl-nowrap" style="font-weight:600">Regime:</span><select id="ciclosel" onchange="setCicloRegime()" style="font:inherit;padding:3px 6px;border:1px solid var(--line2);border-radius:6px"><option value="24h">24h (1 time/dia)</option><option value="12h">12h (dia e noite)</option></select></span><span id="folgaBox" class="ctlgrp" style="display:none;align-items:center;gap:6px;flex-wrap:wrap;border-left:1px solid var(--line);padding-left:12px"><span class="tiny lbl-nowrap" style="font-weight:600">Trabalha</span><input id="fg_trab" type="number" min="1" max="12" value="6" style="width:52px;font:inherit;padding:3px 6px;border:1px solid var(--line2);border-radius:6px" onchange="setFolgaCfg()"><span class="tiny">×</span><span class="tiny lbl-nowrap" style="font-weight:600">Folga</span><input id="fg_folga" type="number" min="1" max="4" value="1" style="width:52px;font:inherit;padding:3px 6px;border:1px solid var(--line2);border-radius:6px" onchange="setFolgaCfg()"><span class="tiny lbl-nowrap" style="font-weight:600">Máx/dia</span><input id="fg_max" type="number" min="1" max="50" value="1" style="width:56px;font:inherit;padding:3px 6px;border:1px solid var(--line2);border-radius:6px" onchange="setFolgaCfg()"><label class="tiny" style="display:inline-flex;align-items:center;gap:4px;cursor:pointer" title="Garante ao menos uma folga no domingo por pessoa no mês (regra do descanso semanal)"><input id="fg_dom" type="checkbox" checked onchange="setFolgaCfg()"> folga no domingo</label><button class="btn ghost" style="padding:4px 8px;font-size:12px" onclick="presetFolga(6,1)">6x1</button><button class="btn ghost" style="padding:4px 8px;font-size:12px" onclick="presetFolga(5,2)">5x2</button><span class="tiny lbl-nowrap" style="font-weight:600;margin-left:6px">Folga só em:</span><span id="fg_dias" style="display:inline-flex;gap:3px;flex-wrap:wrap"></span></span><div id="tipoInfo" class="tiny" style="flex-basis:100%;margin-top:2px;color:var(--mut);line-height:1.4"></div>
+        <span id="tipoBox" class="ctlgrp" style="display:inline-flex;align-items:center;gap:6px;border-left:1px solid var(--line);padding-left:12px"><span class="tiny lbl-nowrap" style="font-weight:600">Tipo de escala:</span><select id="tipo" onchange="setTipo()" style="font:inherit;padding:3px 6px;border:1px solid var(--line2);border-radius:6px"><option value="giro">Giro — 2 giros/dia</option><option value="3giros">3 Giros — 3 turnos/dia</option><option value="24h">Plantão 24h — 1 pessoa/dia</option><option value="turno">Turno (dia ou noite) — 1 pessoa/dia</option><option value="ciclo">Ciclo por times (24×48, 24×72…)</option><option value="folga">Folga rotativa (6x1, 5x2…)</option></select></span><span id="turnoBox" class="ctlgrp" style="display:none;align-items:center;gap:6px;border-left:1px solid var(--line);padding-left:12px"><span class="tiny lbl-nowrap" style="font-weight:600">Turno:</span><select id="turnosel" onchange="setTurno()" style="font:inherit;padding:3px 6px;border:1px solid var(--line2);border-radius:6px"><option value="dia">Dia</option><option value="noite">Noite</option></select></span><span id="cicloBox" class="ctlgrp" style="display:none;align-items:center;gap:6px;border-left:1px solid var(--line);padding-left:12px"><span class="tiny lbl-nowrap" style="font-weight:600">Regime:</span><select id="ciclosel" onchange="setCicloRegime()" style="font:inherit;padding:3px 6px;border:1px solid var(--line2);border-radius:6px"><option value="24h">24h (1 time/dia)</option><option value="12h">12h (dia e noite)</option></select></span><span id="folgaBox" class="ctlgrp" style="display:none;align-items:center;gap:6px;flex-wrap:wrap;border-left:1px solid var(--line);padding-left:12px"><span class="tiny lbl-nowrap" style="font-weight:600">Trabalha</span><input id="fg_trab" type="number" min="1" max="12" value="6" style="width:52px;font:inherit;padding:3px 6px;border:1px solid var(--line2);border-radius:6px" onchange="setFolgaCfg()"><span class="tiny">×</span><span class="tiny lbl-nowrap" style="font-weight:600">Folga</span><input id="fg_folga" type="number" min="1" max="4" value="1" style="width:52px;font:inherit;padding:3px 6px;border:1px solid var(--line2);border-radius:6px" onchange="setFolgaCfg()"><span class="tiny lbl-nowrap" style="font-weight:600">Máx/dia</span><input id="fg_max" type="number" min="1" max="50" value="1" style="width:56px;font:inherit;padding:3px 6px;border:1px solid var(--line2);border-radius:6px" onchange="setFolgaCfg()"><label class="tiny" style="display:inline-flex;align-items:center;gap:4px;cursor:pointer" title="Garante ao menos uma folga no domingo por pessoa no mês (regra do descanso semanal)"><input id="fg_dom" type="checkbox" checked onchange="setFolgaCfg()"> folga no domingo</label><span class="tiny lbl-nowrap" style="font-weight:600;margin-left:6px">Horário</span><input id="fg_hini" type="time" value="18:00" onchange="setFolgaCfg()" style="font:inherit;padding:3px 6px;border:1px solid var(--line2);border-radius:6px"><span class="tiny">–</span><input id="fg_hfim" type="time" value="23:00" onchange="setFolgaCfg()" style="font:inherit;padding:3px 6px;border:1px solid var(--line2);border-radius:6px"><button class="btn ghost" style="padding:4px 8px;font-size:12px" onclick="presetFolga(6,1)">6x1</button><button class="btn ghost" style="padding:4px 8px;font-size:12px" onclick="presetFolga(5,2)">5x2</button><span class="tiny lbl-nowrap" style="font-weight:600;margin-left:6px">Folga só em:</span><span id="fg_dias" style="display:inline-flex;gap:3px;flex-wrap:wrap"></span></span><div id="tipoInfo" class="tiny" style="flex-basis:100%;margin-top:2px;color:var(--mut);line-height:1.4"></div>
         <span id="rotacaoBox" class="ctlgrp" style="display:inline-flex;align-items:center;gap:10px;border-left:1px solid var(--line);padding-left:12px;flex-wrap:wrap"><span class="tiny lbl-nowrap" style="font-weight:600">Rotação:</span><label style="display:inline-flex;gap:5px;align-items:center;cursor:pointer"><input type="radio" name="modo" value="auto" onchange="setModo()"> Automático</label><label style="display:inline-flex;gap:5px;align-items:center;cursor:pointer"><input type="radio" name="modo" value="fixa" onchange="setModo()"> Escala fixa</label><label style="display:inline-flex;gap:5px;align-items:center;cursor:pointer"><input type="radio" name="modo" value="giro" onchange="setModo()"> Com giro</label><span class="tiny" style="cursor:help" title="Automático: usa Com giro quando o efetivo é múltiplo de 7 (que trava), e Fixa nos demais casos. Fixa: rodízio simples — cada militar recua um dia da semana a cada ciclo. Com giro: estende a folga de quem tira sábado+domingo para as posições girarem nos dias da semana.">ⓘ</span> <span id="modohint" class="tiny" style="color:#b45309;font-weight:600"></span></span>
       </div>
       <div id="erro"></div>
@@ -495,14 +496,14 @@
     </div>
   </section>
 
-  <footer><span class="noprint">Confira a escala antes de publicar.<br>© 2026 <b>Gera Escalas</b> · <span class="lnk" onclick="openAbout()">Sobre &amp; Política de Privacidade</span> · <span style="color:var(--mut2)">v4.4</span></span></footer>
+  <footer><span class="noprint">Confira a escala antes de publicar.<br>© 2026 <b>Gera Escalas</b> · <span class="lnk" onclick="openAbout()">Sobre &amp; Política de Privacidade</span> · <span style="color:var(--mut2)">v4.5</span></span></footer>
 </main>
 
 <div id="aboutmodal" class="modal" style="display:none" onclick="if(event.target===this)closeAbout()">
   <div class="mbox">
     <button class="xbtn" onclick="closeAbout()">Fechar ✕</button>
     <h2>Gera Escalas</h2>
-    <p class="muted">Escalas de plantão, turno e giro · Versão 4.4 · 2026</p>
+    <p class="muted">Escalas de plantão, turno e giro · Versão 4.5 · 2026</p>
 
     <h3>Autoria e direitos autorais</h3>
     <p>© 2026 <b>Gera Escalas</b> — desenvolvido por Luís Cesar. Todos os direitos reservados.</p>
@@ -590,10 +591,10 @@ function _serFolga(f){var o={};for(var d in f){o[d]=(f[d]||[]).map(function(m){r
 function serializeSchedule(){
   if(!state.schedule||!state.schedule.result)return null;
   var r=state.schedule.result,idOf=function(x){return x?x.id:null;};
-  var g1={},g2={},g3={};for(var d=1;d<=r.N;d++){g1[d]=idOf(r.g1[d]);g2[d]=idOf(r.g2[d]);g3[d]=idOf(r.g3?r.g3[d]:null);}
+  var g1={},g2={},g3={};if(r.g1){for(var d=1;d<=r.N;d++){g1[d]=idOf(r.g1[d]);g2[d]=idOf(r.g2&&r.g2[d]);g3[d]=idOf(r.g3?r.g3[d]:null);}}
   var cover={};for(var k in (r.cover||{})){var c=r.cover[k];cover[k]={};for(var gi in c){cover[k][gi]={was:idOf(c[gi].was),sub:idOf(c[gi].sub)};}}
   var stats=(r.stats||[]).map(function(s){return {id:s.ref.id,order:s.order,servicos:s.servicos,g1:s.g1,g2:s.g2,sab:s.sab,dom:s.dom,wknd:s.wknd,cob:s.cob,horas:s.horas,folgao:s.folgao,lastDay:s.lastDay,feriasNoMes:s.feriasNoMes,atestadoNoMes:s.atestadoNoMes};});
-  return {year:state.schedule.year,month:state.schedule.month,N:r.N,tipo:r.tipo||"giro",seed:r.seed||null,g1:g1,g2:g2,g3:g3,cols:r.cols||null,durs:r.durs||null,cover:cover,changed:r.changed||{},vacant:r.vacant||[],stats:stats,contInfo:state.contInfo||null,turmas:r.turmas||null,turmasMembros:r.turmasMembros||null,folga:(r.folga?_serFolga(r.folga):null),cfg:r.cfg||null,semDomingo:r.semDomingo||null,excedeu:r.excedeu||false};
+  return {year:state.schedule.year,month:state.schedule.month,N:r.N,tipo:r.tipo||"giro",seed:r.seed||null,g1:g1,g2:g2,g3:g3,cols:r.cols||null,durs:r.durs||null,cover:cover,changed:r.changed||{},vacant:r.vacant||[],stats:stats,contInfo:state.contInfo||null,turmas:r.turmas||null,turmasMembros:r.turmasMembros||null,folga:(r.folga?_serFolga(r.folga):null),cfg:r.cfg||null,semDomingo:r.semDomingo||null,excedeuMax:r.excedeuMax||false,estourou:r.estourou||false};
 }
 function saveSchedule(){try{var o=serializeSchedule();if(o)localStorage.setItem("ciops:schedule",JSON.stringify(o));else localStorage.removeItem("ciops:schedule");}catch(e){}cloudPush("schedule");}
 function restoreSchedule(){
@@ -606,8 +607,9 @@ function restoreSchedule(){
     var stats=(o.stats||[]).map(function(s){var m=byId[s.id];if(!m)return null;var ss=Object.assign({},s);ss.ref=m;return ss;}).filter(Boolean);
     var enter={};enter[0]=g2[1]?{ref:g2[1]}:null;for(var d2=1;d2<=o.N;d2++)enter[d2]=g1[d2]?{ref:g1[d2]}:null;
 var _fol=null;if(o.folga){_fol={};for(var fd in o.folga){_fol[fd]=(o.folga[fd]||[]).map(ref).filter(Boolean);}}
-    var result={N:o.N,tipo:o.tipo||"giro",seed:o.seed||null,g1:g1,g2:g2,g3:g3,cols:o.cols||null,durs:o.durs||null,cover:cover,changed:o.changed||{},vacant:o.vacant||[],stats:stats,enter:enter,sel:[],folga:_fol,cfg:o.cfg||null,semDomingo:o.semDomingo||null,excedeu:o.excedeu||false};
+    var result={N:o.N,tipo:o.tipo||"giro",seed:o.seed||null,g1:g1,g2:g2,g3:g3,cols:o.cols||null,durs:o.durs||null,cover:cover,changed:o.changed||{},vacant:o.vacant||[],stats:stats,enter:enter,sel:[],folga:_fol,cfg:o.cfg||null,semDomingo:o.semDomingo||null,excedeuMax:o.excedeuMax||false,estourou:o.estourou||false,turmas:o.turmas||null,turmasMembros:o.turmasMembros||null};
     state.schedule={result:result,year:o.year,month:o.month};
+    if(result.tipo==="folga"&&result.folga)computeStatsFolga(result,state.militares,o.year,o.month);
     state.contInfo=o.contInfo||null;
   }catch(e){}
 }
@@ -729,7 +731,8 @@ function exportLog(){
 }
 
 /* ===== CONFIGURAÇÕES / ASSINATURAS ===== */
-function loadConfig(){try{var c=localStorage.getItem("ciops:config");state.config=c?JSON.parse(c):{};}catch(e){state.config={};}if(!state.config.tipo)state.config.tipo="giro";if(!state.config.turmas)state.config.turmas=[];if(!state.config.cicloRegime)state.config.cicloRegime="24h";if(!state.config.folgaCfg)state.config.folgaCfg={trab:6,folga:1,maxDia:1,domingo:true,dias:[0,1,2,3,4,5,6]};
+function loadConfig(){try{var c=localStorage.getItem("ciops:config");state.config=c?JSON.parse(c):{};}catch(e){state.config={};}if(!state.config.tipo)state.config.tipo="giro";if(!state.config.turmas)state.config.turmas=[];if(!state.config.cicloRegime)state.config.cicloRegime="24h";if(!state.config.folgaCfg)state.config.folgaCfg={trab:6,folga:1,maxDia:1,domingo:true,dias:[0,1,2,3,4,5,6],hIni:'18:00',hFim:'23:00'};
+  if(!state.config.folgaCfg.hIni)state.config.folgaCfg.hIni='18:00';if(!state.config.folgaCfg.hFim)state.config.folgaCfg.hFim='23:00';
   if(!state.config.folgaCfg.dias)state.config.folgaCfg.dias=[0,1,2,3,4,5,6];if(state.config.satFolga2c===undefined)state.config.satFolga2c=false;if(!state.config.hor)state.config.hor={};var _H=state.config.hor;if(!_H.giro2)_H.giro2=[["07:00","19:00"],["19:00","07:00"]];if(!_H.giro3)_H.giro3=[["07:00","15:00"],["15:00","23:00"],["23:00","07:00"]];if(!_H.h24)_H.h24=[["08:00","08:00"]];if(!_H.turno)_H.turno={dia:["07:00","19:00"],noite:["19:00","07:00"],sel:"dia"};if(state.config.cabecalho===undefined)state.config.cabecalho="";}
 function saveConfig(){try{localStorage.setItem("ciops:config",JSON.stringify(state.config));}catch(e){}cloudPush("config");}
 var RANKS=[["coronel",13],["cel",13],["tenente-coronel",12],["ten cel",12]," ",["major",11],["maj",11],["capit",10],["cap",10],["1º ten",9],["1 ten",9],["2º ten",8],["2 ten",8],["aspir",7],["asp",7],["subten",6],["sub ten",6],["1º sgt",5],["1 sgt",5],["2º sgt",4],["2 sgt",4],["3º sgt",3],["3 sgt",3],["sargento",3],["sgt",3],["cabo",2],["cb",2],["soldado",1],["sd",1]].filter(function(x){return Array.isArray(x);});
@@ -1223,15 +1226,16 @@ function gerarFolga(mils,year,month,cfg,seed){
   }
   var per={};st.forEach(function(s){per[s.ref.id]={cons:s.cons};});
   var semDom=(gDom&&diasP.indexOf(0)>=0)?st.filter(function(s){return !s.sunday;}).map(function(s){return s.ref.nome;}):[];
-  return {N:N,tipo:"folga",folga:folga,cols:[{lab:"Folga(s)"}],durs:[0],cover:{},changed:{},vacant:[],_folgaPer:per,semDomingo:semDom,excedeuMax:excedeuMax,estourou:estourou,cfg:{trab:work,folga:flen,maxDia:maxDia,domingo:gDom,dias:diasP}};
+  return {N:N,tipo:"folga",folga:folga,cols:[{lab:"Folga(s)"}],durs:[0],cover:{},changed:{},vacant:[],_folgaPer:per,semDomingo:semDom,excedeuMax:excedeuMax,estourou:estourou,cfg:{trab:work,folga:flen,maxDia:maxDia,domingo:gDom,dias:diasP,hIni:(cfg.hIni||"18:00"),hFim:(cfg.hFim||"23:00")}};
 }
 function computeStatsFolga(res,mils,year,month){
   var off={};mils.forEach(function(m){off[m.id]={f:0,sun:false};});
   for(var d=1;d<=res.N;d++){(res.folga[d]||[]).forEach(function(m){off[m.id].f++;if(new Date(year,month,d).getDay()===0)off[m.id].sun=true;});}
-  res.stats=mils.map(function(m,i){var av=0;for(var d=1;d<=res.N;d++){if(!isUnavailable(m,new Date(year,month,d)))av++;}var f=off[m.id].f;return {ref:m,order:i,folgasTotal:f,trabalhados:av-f,sunday:off[m.id].sun};});
+  var hDia=durH((res.cfg&&res.cfg.hIni)||"18:00",(res.cfg&&res.cfg.hFim)||"23:00");
+  res.stats=mils.map(function(m,i){var av=0;for(var d=1;d<=res.N;d++){if(!isUnavailable(m,new Date(year,month,d)))av++;}var f=off[m.id].f;var trab=av-f;return {ref:m,order:i,folgasTotal:f,trabalhados:trab,sunday:off[m.id].sun,horas:Math.round(trab*hDia*10)/10};});
 }
 function schemaFor(tipo){var H=(state.config&&state.config.hor)||{};
-  if(tipo==="folga"){return {cols:[{lab:"Folga(s)"}],durs:[0]};}
+  if(tipo==="folga"){var fc=(state.config&&state.config.folgaCfg)||{};var a=fc.hIni||"18:00",b=fc.hFim||"23:00";return {cols:[{lab:"Folga(s)",hhmm:horLabel(a,b)}],durs:[durH(a,b)]};}
   if(tipo==="ciclo"){var _reg=(state.config&&state.config.cicloRegime)||"24h";var nt=((state.config&&state.config.turmas)||[]).length||0;if(_reg==="12h"){var tn=H.turno||{dia:["07:00","19:00"],noite:["19:00","07:00"]};return {cols:[{lab:"Dia (turma)",hhmm:horLabel(tn.dia[0],tn.dia[1])},{lab:"Noite (turma)",hhmm:horLabel(tn.noite[0],tn.noite[1])}],durs:[durH(tn.dia[0],tn.dia[1]),durH(tn.noite[0],tn.noite[1])]};}var ini=(H.h24||[["08:00","08:00"]])[0][0];var ciclo=nt>0?("24\u00d7"+((nt-1)*24)):"por times";return {cols:[{lab:"Plant\u00e3o (turma)",hhmm:"24h ("+ini+") \u00b7 "+ciclo}],durs:[24]};}
   if(tipo==="3giros"){var a=H.giro3||[["07:00","15:00"],["15:00","23:00"],["23:00","07:00"]];return {cols:a.map(function(x,i){return {lab:(i+1)+"\u00ba Giro",hhmm:horLabel(x[0],x[1])};}),durs:a.map(function(x){return durH(x[0],x[1]);})};}
   if(tipo==="24h"){var t=(H.h24||[["08:00","08:00"]])[0];return {cols:[{lab:"Servi\u00e7o",hhmm:"24 horas ("+_hh(t[0])+")"}],durs:[24]};}
@@ -1497,11 +1501,79 @@ function limparContinuidade(){state.carry={};saveCarry();state.contInfo=null;ren
 function setModo(){var r=document.querySelector('input[name="modo"]:checked');if(r){state.config.modo=r.value;saveConfig();}updateModoHint();}
 function setSatFolga(){var c=document.getElementById("satfolga");state.config.satFolga2c=!!(c&&c.checked);saveConfig();}
 function renderFolgaDias(){var box=document.getElementById("fg_dias");if(!box)return;var AB=["D","S","T","Q","Q","S","S"],NM=["Domingo","Segunda","Terça","Quarta","Quinta","Sexta","Sábado"];var dias=(state.config.folgaCfg&&state.config.folgaCfg.dias)||[0,1,2,3,4,5,6];box.innerHTML=AB.map(function(l,i){var on=dias.indexOf(i)>=0;return '<label title="'+NM[i]+'" style="cursor:pointer;font-size:11px;font-weight:700;border:1px solid var(--line2);border-radius:6px;padding:2px 7px;background:'+(on?"var(--cbm)":"#fff")+';color:'+(on?"#fff":"var(--mut)")+'"><input type="checkbox" data-d="'+i+'" '+(on?"checked":"")+' onchange="setFolgaCfg()" style="display:none">'+l+'</label>';}).join("");}
-function setFolgaCfg(){var g=function(id){return document.getElementById(id);};var dias=[];document.querySelectorAll('#fg_dias input[data-d]').forEach(function(c){if(c.checked)dias.push(parseInt(c.getAttribute("data-d"),10));});if(!dias.length)dias=[0,1,2,3,4,5,6];state.config.folgaCfg={trab:Math.max(1,parseInt((g("fg_trab")||{}).value||6,10)),folga:Math.max(1,parseInt((g("fg_folga")||{}).value||1,10)),maxDia:Math.max(1,parseInt((g("fg_max")||{}).value||1,10)),domingo:!!((g("fg_dom")||{}).checked),dias:dias};saveConfig();renderFolgaDias();}
+function setFolgaCfg(){var g=function(id){return document.getElementById(id);};var dias=[];document.querySelectorAll('#fg_dias input[data-d]').forEach(function(c){if(c.checked)dias.push(parseInt(c.getAttribute("data-d"),10));});if(!dias.length)dias=[0,1,2,3,4,5,6];state.config.folgaCfg={trab:Math.max(1,parseInt((g("fg_trab")||{}).value||6,10)),folga:Math.max(1,parseInt((g("fg_folga")||{}).value||1,10)),maxDia:Math.max(1,parseInt((g("fg_max")||{}).value||1,10)),domingo:!!((g("fg_dom")||{}).checked),dias:dias,hIni:(g("fg_hini")||{}).value||"18:00",hFim:(g("fg_hfim")||{}).value||"23:00"};saveConfig();renderFolgaDias();}
 function presetFolga(t,f){var e;if(e=document.getElementById("fg_trab"))e.value=t;if(e=document.getElementById("fg_folga"))e.value=f;setFolgaCfg();}
 var TIPO_INFO={giro:"<b>Giro (2 giros/dia):</b> dois turnos por dia (1º e 2º giro) que se encadeiam — quem entra hoje faz o 1º giro e amanhã o 2º. Comum em <b>supervisão, centrais de operação e forças de segurança</b>.","3giros":"<b>3 Giros:</b> três turnos por dia em sequência, cobrindo 24h em 3 períodos. Usado em <b>centrais e operações com cobertura contínua</b>.","24h":"<b>Plantão 24h:</b> um plantão de 24 horas por dia, revezando entre as pessoas. Comum em <b>bombeiros, saúde e segurança</b>.",turno:"<b>Turno (dia ou noite):</b> um turno fixo por dia. Para operações que funcionam em <b>um período só</b> (ex.: só de dia).",ciclo:"<b>Ciclo por times:</b> times fixos que se revezam por dia (3 times = 24×48, 4 = 24×72). Comum em <b>vigilância, portaria e plantões por equipe</b>.",folga:"<b>Folga rotativa (6x1, 5x2):</b> todos trabalham e o app define <b>quem folga</b> a cada dia, sem passar dos dias seguidos permitidos e garantindo folga no domingo. Comum em <b>comércio, bares, restaurantes e pizzarias</b>."};
+function _trocaEnts(){var res=state.schedule.result;if(res.tipo==="ciclo")return (res.turmas||state.config.turmas||[]).map(function(t){return{id:t.id,nome:t.nome};});return (state.militares||[]).map(function(m){return{id:m.id,nome:(m.posto?m.posto+" ":"")+m.nome};});}
+function _celAtual(d,ci){var res=state.schedule.result;var cov=res.cover&&res.cover[d]&&res.cover[d][ci+1];if(cov)return cov.sub;var gm=[res.g1,res.g2,res.g3][ci];return gm?gm[d]:null;}
+function _entPorId(id){var res=state.schedule.result;if(res.tipo==="ciclo")return (res.turmas||state.config.turmas||[]).find(function(t){return String(t.id)===String(id);});return byMil(isNaN(+id)?id:+id);}
+function fecharTroca(){var m=document.getElementById("trocaModal");if(m)m.style.display="none";}
+function _diaOpts(){var res=state.schedule.result,mo=state.schedule.month,yr=state.schedule.year,AB=["Dom","Seg","Ter","Qua","Qui","Sex","Sáb"],o="";for(var d=1;d<=res.N;d++){o+='<option value="'+d+'">'+pad(d)+"/"+pad(mo+1)+" ("+AB[new Date(yr,mo,d).getDay()]+")</option>";}return o;}
+function openTroca(){
+  if(!state.schedule||!isAdmin())return;
+  if(!_proAtivo().ativo){alert("Trocar/Substituir é um recurso Pro. Assine para usar.");return;}
+  if(!document.getElementById("trocaCss")){var st=document.createElement("style");st.id="trocaCss";st.textContent="#trocaBody h3{margin:0 0 10px;color:var(--indigo-900,#1e1b4b)}#trocaBody .troca-row{margin:8px 0;display:flex;gap:6px;align-items:center;flex-wrap:wrap}#trocaBody select,#trocaBody input{font:inherit;padding:5px 7px;border:1px solid var(--line2);border-radius:6px}#trocaBody .troca-sec{margin:6px 0 12px}#trocaBody .btn{margin-top:6px}";document.head.appendChild(st);}
+  var res=state.schedule.result,body,dOpts=_diaOpts();
+  if(res.tipo==="folga"){
+    var pes=(state.militares||[]).map(function(x){return '<option value="'+x.id+'">'+esc((x.posto?x.posto+" ":"")+x.nome)+'</option>';}).join("");
+    body='<h3>🔁 Permutar / mover folga</h3><div class="troca-sec"><b>Permutar folga entre 2 pessoas</b><div class="troca-row">Dia A <select id="tf_dA">'+dOpts+'</select> Pessoa <select id="tf_pA">'+pes+'</select></div><div class="troca-row">Dia B <select id="tf_dB">'+dOpts+'</select> Pessoa <select id="tf_pB">'+pes+'</select></div><button class="btn primary" onclick="trocaFolgaPermuta()">Permutar folgas</button></div><hr><div class="troca-sec"><b>Mover a folga de uma pessoa</b><div class="troca-row">Pessoa <select id="tf_mp">'+pes+'</select></div><div class="troca-row">do dia <select id="tf_mde">'+dOpts+'</select> para o dia <select id="tf_mpara">'+dOpts+'</select></div><button class="btn primary" onclick="trocaFolgaMover()">Mover folga</button></div>';
+  }else{
+    var cols=_colsOf(res),colOpts=cols.map(function(c,i){return '<option value="'+i+'">'+esc(c.lab)+'</option>';}).join("");
+    var ents=_trocaEnts().map(function(e){return '<option value="'+e.id+'">'+esc(e.nome)+'</option>';}).join("");
+    var alvoLabel=(res.tipo==="ciclo")?"Novo time":"Substituir por";
+    body='<h3>🔁 Trocar / Substituir</h3><div class="troca-row">Dia <select id="tk_d" onchange="trocaRefresh()">'+dOpts+'</select> '+(cols.length>1?('Coluna <select id="tk_c" onchange="trocaRefresh()">'+colOpts+'</select>'):('<input type="hidden" id="tk_c" value="0">'))+'</div><div class="troca-row">No dia: <b id="tk_atual">—</b></div><div class="troca-row"><label><input type="radio" name="tk_acao" value="sub" checked onchange="trocaRefresh()"> Substituir</label> &nbsp; <label><input type="radio" name="tk_acao" value="perm" onchange="trocaRefresh()"> Permutar entre 2 dias</label></div><div id="tk_sub" class="troca-row">'+alvoLabel+' <select id="tk_alvo">'+ents+'</select></div><div id="tk_perm" class="troca-row" style="display:none">com Dia <select id="tk_d2">'+dOpts+'</select> '+(cols.length>1?('Coluna <select id="tk_c2">'+colOpts+'</select>'):('<input type="hidden" id="tk_c2" value="0">'))+'</div><button class="btn primary" onclick="trocaAplicar()">Aplicar</button>';
+  }
+  document.getElementById("trocaBody").innerHTML=body;
+  document.getElementById("trocaModal").style.display="flex";
+  if(res.tipo!=="folga")trocaRefresh();
+}
+function trocaRefresh(){
+  var res=state.schedule.result;if(res.tipo==="folga")return;
+  var d=+document.getElementById("tk_d").value,ci=+document.getElementById("tk_c").value;
+  var a=_celAtual(d,ci);var el=document.getElementById("tk_atual");if(el)el.textContent=a?((a.posto?a.posto+" ":"")+a.nome):"—";
+  var acao=(document.querySelector('input[name="tk_acao"]:checked')||{}).value;
+  var sub=document.getElementById("tk_sub"),per=document.getElementById("tk_perm");
+  if(sub)sub.style.display=acao==="sub"?"":"none";if(per)per.style.display=acao==="perm"?"":"none";
+}
+function trocaAplicar(){
+  var res=state.schedule.result;res.cover=res.cover||{};
+  var d=+document.getElementById("tk_d").value,ci=+document.getElementById("tk_c").value;
+  var acao=(document.querySelector('input[name="tk_acao"]:checked')||{}).value;
+  if(acao==="sub"){
+    var novo=_entPorId(document.getElementById("tk_alvo").value),atual=_celAtual(d,ci)||{nome:"—"};
+    res.cover[d]=res.cover[d]||{};res.cover[d][ci+1]={was:atual,sub:novo,badge:"substituição",motivo:"substituído"};
+    log("Substituição","dia "+d+": "+((atual&&atual.nome)||"—")+" → "+((novo&&novo.nome)||"—"));
+  }else{
+    var d2=+document.getElementById("tk_d2").value,c2=+document.getElementById("tk_c2").value;
+    var pA=_celAtual(d,ci),pB=_celAtual(d2,c2);
+    res.cover[d]=res.cover[d]||{};res.cover[d2]=res.cover[d2]||{};
+    res.cover[d][ci+1]={was:pA||{nome:"—"},sub:pB,badge:"permuta",motivo:"permutado"};
+    res.cover[d2][c2+1]={was:pB||{nome:"—"},sub:pA,badge:"permuta",motivo:"permutado"};
+    log("Permuta","dia "+d+" ↔ dia "+d2);
+  }
+  if(res.tipo!=="folga")computeStats(res,state.militares,state.schedule.year,state.schedule.month);
+  renderSchedule();saveSchedule();fecharTroca();
+}
+function trocaFolgaPermuta(){
+  var res=state.schedule.result;var dA=+val("tf_dA"),pA=+val("tf_pA"),dB=+val("tf_dB"),pB=+val("tf_pB");
+  res.folga[dA]=res.folga[dA]||[];res.folga[dB]=res.folga[dB]||[];
+  if(!res.folga[dA].some(function(m){return m.id===pA;})||!res.folga[dB].some(function(m){return m.id===pB;})){alert("Escolha pessoas que realmente folgam nos dias indicados.");return;}
+  res.folga[dA]=res.folga[dA].map(function(m){return m.id===pA?byMil(pB):m;});
+  res.folga[dB]=res.folga[dB].map(function(m){return m.id===pB?byMil(pA):m;});
+  computeStatsFolga(res,state.militares,state.schedule.year,state.schedule.month);
+  log("Permuta de folga","dia "+dA+" ↔ "+dB);renderSchedule();saveSchedule();fecharTroca();
+}
+function trocaFolgaMover(){
+  var res=state.schedule.result;var pid=+val("tf_mp"),dDe=+val("tf_mde"),dPara=+val("tf_mpara");
+  res.folga[dDe]=res.folga[dDe]||[];res.folga[dPara]=res.folga[dPara]||[];
+  if(!res.folga[dDe].some(function(m){return m.id===pid;})){alert("Essa pessoa não folga no dia de origem.");return;}
+  if(res.folga[dPara].some(function(m){return m.id===pid;})){alert("Essa pessoa já folga no dia de destino.");return;}
+  res.folga[dDe]=res.folga[dDe].filter(function(m){return m.id!==pid;});res.folga[dPara].push(byMil(pid));
+  computeStatsFolga(res,state.militares,state.schedule.year,state.schedule.month);
+  log("Folga movida","pessoa "+pid+": dia "+dDe+" → "+dPara);renderSchedule();saveSchedule();fecharTroca();
+}
 function renderTipoInfo(){var t=(document.getElementById("tipo")||{}).value||"giro";var el=document.getElementById("tipoInfo");if(el)el.innerHTML=TIPO_INFO[t]||"";}
-function setTipo(){var t=(document.getElementById("tipo")||{}).value||"giro";state.config.tipo=t;saveConfig();renderTipoInfo();renderAddTime();var box=document.getElementById("rotacaoBox");if(box)box.style.display=(t==="giro")?"inline-flex":"none";var tb=document.getElementById("turnoBox");if(tb)tb.style.display=(t==="turno")?"inline-flex":"none";var ab=document.getElementById("btncob");if(ab)ab.style.display=(t==="ciclo")?"none":"";var cb=document.getElementById("cicloBox");if(cb)cb.style.display=(t==="ciclo")?"inline-flex":"none";var fb=document.getElementById("folgaBox");if(fb)fb.style.display=(t==="folga")?"inline-flex":"none";if(t==="folga"){var fc=state.config.folgaCfg||{trab:6,folga:1,maxDia:1,domingo:true};var e;if(e=document.getElementById("fg_trab"))e.value=fc.trab;if(e=document.getElementById("fg_folga"))e.value=fc.folga;if(e=document.getElementById("fg_max"))e.value=fc.maxDia;if(e=document.getElementById("fg_dom"))e.checked=fc.domingo!==false;renderFolgaDias();}var cs=document.getElementById("ciclosel");if(cs)cs.value=state.config.cicloRegime||"24h";var tl=document.getElementById("turmasLegend");if(tl)tl.style.display=(t==="ciclo"&&state.schedule)?"":"none";renderTurmasLegend();updateModoHint();}
+function setTipo(){var t=(document.getElementById("tipo")||{}).value||"giro";state.config.tipo=t;saveConfig();renderTipoInfo();renderAddTime();var box=document.getElementById("rotacaoBox");if(box)box.style.display=(t==="giro")?"inline-flex":"none";var tb=document.getElementById("turnoBox");if(tb)tb.style.display=(t==="turno")?"inline-flex":"none";var ab=document.getElementById("btncob");if(ab)ab.style.display=(t==="ciclo")?"none":"";var cb=document.getElementById("cicloBox");if(cb)cb.style.display=(t==="ciclo")?"inline-flex":"none";var fb=document.getElementById("folgaBox");if(fb)fb.style.display=(t==="folga")?"inline-flex":"none";if(t==="folga"){var fc=state.config.folgaCfg||{trab:6,folga:1,maxDia:1,domingo:true};var e;if(e=document.getElementById("fg_trab"))e.value=fc.trab;if(e=document.getElementById("fg_folga"))e.value=fc.folga;if(e=document.getElementById("fg_max"))e.value=fc.maxDia;if(e=document.getElementById("fg_dom"))e.checked=fc.domingo!==false;if(e=document.getElementById("fg_hini"))e.value=fc.hIni||"18:00";if(e=document.getElementById("fg_hfim"))e.value=fc.hFim||"23:00";renderFolgaDias();}var cs=document.getElementById("ciclosel");if(cs)cs.value=state.config.cicloRegime||"24h";var tl=document.getElementById("turmasLegend");if(tl)tl.style.display=(t==="ciclo"&&state.schedule)?"":"none";renderTurmasLegend();updateModoHint();}
 function setCicloRegime(){var v=(document.getElementById("ciclosel")||{}).value||"24h";state.config.cicloRegime=v;saveConfig();}
 function setTurno(){var v=(document.getElementById("turnosel")||{}).value||"dia";state.config.hor=state.config.hor||{};if(!state.config.hor.turno)state.config.hor.turno={dia:["07:00","19:00"],noite:["19:00","07:00"],sel:"dia"};state.config.hor.turno.sel=v;saveConfig();}
 function modoEfetivo(){var sel=(document.querySelector('input[name="modo"]:checked')||{}).value||state.config.modo||"auto";if(sel==="auto")return (state.militares.length>0&&state.militares.length%7===0)?"giro":"fixa";return sel;}
@@ -1575,9 +1647,10 @@ function renderRoster(){
 
 /* ===== RENDER: ESCALA ===== */
 function giroCell(ref,cov){
-  if(cov){ // cobertura neste giro
+  if(cov){ // cobertura / substituição / permuta neste giro
     const sub=cov.sub?((cov.sub.posto?'<span class="pg">'+esc(cov.sub.posto)+' </span>':'')+esc(cov.sub.nome)):'<span class="vago">SEM COBERTURA</span>';
-    return {cls:'cobcell', html:sub+'<span class="cobbadge">cobertura</span><span class="cobwas">'+esc(cov.was.nome)+' (afastado)</span>'};
+    var _bdg=cov.badge||'cobertura',_mot=cov.motivo||'afastado';
+    return {cls:'cobcell', html:sub+'<span class="cobbadge">'+esc(_bdg)+'</span><span class="cobwas">'+esc((cov.was&&cov.was.nome)||'—')+' ('+esc(_mot)+')</span>'};
   }
   return {cls:'', html: ref?((ref.posto?'<span class="pg">'+esc(ref.posto)+' </span>':'')+esc(ref.nome)):'<span class="vago">SEM ESCALA</span>'};
 }
@@ -1586,7 +1659,7 @@ function renderSchedule(){
   if(state.schedule.result&&state.schedule.result.tipo==="folga"){return renderFolga();}
   const res=state.schedule.result,year=state.schedule.year,month=state.schedule.month;
   document.getElementById("tituloEsc").textContent="Escala — "+MESES[month]+" de "+year;
-  document.getElementById("btncsv").disabled=false;document.getElementById("btnprint").disabled=false;document.getElementById("btncob").disabled=false;
+  document.getElementById("btncsv").disabled=false;document.getElementById("btnprint").disabled=false;document.getElementById("btncob").disabled=false;var _bt0=document.getElementById("btntroca");if(_bt0)_bt0.disabled=false;
   const ci=state.contInfo;let chip="";
   if(ci){chip=ci.applied?'<span class="chip sky">🔗 Continuidade de '+esc(ci.source)+'</span>':'<span class="chip gray">🔗 '+(ci.enabled?'Iniciada do zero (sem mês anterior)':'Continuidade desativada')+'</span>';}
   document.getElementById("contChip").innerHTML=chip;
@@ -1630,7 +1703,7 @@ function renderSchedule(){
 function renderFolga(){
   var res=state.schedule.result,year=state.schedule.year,month=state.schedule.month;
   document.getElementById("tituloEsc").textContent="Escala — "+MESES[month]+" de "+year;
-  ["btncsv","btnprint"].forEach(function(id){var b=document.getElementById(id);if(b)b.disabled=false;});
+  ["btncsv","btnprint","btntroca"].forEach(function(id){var b=document.getElementById(id);if(b)b.disabled=false;});
   var cbb=document.getElementById("btncob");if(cbb)cbb.disabled=true;
   var ci=state.contInfo;var chip=ci?(ci.applied?'<span class="chip sky">🔗 Continuidade de '+esc(ci.source)+'</span>':'<span class="chip gray">🔗 '+(ci.enabled?"Iniciada do zero":"Continuidade desativada")+'</span>'):"";
   document.getElementById("contChip").innerHTML=chip;
@@ -1668,7 +1741,7 @@ function renderAvisos(){
 /* ===== RENDER: ESTATÍSTICA ===== */
 let statSort={col:"servicos",dir:-1};
 function setSort(col){if(statSort.col===col)statSort.dir*=-1;else{statSort.col=col;statSort.dir=-1;}renderStats();}
-function renderStatsFolga(){var res=state.schedule.result,box=document.getElementById("stats");if(!box)return;var ss=(res.stats||[]).slice().sort(function(a,b){return b.folgasTotal-a.folgasTotal||a.order-b.order;});box.innerHTML='<table class="stat"><thead><tr><th>Pessoa</th><th>Folgas</th><th>Dias trab.</th><th>Domingo</th></tr></thead><tbody>'+ss.map(function(s){return '<tr><td>'+esc((s.ref.posto?s.ref.posto+" ":"")+s.ref.nome)+'</td><td>'+s.folgasTotal+'</td><td>'+s.trabalhados+'</td><td>'+(s.sunday?"✓":'<span style="color:#b45309">—</span>')+'</td></tr>';}).join("")+'</tbody></table>';var su=document.getElementById("statsummary");if(su)su.innerHTML="";}
+function renderStatsFolga(){var res=state.schedule.result,box=document.getElementById("stats");if(!box)return;var LIM=220;var ss=(res.stats||[]).slice().sort(function(a,b){return (b.horas||0)-(a.horas||0)||a.order-b.order;});box.innerHTML='<table class="stat"><thead><tr><th>Pessoa</th><th>Dias trab.</th><th>Folgas</th><th>Horas/mês</th><th>CLT (~220h)</th><th>Domingo</th></tr></thead><tbody>'+ss.map(function(s){var acima=(s.horas||0)>LIM;return '<tr><td>'+esc((s.ref.posto?s.ref.posto+" ":"")+s.ref.nome)+'</td><td>'+s.trabalhados+'</td><td>'+s.folgasTotal+'</td><td>'+(s.horas||0).toFixed(1).replace(".",",")+'h</td><td>'+(acima?'<span style="color:#b91c1c;font-weight:700">acima</span>':'<span style="color:#15803d">ok</span>')+'</td><td>'+(s.sunday?"✓":'<span style="color:#b45309">—</span>')+'</td></tr>';}).join("")+'</tbody></table><div class="tiny" style="margin-top:8px;color:var(--mut)">Refer\u00eancia CLT: at\u00e9 ~44h/semana (~220h/m\u00eas). Este \u00e9 um <b>alerta de refer\u00eancia</b> \u2014 jornada, horas extras, banco de horas e intervalos dependem do controle de ponto e do seu contador.</div>';var su=document.getElementById("statsummary");if(su)su.innerHTML="";}
 function renderStats(){
   if(state.schedule&&state.schedule.result&&state.schedule.result.tipo==="folga"){document.getElementById("statcard").style.display="";return renderStatsFolga();}
   if(!state.schedule)return;
@@ -2086,5 +2159,6 @@ setTimeout(checkUpdate,2500);
 document.addEventListener("visibilitychange",function(){if(!document.hidden)setTimeout(checkUpdate,300);});
 init();
 </script>
+<div id="trocaModal" style="display:none;position:fixed;inset:0;background:rgba(15,23,42,.5);z-index:9998;align-items:center;justify-content:center;padding:12px"><div style="background:#fff;border-radius:14px;padding:18px;max-width:480px;width:100%;max-height:88vh;overflow:auto"><div id="trocaBody"></div><div style="text-align:right;margin-top:12px"><button class="btn ghost" onclick="fecharTroca()">Fechar</button></div></div></div>
 </body>
 </html>
