@@ -160,6 +160,10 @@
   .modal .muted{color:var(--mut);font-size:12px}
   .modal .xbtn{float:right;border:none;background:#eef2f6;border-radius:8px;padding:6px 10px;cursor:pointer;font-size:14px}
   .btn:active{transform:translateY(1px) scale(.985);filter:brightness(.93)}
+  .btn .ripple{position:absolute;border-radius:50%;background:currentColor;opacity:.28;transform:scale(0);animation:rip .5s ease-out;pointer-events:none}
+  @keyframes rip{to{transform:scale(2.4);opacity:0}}
+  .mini{transition:transform .07s ease,background .12s ease}.mini:active{transform:scale(.9);filter:brightness(.92)}
+  .addper:active{filter:brightness(.9)}
   .btn:disabled,.btn.loading{pointer-events:none;opacity:.8}
   .btn .rip{position:absolute;border-radius:50%;transform:scale(0);background:rgba(255,255,255,.45);animation:rip .5s ease-out;pointer-events:none}
   .btn.ghost .rip,.btn.mini .rip,.mini .rip{background:rgba(15,23,42,.16)}
@@ -413,9 +417,10 @@
       <hr style="border:none;border-top:1px solid var(--line);margin:18px 0">
       <h3 style="margin:0 0 8px;font-size:15px">Assinaturas da escala</h3>
       <div class="row">
-        <label class="fld"><span>Responsável pela escala — cargo</span><input id="cfg_dirposto" placeholder="ex.: Cel BM"></label>
-        <label class="fld" style="flex:1;min-width:200px"><span>Diretor — nome</span><input id="cfg_dirnome" placeholder="Nome do diretor" style="width:100%"></label>
+        <label class="fld"><span>Responsável — cargo/posto (antes do nome)</span><input id="cfg_dirposto" placeholder="ex.: Gerente / Cel BM"></label>
+        <label class="fld" style="flex:1;min-width:200px"><span>Responsável — nome</span><input id="cfg_dirnome" placeholder="Nome do responsável" style="width:100%"></label>
       </div>
+      <div class="row"><label class="fld"><span>Rótulo da assinatura 1 (responsável)</span><input id="cfg_cargoresp" placeholder="ex.: Responsável pela escala"></label><label class="fld" style="flex:1;min-width:200px"><span>Rótulo da assinatura 2 (quem assina)</span><input id="cfg_cargoassina" placeholder="ex.: Conferido por" style="width:100%"></label></div>
       <label class="fld" style="display:block;margin-top:10px"><span>Quem assina a escala</span><select id="cfg_signatario" style="width:100%;max-width:100%"></select></label>
       <p class="tiny">No modo automático assina a pessoa de maior antiguidade presente na escala; havendo empate, a que estiver mais acima na equipe (ordene por antiguidade com as setas). Também é possível fixar um militar específico.</p>
       <div style="display:flex;gap:8px;align-items:center"><button class="btn primary" onclick="salvarAssinaturas()">Salvar assinaturas</button><span class="tiny" id="cfg_msg"></span></div>
@@ -496,14 +501,14 @@
     </div>
   </section>
 
-  <footer><span class="noprint">Confira a escala antes de publicar.<br>© 2026 <b>Gera Escalas</b> · <span class="lnk" onclick="openAbout()">Sobre &amp; Política de Privacidade</span> · <span style="color:var(--mut2)">v4.6</span></span></footer>
+  <footer><span class="noprint">Confira a escala antes de publicar.<br>© 2026 <b>Gera Escalas</b> · <span class="lnk" onclick="openAbout()">Sobre &amp; Política de Privacidade</span> · <span style="color:var(--mut2)">v4.7</span></span></footer>
 </main>
 
 <div id="aboutmodal" class="modal" style="display:none" onclick="if(event.target===this)closeAbout()">
   <div class="mbox">
     <button class="xbtn" onclick="closeAbout()">Fechar ✕</button>
     <h2>Gera Escalas</h2>
-    <p class="muted">Escalas de plantão, turno e giro · Versão 4.6 · 2026</p>
+    <p class="muted">Escalas de plantão, turno e giro · Versão 4.7 · 2026</p>
 
     <h3>Autoria e direitos autorais</h3>
     <p>© 2026 <b>Gera Escalas</b> — desenvolvido por Luís Cesar. Todos os direitos reservados.</p>
@@ -756,8 +761,8 @@ function signatureBlockHTML(){
   var sigNome=sig?((sig.posto?sig.posto+" ":"")+sig.nome):"____________________";
   var oper=state.user?((state.user.posto?state.user.posto+" ":"")+state.user.nome):"";
   return '<div class="assin">'+
-    '<div class="assbox"><div class="assline"></div><div class="assname">'+esc(dir)+'</div><div class="assrole">Diretor do CIOPS/CBMMA</div></div>'+
-    '<div class="assbox"><div class="assline"></div><div class="assname">'+esc(sigNome)+'</div><div class="assrole">Responsável pela escala — maior antiguidade</div></div>'+
+    '<div class="assbox"><div class="assline"></div><div class="assname">'+esc(dir)+'</div><div class="assrole">'+esc(state.config.cargoResp||"Responsável pela escala")+'</div></div>'+
+    '<div class="assbox"><div class="assline"></div><div class="assname">'+esc(sigNome)+'</div><div class="assrole">'+esc(state.config.cargoAssina||"Conferido por")+'</div></div>'+
     '</div>'+(oper?'<div class="confec">Confeccionada por: '+esc(oper)+' · '+new Date().toLocaleDateString("pt-BR")+'</div>':'');
 }
 async function renderOperadoresCloud(){
@@ -971,6 +976,8 @@ function renderTurmasLegend(){
 function renderConfigForm(){if(document.getElementById("horbox"))renderHorarios();if(document.getElementById("assin_box"))renderAssinatura();if(document.getElementById("docbox"))renderDoc();if(document.getElementById("setores_list"))renderSetoresList();if(document.getElementById("turmas_list"))renderTurmas();
   document.getElementById("cfg_dirnome").value=state.config.diretorNome||"";
   document.getElementById("cfg_dirposto").value=state.config.diretorPosto||"";
+  var _cr=document.getElementById("cfg_cargoresp");if(_cr)_cr.value=state.config.cargoResp||"";
+  var _ca=document.getElementById("cfg_cargoassina");if(_ca)_ca.value=state.config.cargoAssina||"";
   var selHtml='<option value="auto">Automático (maior patente/antiguidade da escala)</option>';
   state.militares.forEach(function(m){selHtml+='<option value="'+m.id+'">'+esc((m.posto?m.posto+" ":"")+m.nome)+'</option>';});
   var sel=document.getElementById("cfg_signatario");sel.innerHTML=selHtml;sel.value=state.config.signatario||"auto";
@@ -1115,6 +1122,7 @@ function salvarHorarios(){if(!isAdmin())return;var g=function(id){return val(id)
 function salvarAssinaturas(){
   state.config.diretorNome=val("cfg_dirnome").trim();
   state.config.diretorPosto=val("cfg_dirposto").trim();
+  state.config.cargoResp=(val("cfg_cargoresp")||"").trim();state.config.cargoAssina=(val("cfg_cargoassina")||"").trim();
   state.config.signatario=document.getElementById("cfg_signatario").value;
   saveConfig();log("Configuração de assinaturas","Diretor: "+((state.config.diretorPosto?state.config.diretorPosto+" ":"")+state.config.diretorNome));
   if(state.schedule)renderSchedule();
@@ -1948,8 +1956,10 @@ function _mapaCard(s,sched,mils,Y,Mo,Dy){
   var inner="";
   if(sched.tipo==="folga"){
     var fl=(sched.folga&&sched.folga[Dy])||[];var byM={};(mils||[]).forEach(function(m){byM[m.id]=m;});
-    var nomes=fl.map(function(x){var pid=(x&&typeof x==="object")?x.id:x;var m=byM[pid];return m?esc((m.posto?m.posto+" ":"")+(m.nome||"")):"";}).filter(Boolean);
-    inner='<div class="mc-folga"><span class="mc-tag amber">Folga</span> '+(nomes.length?nomes.join(", "):"—")+'</div><div class="mc-note">as demais pessoas trabalham</div>';
+    var folIds=fl.map(function(x){return (x&&typeof x==="object")?x.id:x;});
+    var nomes=folIds.map(function(id){var m=byM[id];return m?esc((m.posto?m.posto+" ":"")+(m.nome||"")):"";}).filter(Boolean);
+    var trab=(mils||[]).filter(function(m){return folIds.indexOf(m.id)<0&&!isUnavailable(m,new Date(Y,Mo,Dy));}).map(function(m){return esc((m.posto?m.posto+" ":"")+m.nome);});
+    inner='<div class="mc-folga"><span class="mc-tag amber">Folga</span> '+(nomes.length?nomes.join(", "):"—")+'</div><div class="mc-line" style="margin-top:6px"><span class="mc-tag" style="background:#dcfce7;color:#15803d">Em serviço</span> '+(trab.length?trab.join(", "):"—")+'</div>';
   }else if(sched.tipo==="ciclo"){
     var has2=sched.g2&&Object.keys(sched.g2).length>0;
     var slot=function(lbl,gm){var tid=(gm||{})[Dy];if(!tid)return "";var tn=((sched.turmas||[]).find(function(t){return t.id===tid;})||{}).nome||"—";var mem=(sched.turmasMembros&&sched.turmasMembros[tid])||[];return '<div class="mc-line"><span class="mc-lab">'+(has2?lbl:"Time")+'</span><span class="mc-val"><b>'+esc(tn)+'</b>'+(mem.length?'<span class="mc-mem">'+esc(mem.join(", "))+'</span>':'')+'</span></div>';};
@@ -2185,6 +2195,7 @@ function checkUpdate(){
     }).catch(function(){});
   }catch(e){}
 }
+document.addEventListener("click",function(e){var b=e.target.closest&&e.target.closest(".btn");if(!b||b.disabled)return;try{var r=document.createElement("span");r.className="ripple";var rc=b.getBoundingClientRect();var sz=Math.max(rc.width,rc.height);r.style.width=r.style.height=sz+"px";r.style.left=((e.clientX||rc.left+rc.width/2)-rc.left-sz/2)+"px";r.style.top=((e.clientY||rc.top+rc.height/2)-rc.top-sz/2)+"px";b.appendChild(r);setTimeout(function(){r.remove();},520);}catch(_e){}},true);
 setTimeout(checkUpdate,2500);
 document.addEventListener("visibilitychange",function(){if(!document.hidden)setTimeout(checkUpdate,300);});
 init();
