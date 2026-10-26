@@ -501,14 +501,14 @@
     </div>
   </section>
 
-  <footer><span class="noprint">Confira a escala antes de publicar.<br>© 2026 <b>Gera Escalas</b> · <span class="lnk" onclick="openAbout()">Sobre &amp; Política de Privacidade</span> · <span style="color:var(--mut2)">v4.8</span></span></footer>
+  <footer><span class="noprint">Confira a escala antes de publicar.<br>© 2026 <b>Gera Escalas</b> · <span class="lnk" onclick="openAbout()">Sobre &amp; Política de Privacidade</span> · <span style="color:var(--mut2)">v4.9</span></span></footer>
 </main>
 
 <div id="aboutmodal" class="modal" style="display:none" onclick="if(event.target===this)closeAbout()">
   <div class="mbox">
     <button class="xbtn" onclick="closeAbout()">Fechar ✕</button>
     <h2>Gera Escalas</h2>
-    <p class="muted">Escalas de plantão, turno e giro · Versão 4.8 · 2026</p>
+    <p class="muted">Escalas de plantão, turno e giro · Versão 4.9 · 2026</p>
 
     <h3>Autoria e direitos autorais</h3>
     <p>© 2026 <b>Gera Escalas</b> — desenvolvido por Luís Cesar. Todos os direitos reservados.</p>
@@ -869,9 +869,9 @@ function renderAssinatura(){
   }
   if(owner){
     html+='<div style="display:grid;gap:8px;margin-top:12px;grid-template-columns:1fr 1fr">'+
-      '<button class="btn primary" onclick="assinarMensal()">💳 Mensal (cartão)<br><span style="font-weight:500;font-size:12px">R$ 29,90/mês · automático</span></button>'+
-      '<button class="btn primary" style="background:var(--teal)" onclick="assinarPro()">📱 Anual (Pix)<br><span style="font-weight:500;font-size:12px">R$ 299/ano · economize 2 meses</span></button>'+
-      '</div><div style="margin-top:8px"><button class="btn ghost" onclick="atualizarAssinatura()">↻ Já paguei / Atualizar status</button></div><div id="assin_msg" class="tiny" style="margin-top:8px"></div>';
+      '<button class="btn primary" onclick="assinarMensal()">💳 Mensal (cartão)<br><span style="font-weight:500;font-size:12px">R$ 99/mês · automático</span></button>'+
+      '<button class="btn primary" style="background:var(--teal)" onclick="assinarPro()">📱 Anual (Pix)<br><span style="font-weight:500;font-size:12px">R$ 990/ano · economize 2 meses</span></button>'+
+      '</div><div style="margin-top:8px"><button class="btn ghost" onclick="atualizarAssinatura()">↻ Já paguei / Atualizar status</button></div>'+'<div class="tiny" style="margin-top:8px;color:var(--mut)">Plano <b>Essencial</b>. Precisa do <b>Profissional</b> (vários setores) ou é <b>órgão público</b>? <a href="https://wa.me/5598970171130?text=Ol%C3%A1!%20Quero%20falar%20sobre%20o%20plano%20Profissional%2For%C3%A3o%20p%C3%BAblico%20do%20Gera%20Escalas" target="_blank" rel="noopener">Fale com a gente</a>.</div>'+'<div id="assin_msg" class="tiny" style="margin-top:8px"></div>';
   }else{
     html+='<p class="tiny" style="margin-top:8px">Somente o Proprietário pode assinar.</p>';
   }
