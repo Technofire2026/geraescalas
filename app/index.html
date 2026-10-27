@@ -501,14 +501,14 @@
     </div>
   </section>
 
-  <footer><span class="noprint">Confira a escala antes de publicar.<br>© 2026 <b>Gera Escalas</b> · <span class="lnk" onclick="openAbout()">Sobre &amp; Política de Privacidade</span> · <span style="color:var(--mut2)">v5.6</span></span></footer>
+  <footer><span class="noprint">Confira a escala antes de publicar.<br>© 2026 <b>Gera Escalas</b> · <span class="lnk" onclick="openAbout()">Sobre &amp; Política de Privacidade</span> · <span style="color:var(--mut2)">v5.7</span></span></footer>
 </main>
 
 <div id="aboutmodal" class="modal" style="display:none" onclick="if(event.target===this)closeAbout()">
   <div class="mbox">
     <button class="xbtn" onclick="closeAbout()">Fechar ✕</button>
     <h2>Gera Escalas</h2>
-    <p class="muted">Escalas de plantão, turno e giro · Versão 5.6 · 2026</p>
+    <p class="muted">Escalas de plantão, turno e giro · Versão 5.7 · 2026</p>
 
     <h3>Autoria e direitos autorais</h3>
     <p>© 2026 <b>Gera Escalas</b> — desenvolvido por Luís Cesar. Todos os direitos reservados.</p>
@@ -2007,6 +2007,19 @@ function openAbout(){var m=document.getElementById("aboutmodal");if(m)m.style.di
 function closeAbout(){var m=document.getElementById("aboutmodal");if(m)m.style.display="none";}
 function openClientes(){var m=document.getElementById("clientesmodal");if(!m)return;m.style.display="flex";renderClientesTabela();}
 function closeClientes(){var m=document.getElementById("clientesmodal");if(m)m.style.display="none";}
+async function liberarAcesso(orgId,nome){
+  if(!db)return;
+  var v=prompt('Liberar acesso GRÁTIS (cortesia) para "'+nome+'" por quantos meses?',"12");
+  if(v===null)return;
+  var meses=parseInt(v,10);
+  if(isNaN(meses)||meses<1||meses>120){alert("Informe um número de 1 a 120 meses.");return;}
+  if(!confirm('Confirmar: liberar "'+nome+'" por '+meses+' mês(es) de cortesia?'))return;
+  var r;try{r=await db.rpc("admin_liberar_acesso",{p_org_id:orgId,p_meses:meses});}catch(e){alert("Erro: "+(e.message||e));return;}
+  if(r.error){alert("Não foi possível liberar: "+r.error.message);return;}
+  var fim=(r.data&&r.data[0]&&r.data[0].assinatura_valida_ate)?r.data[0].assinatura_valida_ate:null;
+  alert("✅ Acesso liberado"+(fim?(" até "+_brd(fim)):"")+".");
+  renderClientesTabela();
+}
 function _brd(s){if(!s)return "—";var p=String(s).slice(0,10).split("-");return p.length===3?(p[2]+"/"+p[1]+"/"+p[0]):String(s);}
 async function renderClientesTabela(){
   var box=document.getElementById("clientesbody");if(!box)return;
@@ -2019,9 +2032,10 @@ async function renderClientesTabela(){
   var total=rows.length,assin=0,teste=0,exp=0;
   rows.forEach(function(x){if(x.situacao==="Assinante")assin++;else if(x.situacao==="Em teste")teste++;else exp++;});
   var h='<div class="tiny" style="margin-bottom:10px">Total: <b>'+total+'</b> &nbsp;·&nbsp; Assinantes: <b style="color:#15803d">'+assin+'</b> &nbsp;·&nbsp; Em teste: <b style="color:#b45309">'+teste+'</b> &nbsp;·&nbsp; Expirados: <b style="color:#b91c1c">'+exp+'</b> <button class="ubtn" style="background:#eef2f6;color:#0f172a;margin-left:8px" onclick="renderClientesTabela()">↻ Atualizar</button></div>';
-  h+='<div style="overflow:auto"><table class="esc" style="font-size:12px;min-width:760px"><thead><tr><th style="text-align:left">Organização</th><th>Cadastro</th><th>Situação</th><th>Teste até</th><th>Assin. até</th><th>Plano</th><th>Valor</th><th>Pago em</th><th>Usu.</th></tr></thead><tbody>';
+  h+='<div style="overflow:auto"><table class="esc" style="font-size:12px;min-width:760px"><thead><tr><th style="text-align:left">Organização</th><th>Cadastro</th><th>Situação</th><th>Teste até</th><th>Assin. até</th><th>Plano</th><th>Valor</th><th>Pago em</th><th>Usu.</th><th>Ação</th></tr></thead><tbody>';
   rows.forEach(function(c){
     var cor=c.situacao==="Assinante"?"#15803d":(c.situacao==="Em teste"?"#b45309":"#b91c1c");
+    var _nm=(c.organizacao||"").replace(/['"\\<>]/g," ");
     h+='<tr><td style="text-align:left"><b>'+esc(c.organizacao||"—")+'</b>'+(c.cnpj_cpf?' <span class="tiny" style="color:var(--mut)">'+esc(c.cnpj_cpf)+'</span>':'')+(c.email_responsavel?'<br><span class="tiny" style="color:var(--mut)">'+esc(c.email_responsavel)+'</span>':'')+'</td>'
       +'<td style="text-align:center">'+_brd(c.cadastrou_em)+'</td>'
       +'<td style="text-align:center"><b style="color:'+cor+'">'+esc(c.situacao||"—")+'</b>'+((c.situacao==="Em teste"&&c.dias_teste_restantes!=null)?'<br><span class="tiny">'+c.dias_teste_restantes+'d rest.</span>':'')+'</td>'
@@ -2030,7 +2044,8 @@ async function renderClientesTabela(){
       +'<td style="text-align:center">'+esc(c.ultimo_plano||"—")+'</td>'
       +'<td style="text-align:center">'+(c.ultimo_valor_rs!=null?("R$ "+Number(c.ultimo_valor_rs).toFixed(2).replace(".",",")):"—")+'</td>'
       +'<td style="text-align:center">'+_brd(c.ultimo_pagamento_em)+'</td>'
-      +'<td style="text-align:center">'+(c.qtd_usuarios||0)+'</td></tr>';
+      +'<td style="text-align:center">'+(c.qtd_usuarios||0)+'</td>'
+      +'<td style="text-align:center"><button class="ubtn" style="background:#eef2f6;color:#0f172a;padding:4px 8px" title="Liberar acesso grátis por um período" onclick="liberarAcesso(\''+c.org_id+'\',\''+_nm+'\')">🎁 Liberar</button></td></tr>';
   });
   h+='</tbody></table></div>';
   box.innerHTML=h;
