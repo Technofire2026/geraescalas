@@ -501,14 +501,14 @@
     </div>
   </section>
 
-  <footer><span class="noprint">Confira a escala antes de publicar.<br>© 2026 <b>Gera Escalas</b> · <span class="lnk" onclick="openAbout()">Sobre &amp; Política de Privacidade</span> · <span style="color:var(--mut2)">v5.5</span></span></footer>
+  <footer><span class="noprint">Confira a escala antes de publicar.<br>© 2026 <b>Gera Escalas</b> · <span class="lnk" onclick="openAbout()">Sobre &amp; Política de Privacidade</span> · <span style="color:var(--mut2)">v5.6</span></span></footer>
 </main>
 
 <div id="aboutmodal" class="modal" style="display:none" onclick="if(event.target===this)closeAbout()">
   <div class="mbox">
     <button class="xbtn" onclick="closeAbout()">Fechar ✕</button>
     <h2>Gera Escalas</h2>
-    <p class="muted">Escalas de plantão, turno e giro · Versão 5.5 · 2026</p>
+    <p class="muted">Escalas de plantão, turno e giro · Versão 5.6 · 2026</p>
 
     <h3>Autoria e direitos autorais</h3>
     <p>© 2026 <b>Gera Escalas</b> — desenvolvido por Luís Cesar. Todos os direitos reservados.</p>
@@ -540,6 +540,15 @@
     <p><b>9. Retenção e exclusão.</b> Mantemos os dados enquanto sua conta estiver ativa. Você pode solicitar a exclusão a qualquer momento; dados de cobrança podem ser mantidos pelo prazo legal/fiscal. Também é possível apagar dados locais limpando os dados do navegador.</p>
     <p><b>10. Seus direitos (LGPD).</b> Você pode solicitar acesso, correção, portabilidade ou exclusão dos seus dados e revogar consentimentos pelo e-mail <b>contato@geraescalas.com.br</b>. Para dados da equipe, os titulares podem procurar a organização controladora ou nos acionar, que encaminharemos.</p>
     <p class="muted">Dúvidas sobre privacidade e dados: <b>contato@geraescalas.com.br</b>.</p>
+  </div>
+</div>
+
+<div id="clientesmodal" class="modal" style="display:none" onclick="if(event.target===this)closeClientes()">
+  <div class="mbox" style="max-width:920px">
+    <button class="xbtn" onclick="closeClientes()">Fechar ✕</button>
+    <h2>👥 Clientes</h2>
+    <p class="muted">Painel do dono — organizações, planos, período de teste e pagamentos.</p>
+    <div id="clientesbody" style="margin-top:12px"></div>
   </div>
 </div>
 
@@ -705,8 +714,10 @@ async function logout(){try{if(db)await db.auth.signOut();}catch(e){}try{["ciops
 function showApp(){document.getElementById("authgate").style.display="none";document.getElementById("app").style.display="";var _cc=document.getElementById("configcard");if(_cc)_cc.style.display="none";renderUserbar();renderSetorSel();renderAddSetor();renderRoster();renderContControls();applyPerms();renderProBanner();var _m=state.config.modo||"auto";var _r=document.querySelector('input[name="modo"][value="'+_m+'"]');if(_r)_r.checked=true;var _sf=document.getElementById("satfolga");if(_sf)_sf.checked=!!state.config.satFolga2c;var _tp=document.getElementById("tipo");if(_tp)_tp.value=(state.schedule&&state.schedule.result&&state.schedule.result.tipo)||state.config.tipo||"giro";var _ts=document.getElementById("turnosel");if(_ts&&state.config.hor&&state.config.hor.turno)_ts.value=state.config.hor.turno.sel||"dia";setTipo();if(state.schedule){var _ms=document.getElementById("mes");if(_ms)_ms.value=state.schedule.month;var _an=document.getElementById("ano");if(_an)_an.value=state.schedule.year;renderSchedule();renderStats();}showTab(state.schedule?"escala":"efetivo");}
 function isOwner(){return !!(state.user&&state.user.role==="owner");}
 function isAdmin(){return !!(state.user&&(state.user.role==="admin"||state.user.role==="owner"));}
+var ADMIN_EMAILS=["lcsmbm@gmail.com","geraescalas@gmail.com"];
+function isPlatformAdmin(){return !!(state.user&&ADMIN_EMAILS.indexOf(((state.user.login)||"").toLowerCase())>=0);}
 function applyPerms(){var admin=isAdmin();var cc=document.getElementById("configcard");if(cc&&!admin)cc.style.display="none";var g=document.getElementById("btngerar");if(g)g.style.display=admin?"":"none";var c=document.getElementById("btncob");if(c)c.style.display=admin?"":"none";var cont=document.querySelector(".card .cont");if(cont)cont.style.display=admin?"":"none";var af=document.querySelector("#efetivo .addform");if(af)af.style.display=admin?"":"none";}
-function renderUserbar(){var u=state.user;if(!u)return;var admin=(u.role==="admin"||u.role==="owner");var tag=(u.role==="owner")?' <span class="rotag" style="background:rgba(231,199,102,.25);color:#ffe9a8">Proprietário</span>':(admin?'':' <span class="rotag">somente leitura</span>');document.getElementById("userbar").innerHTML='<span class="who">'+esc((u.posto?u.posto+" ":"")+u.nome)+tag+'</span>'+(admin?'<button class="ubtn ico-only" title="Configurações" aria-label="Configurações" onclick="openConfig()">⚙</button>':'')+'<button class="ubtn ico-only" title="Sair" aria-label="Sair" onclick="logout()">⎋</button>';}
+function renderUserbar(){var u=state.user;if(!u)return;var admin=(u.role==="admin"||u.role==="owner");var tag=(u.role==="owner")?' <span class="rotag" style="background:rgba(231,199,102,.25);color:#ffe9a8">Proprietário</span>':(admin?'':' <span class="rotag">somente leitura</span>');document.getElementById("userbar").innerHTML='<span class="who">'+esc((u.posto?u.posto+" ":"")+u.nome)+tag+'</span>'+(isPlatformAdmin()?'<button class="ubtn" title="Painel de clientes (dono)" onclick="openClientes()">👥 Clientes</button>':'')+(admin?'<button class="ubtn ico-only" title="Configurações" aria-label="Configurações" onclick="openConfig()">⚙</button>':'')+'<button class="ubtn ico-only" title="Sair" aria-label="Sair" onclick="logout()">⎋</button>';}
 
 /* ===== REGISTRO / AUDITORIA ===== */
 function loadLog(){try{var l=localStorage.getItem("ciops:log");state.logArr=l?JSON.parse(l):[];}catch(e){state.logArr=[];}}
@@ -1994,6 +2005,36 @@ function _mapaCard(s,sched,mils,Y,Mo,Dy){
 function showTab(t){["efetivo","escala","stat","mapa"].forEach(function(n){var p=document.getElementById("pane-"+n);if(p)p.style.display=(n===t)?"":"none";var b=document.getElementById("tab-"+n);if(b)b.classList.toggle("active",n===t);});if(t==="stat"){var se=document.getElementById("statempty");if(se)se.style.display=state.schedule?"none":"";}if(t==="mapa"){renderMapa();}state._tab=t;}
 function openAbout(){var m=document.getElementById("aboutmodal");if(m)m.style.display="flex";}
 function closeAbout(){var m=document.getElementById("aboutmodal");if(m)m.style.display="none";}
+function openClientes(){var m=document.getElementById("clientesmodal");if(!m)return;m.style.display="flex";renderClientesTabela();}
+function closeClientes(){var m=document.getElementById("clientesmodal");if(m)m.style.display="none";}
+function _brd(s){if(!s)return "—";var p=String(s).slice(0,10).split("-");return p.length===3?(p[2]+"/"+p[1]+"/"+p[0]):String(s);}
+async function renderClientesTabela(){
+  var box=document.getElementById("clientesbody");if(!box)return;
+  box.innerHTML='<p class="muted">Carregando…</p>';
+  if(!db){box.innerHTML='<p style="color:#b91c1c">Sem conexão com a nuvem.</p>';return;}
+  var r;try{r=await db.rpc("admin_clientes");}catch(e){box.innerHTML='<p style="color:#b91c1c">Erro: '+esc(e.message||String(e))+'</p>';return;}
+  if(r.error){box.innerHTML='<p style="color:#b91c1c">Não foi possível carregar: '+esc(r.error.message)+'.<br><span class="tiny">Confirme que você rodou o SQL do painel de clientes no Supabase e que seu e-mail está na lista de donos.</span></p>';return;}
+  var rows=r.data||[];
+  if(!rows.length){box.innerHTML='<p class="muted">Nenhum cliente cadastrado ainda.</p>';return;}
+  var total=rows.length,assin=0,teste=0,exp=0;
+  rows.forEach(function(x){if(x.situacao==="Assinante")assin++;else if(x.situacao==="Em teste")teste++;else exp++;});
+  var h='<div class="tiny" style="margin-bottom:10px">Total: <b>'+total+'</b> &nbsp;·&nbsp; Assinantes: <b style="color:#15803d">'+assin+'</b> &nbsp;·&nbsp; Em teste: <b style="color:#b45309">'+teste+'</b> &nbsp;·&nbsp; Expirados: <b style="color:#b91c1c">'+exp+'</b> <button class="ubtn" style="background:#eef2f6;color:#0f172a;margin-left:8px" onclick="renderClientesTabela()">↻ Atualizar</button></div>';
+  h+='<div style="overflow:auto"><table class="esc" style="font-size:12px;min-width:760px"><thead><tr><th style="text-align:left">Organização</th><th>Cadastro</th><th>Situação</th><th>Teste até</th><th>Assin. até</th><th>Plano</th><th>Valor</th><th>Pago em</th><th>Usu.</th></tr></thead><tbody>';
+  rows.forEach(function(c){
+    var cor=c.situacao==="Assinante"?"#15803d":(c.situacao==="Em teste"?"#b45309":"#b91c1c");
+    h+='<tr><td style="text-align:left"><b>'+esc(c.organizacao||"—")+'</b>'+(c.cnpj_cpf?' <span class="tiny" style="color:var(--mut)">'+esc(c.cnpj_cpf)+'</span>':'')+(c.email_responsavel?'<br><span class="tiny" style="color:var(--mut)">'+esc(c.email_responsavel)+'</span>':'')+'</td>'
+      +'<td style="text-align:center">'+_brd(c.cadastrou_em)+'</td>'
+      +'<td style="text-align:center"><b style="color:'+cor+'">'+esc(c.situacao||"—")+'</b>'+((c.situacao==="Em teste"&&c.dias_teste_restantes!=null)?'<br><span class="tiny">'+c.dias_teste_restantes+'d rest.</span>':'')+'</td>'
+      +'<td style="text-align:center">'+_brd(c.teste_termina_em)+'</td>'
+      +'<td style="text-align:center">'+_brd(c.assinatura_valida_ate)+'</td>'
+      +'<td style="text-align:center">'+esc(c.ultimo_plano||"—")+'</td>'
+      +'<td style="text-align:center">'+(c.ultimo_valor_rs!=null?("R$ "+Number(c.ultimo_valor_rs).toFixed(2).replace(".",",")):"—")+'</td>'
+      +'<td style="text-align:center">'+_brd(c.ultimo_pagamento_em)+'</td>'
+      +'<td style="text-align:center">'+(c.qtd_usuarios||0)+'</td></tr>';
+  });
+  h+='</tbody></table></div>';
+  box.innerHTML=h;
+}
 /* ================== LOGIN NA NUVEM (Supabase) ================== */
 const SB_URL="https://ebvbjepghlzqkpbgdcbk.supabase.co";
 const SB_KEY="sb_publishable_7tOgGEsmgJxts_-YpUGWuA_JAzvWRCM"; /* <-- cole sua sb_publishable_... aqui */
