@@ -501,14 +501,14 @@
     </div>
   </section>
 
-  <footer><span class="noprint">Confira a escala antes de publicar.<br>© 2026 <b>Gera Escalas</b> · <span class="lnk" onclick="openAbout()">Sobre &amp; Política de Privacidade</span> · <span style="color:var(--mut2)">v5.2</span></span></footer>
+  <footer><span class="noprint">Confira a escala antes de publicar.<br>© 2026 <b>Gera Escalas</b> · <span class="lnk" onclick="openAbout()">Sobre &amp; Política de Privacidade</span> · <span style="color:var(--mut2)">v5.3</span></span></footer>
 </main>
 
 <div id="aboutmodal" class="modal" style="display:none" onclick="if(event.target===this)closeAbout()">
   <div class="mbox">
     <button class="xbtn" onclick="closeAbout()">Fechar ✕</button>
     <h2>Gera Escalas</h2>
-    <p class="muted">Escalas de plantão, turno e giro · Versão 5.2 · 2026</p>
+    <p class="muted">Escalas de plantão, turno e giro · Versão 5.3 · 2026</p>
 
     <h3>Autoria e direitos autorais</h3>
     <p>© 2026 <b>Gera Escalas</b> — desenvolvido por Luís Cesar. Todos os direitos reservados.</p>
@@ -1588,7 +1588,7 @@ function trocaFolgaMover(){
   log("Folga movida","pessoa "+pid+": dia "+dDe+" → "+dPara);renderSchedule();saveSchedule();fecharTroca();
 }
 function renderTipoInfo(){var t=(document.getElementById("tipo")||{}).value||"giro";var el=document.getElementById("tipoInfo");if(el)el.innerHTML=TIPO_INFO[t]||"";}
-function setTipo(){var t=(document.getElementById("tipo")||{}).value||"giro";state.config.tipo=t;saveConfig();renderTipoInfo();renderAddTime();var box=document.getElementById("rotacaoBox");if(box)box.style.display=(t==="giro")?"inline-flex":"none";var tb=document.getElementById("turnoBox");if(tb)tb.style.display=(t==="turno")?"inline-flex":"none";var ab=document.getElementById("btncob");if(ab)ab.style.display=(t==="ciclo")?"none":"";var cb=document.getElementById("cicloBox");if(cb)cb.style.display=(t==="ciclo")?"inline-flex":"none";var fb=document.getElementById("folgaBox");if(fb)fb.style.display=(t==="folga")?"inline-flex":"none";if(t==="folga"){var fc=state.config.folgaCfg||{trab:6,folga:1,maxDia:1,domingo:true};var e;if(e=document.getElementById("fg_trab"))e.value=fc.trab;if(e=document.getElementById("fg_folga"))e.value=fc.folga;if(e=document.getElementById("fg_max"))e.value=fc.maxDia;if(e=document.getElementById("fg_dom"))e.checked=fc.domingo!==false;if(e=document.getElementById("fg_hini"))e.value=fc.hIni||"18:00";if(e=document.getElementById("fg_hfim"))e.value=fc.hFim||"23:00";if(e=document.getElementById("fg_maxsem"))e.value=fc.maxSem||0;renderFolgaDias();}var cs=document.getElementById("ciclosel");if(cs)cs.value=state.config.cicloRegime||"24h";var tl=document.getElementById("turmasLegend");if(tl)tl.style.display=(t==="ciclo"&&state.schedule)?"":"none";renderTurmasLegend();updateModoHint();}
+function setTipo(){var t=(document.getElementById("tipo")||{}).value||"giro";state.config.tipo=t;saveConfig();renderTipoInfo();renderAddTime();var box=document.getElementById("rotacaoBox");if(box)box.style.display=(t==="giro")?"inline-flex":"none";var tb=document.getElementById("turnoBox");if(tb)tb.style.display=(t==="turno")?"inline-flex":"none";var ab=document.getElementById("btncob");if(ab)ab.style.display=(t==="ciclo"||t==="folga")?"none":"";var cb=document.getElementById("cicloBox");if(cb)cb.style.display=(t==="ciclo")?"inline-flex":"none";var fb=document.getElementById("folgaBox");if(fb)fb.style.display=(t==="folga")?"inline-flex":"none";if(t==="folga"){var fc=state.config.folgaCfg||{trab:6,folga:1,maxDia:1,domingo:true};var e;if(e=document.getElementById("fg_trab"))e.value=fc.trab;if(e=document.getElementById("fg_folga"))e.value=fc.folga;if(e=document.getElementById("fg_max"))e.value=fc.maxDia;if(e=document.getElementById("fg_dom"))e.checked=fc.domingo!==false;if(e=document.getElementById("fg_hini"))e.value=fc.hIni||"18:00";if(e=document.getElementById("fg_hfim"))e.value=fc.hFim||"23:00";if(e=document.getElementById("fg_maxsem"))e.value=fc.maxSem||0;renderFolgaDias();}var cs=document.getElementById("ciclosel");if(cs)cs.value=state.config.cicloRegime||"24h";var tl=document.getElementById("turmasLegend");if(tl)tl.style.display=(t==="ciclo"&&state.schedule)?"":"none";renderTurmasLegend();updateModoHint();}
 function setCicloRegime(){var v=(document.getElementById("ciclosel")||{}).value||"24h";state.config.cicloRegime=v;saveConfig();}
 function setTurno(){var v=(document.getElementById("turnosel")||{}).value||"dia";state.config.hor=state.config.hor||{};if(!state.config.hor.turno)state.config.hor.turno={dia:["07:00","19:00"],noite:["19:00","07:00"],sel:"dia"};state.config.hor.turno.sel=v;saveConfig();}
 function modoEfetivo(){var sel=(document.querySelector('input[name="modo"]:checked')||{}).value||state.config.modo||"auto";if(sel==="auto")return (state.militares.length>0&&state.militares.length%7===0)?"giro":"fixa";return sel;}
@@ -1747,13 +1747,13 @@ function renderFolga(){
         var _dt=new Date(year,month,gd2);
         var _fer=onVacation(m,_dt),_ate=onAtestado(m,_dt);
         var _fol=(res.folga[gd2]||[]).some(function(x){return x.id===m.id;});
-        var cell=_fer?'<span title="Férias" style="font-size:13px">🏖️</span>':(_ate?'<span title="Atestado/afastado" style="font-size:13px">🩹</span>':(_fol?'<span title="Folga" style="font-size:13px">🔵</span>':'<span title="Em serviço" style="font-size:13px">🟢</span>'));
+        var cell=_fer?'<span title="Férias" style="font-size:13px">🏖️</span>':(_ate?'<span title="Atestado/afastado" style="font-size:13px">🩹</span>':(_fol?'<b title="Folga" style="color:#2563eb">F</b>':'<b title="Em serviço" style="color:#16a34a">S</b>'));
         var _wd2=new Date(year,month,gd2).getDay();
         gh+='<td style="text-align:center;padding:3px 5px'+((_wd2===0||_wd2===6)?';background:#fffbeb':'')+'">'+cell+'</td>';
       }
       gh+='</tr>';
     });
-    gh+='</tbody></table></div><div class="tiny" style="margin-top:6px;color:var(--mut)">🟢 serviço · 🔵 folga · 🏖️ férias · 🩹 atestado</div>';
+    gh+='</tbody></table></div><div class="tiny" style="margin-top:6px;color:var(--mut)"><b style="color:#16a34a">S</b> serviço · <b style="color:#2563eb">F</b> folga · 🏖️ férias · 🩹 atestado</div>';
     document.getElementById("escala").innerHTML=head+av+toggle+gh+signatureBlockHTML();
     var tlg=document.getElementById("turmasLegend");if(tlg)tlg.style.display="none";
     return;
