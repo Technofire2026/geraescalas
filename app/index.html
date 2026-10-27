@@ -501,14 +501,14 @@
     </div>
   </section>
 
-  <footer><span class="noprint">Confira a escala antes de publicar.<br>© 2026 <b>Gera Escalas</b> · <span class="lnk" onclick="openAbout()">Sobre &amp; Política de Privacidade</span> · <span style="color:var(--mut2)">v5.1</span></span></footer>
+  <footer><span class="noprint">Confira a escala antes de publicar.<br>© 2026 <b>Gera Escalas</b> · <span class="lnk" onclick="openAbout()">Sobre &amp; Política de Privacidade</span> · <span style="color:var(--mut2)">v5.2</span></span></footer>
 </main>
 
 <div id="aboutmodal" class="modal" style="display:none" onclick="if(event.target===this)closeAbout()">
   <div class="mbox">
     <button class="xbtn" onclick="closeAbout()">Fechar ✕</button>
     <h2>Gera Escalas</h2>
-    <p class="muted">Escalas de plantão, turno e giro · Versão 5.1 · 2026</p>
+    <p class="muted">Escalas de plantão, turno e giro · Versão 5.2 · 2026</p>
 
     <h3>Autoria e direitos autorais</h3>
     <p>© 2026 <b>Gera Escalas</b> — desenvolvido por Luís Cesar. Todos os direitos reservados.</p>
@@ -1744,15 +1744,16 @@ function renderFolga(){
     mils.forEach(function(m){
       gh+='<tr><td style="text-align:left;font-weight:600;position:sticky;left:0;background:#fff;white-space:nowrap">'+esc((m.posto?m.posto+" ":"")+m.nome)+'</td>';
       for(var gd2=1;gd2<=res.N;gd2++){
-        var _un=isUnavailable(m,new Date(year,month,gd2));
+        var _dt=new Date(year,month,gd2);
+        var _fer=onVacation(m,_dt),_ate=onAtestado(m,_dt);
         var _fol=(res.folga[gd2]||[]).some(function(x){return x.id===m.id;});
-        var cell=_un?'<span style="color:#94a3b8">–</span>':(_fol?'<b style="color:#0d9488">F</b>':'<span style="color:#cbd5e1">•</span>');
+        var cell=_fer?'<span title="Férias" style="font-size:13px">🏖️</span>':(_ate?'<span title="Atestado/afastado" style="font-size:13px">🩹</span>':(_fol?'<span title="Folga" style="font-size:13px">🔵</span>':'<span title="Em serviço" style="font-size:13px">🟢</span>'));
         var _wd2=new Date(year,month,gd2).getDay();
         gh+='<td style="text-align:center;padding:3px 5px'+((_wd2===0||_wd2===6)?';background:#fffbeb':'')+'">'+cell+'</td>';
       }
       gh+='</tr>';
     });
-    gh+='</tbody></table></div><div class="tiny" style="margin-top:6px;color:var(--mut)"><b style="color:#0d9488">F</b> = folga · • = serviço · – = afastado/férias</div>';
+    gh+='</tbody></table></div><div class="tiny" style="margin-top:6px;color:var(--mut)">🟢 serviço · 🔵 folga · 🏖️ férias · 🩹 atestado</div>';
     document.getElementById("escala").innerHTML=head+av+toggle+gh+signatureBlockHTML();
     var tlg=document.getElementById("turmasLegend");if(tlg)tlg.style.display="none";
     return;
