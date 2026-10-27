@@ -502,14 +502,14 @@
     </div>
   </section>
 
-  <footer><span class="noprint">Confira a escala antes de publicar.<br>© 2026 <b>Gera Escalas</b> · <span class="lnk" onclick="openAbout()">Sobre &amp; Política de Privacidade</span> · <span style="color:var(--mut2)">v5.8</span></span></footer>
+  <footer><span class="noprint">Confira a escala antes de publicar.<br>© 2026 <b>Gera Escalas</b> · <span class="lnk" onclick="openAbout()">Sobre &amp; Política de Privacidade</span> · <span style="color:var(--mut2)">v6.0</span></span></footer>
 </main>
 
 <div id="aboutmodal" class="modal" style="display:none" onclick="if(event.target===this)closeAbout()">
   <div class="mbox">
     <button class="xbtn" onclick="closeAbout()">Fechar ✕</button>
     <h2>Gera Escalas</h2>
-    <p class="muted">Escalas de plantão, turno e giro · Versão 5.8 · 2026</p>
+    <p class="muted">Escalas de plantão, turno e giro · Versão 6.0 · 2026</p>
 
     <h3>Autoria e direitos autorais</h3>
     <p>© 2026 <b>Gera Escalas</b> — desenvolvido por Luís Cesar. Todos os direitos reservados.</p>
@@ -563,6 +563,102 @@
     <label class="fld" style="margin-top:8px"><span>…ou cole o conteúdo do CSV aqui</span><textarea id="imp_txt" rows="7" style="width:100%;font:inherit;font-size:13px;padding:8px;border:1px solid var(--line2);border-radius:8px" placeholder="nome;cargo;cpf;telefone;email;endereco;ferias&#10;Ana Paula Souza;Enfermeira;;;;;&#10;Bruno Lima;Técnico;;;;;15/01/2026"></textarea></label>
     <button class="btn primary" style="width:100%;justify-content:center;margin-top:10px" onclick="importarCSV()">Importar</button>
     <div id="imp_msg" class="tiny" style="margin-top:8px"></div>
+  </div>
+</div>
+
+<div id="helpmodal" class="modal" style="display:none" onclick="if(event.target===this)closeHelp()">
+  <div class="mbox" style="max-width:740px">
+    <button class="xbtn" onclick="closeHelp()">Fechar ✕</button>
+    <h2>❓ Como usar o Gera Escalas</h2>
+    <p class="muted">Guia completo das funções. Use o ❓ no topo para abrir isto a qualquer momento.</p>
+
+    <h3>Passo a passo (resumo)</h3>
+    <ul>
+      <li><b>1.</b> Cadastre o <b>efetivo</b> (as pessoas) na aba <b>Efetivo</b>.</li>
+      <li><b>2.</b> Escolha o <b>tipo de escala</b> e o <b>mês/ano</b>.</li>
+      <li><b>3.</b> Clique em <b>Gerar escala</b>.</li>
+      <li><b>4.</b> Confira, ajuste se precisar, e <b>imprima/exporte</b>.</li>
+    </ul>
+
+    <h3>1) Cadastrar o efetivo</h3>
+    <ul>
+      <li><b>➕ Adicionar pessoa:</b> só o <b>nome</b> é obrigatório. Em “+ mais dados” você informa CPF, telefone, e-mail e endereço (opcionais).</li>
+      <li><b>⬆ Importar por CSV:</b> cadastre várias pessoas de uma vez. Baixe o modelo, preencha no Excel (salve como “CSV UTF-8”) e importe. Colunas: nome, cargo/função, cpf, telefone, email, endereço, férias.</li>
+      <li><b>Férias (35 dias) e atestado:</b> marque na própria pessoa (botões de período e “+ atestado”). O app considera isso ao gerar.</li>
+      <li><b>Setas (ordem):</b> definem a <b>ordem inicial</b> da rotação. Dá para reordenar quem começa.</li>
+      <li><b>Editar / remover:</b> cada pessoa tem os botões de edição e exclusão na lista.</li>
+    </ul>
+
+    <h3>2) Tipos de escala (detalhado)</h3>
+    <ul>
+      <li><b>Giro — 2 giros/dia:</b> dois turnos por dia (1º e 2º giro) que se encadeiam: quem entra hoje faz o 1º giro e no dia seguinte o 2º. Comum em <b>supervisão, centrais de operação e forças de segurança</b>.</li>
+      <li><b>3 Giros:</b> três turnos por dia, cobrindo 24h em 3 períodos. Para operações com cobertura contínua.</li>
+      <li><b>Plantão 24h:</b> um plantão de 24 horas por dia, revezando as pessoas. Comum em <b>bombeiros, saúde e segurança</b>.</li>
+      <li><b>Turno (dia ou noite):</b> um turno fixo por dia, para quem funciona só em um período.</li>
+      <li><b>Ciclo por times:</b> <b>equipes fixas</b> que se revezam por dia. No <b>regime 24h</b>: 3 times = 24×48, 4 times = 24×72. No <b>regime 12h</b>: times de dia e de noite. Você cria os times e distribui as pessoas.</li>
+      <li><b>Folga rotativa (5x2, 6x1):</b> todos trabalham e o app define <b>quem folga</b> a cada dia. Opções: <b>Trabalha × Folga</b> (ex.: 6×1 ou 5×2), <b>Máx/dia</b> (quantos podem folgar no mesmo dia), <b>Máx folgas/semana</b>, <b>folga no domingo</b> garantida, <b>folga só em dias específicos</b> e <b>horário</b> do expediente. Botão <b>✅ 5x2 (nova lei)</b> já aplica a escala da <b>EC 141/2026</b>. Comum em <b>comércio, bares, restaurantes e serviços</b>.</li>
+    </ul>
+
+    <h3>3) Gerar a escala</h3>
+    <ul>
+      <li>Escolha <b>mês e ano</b> e clique em <b>Gerar escala</b>.</li>
+      <li><b>Continuidade entre meses:</b> com a opção <b>🔗 Aproveitar o fim da escala do mês anterior</b> ligada, o app começa o mês novo de onde o anterior parou (ninguém repete fim de semana seguido, por exemplo).</li>
+      <li><b>Distribuição justa:</b> o app equilibra serviço, fins de semana e folgas automaticamente.</li>
+    </ul>
+
+    <h3>4) Ajustar uma escala já pronta</h3>
+    <ul>
+      <li><b>Trocar / permutar:</b> o botão <b>Trocar</b> permite substituir alguém num dia ou permutar (trocar) entre dois dias.</li>
+      <li><b>🩺 Aplicar afastamento</b> (giro, 24h e turno): quando a escala já está pronta e alguém pega atestado <b>depois</b>, recalcula só a partir daquele dia — o sucessor assume e os dias já cumpridos ficam intactos.</li>
+      <li><b>Folga rotativa:</b> aqui não precisa do botão — marque o afastamento e <b>gere a escala de novo</b>; o app tira a pessoa dos dias afastados e redistribui.</li>
+    </ul>
+
+    <h3>5) Grade mensal (folga rotativa)</h3>
+    <p>Na folga, alterne entre <b>Por dia</b> e <b>Grade mensal</b>. Na grade: <b style="color:#16a34a">S</b> = em serviço · <b style="color:#2563eb">F</b> = folga · 🏖️ = férias · 🩹 = atestado.</p>
+
+    <h3>6) Setores e Mapa do dia</h3>
+    <p>Se sua operação tem áreas diferentes (ex.: UTI, Portaria, Pronto-Socorro), crie <b>setores</b> em Configurações. Cada setor tem <b>seu próprio efetivo e escala</b>. O <b>Mapa do dia</b> mostra, para uma data, quem está de serviço em cada setor.</p>
+
+    <h3>7) Estatísticas</h3>
+    <p>A aba de <b>Estatística</b> mostra, por pessoa, quantos serviços, fins de semana e horas. Na folga, há um alerta de <b>limite legal</b> de jornada (42h/semana a partir de 15/12/2026, conforme a EC 141/2026) para você não passar do permitido.</p>
+
+    <h3>8) Responsável, logo e configurações</h3>
+    <p>Em <b>Configurações</b> você define o <b>responsável pela escala</b> (nome que assina), pode colocar a <b>logo</b> da sua organização e ajustar horários e preferências.</p>
+
+    <h3>9) Acessos (operadores)</h3>
+    <ul>
+      <li><b>Proprietário:</b> dono da conta — administra tudo e os acessos.</li>
+      <li><b>Administrador:</b> cria/edita efetivo e escalas.</li>
+      <li><b>Visualização:</b> só vê a escala, não altera.</li>
+      <li>Em <b>Configurações → Operadores</b> você convida pessoas e define o papel de cada uma. Há também a <b>senha-mestra de recuperação</b> e a opção <b>Trocar minha senha</b>.</li>
+    </ul>
+
+    <h3>10) Imprimir e exportar</h3>
+    <p><b>🖨 Imprimir</b> gera uma versão limpa para papel/PDF. <b>⬇ CSV</b> exporta a escala para abrir no Excel. Confira a escala antes de publicar.</p>
+
+    <h3>11) Backup (exportar / importar)</h3>
+    <p>Em Configurações, <b>Exportar backup</b> salva um arquivo com seus dados; <b>Importar backup</b> restaura. Útil para guardar uma cópia ou levar para outro dispositivo.</p>
+
+    <h3>12) Nuvem e dispositivos</h3>
+    <p>Seus dados ficam salvos na <b>nuvem</b> (servidores no Brasil), separados por organização. Você acessa do <b>celular ou do computador</b>, com o mesmo login.</p>
+
+    <h3>13) Assinatura</h3>
+    <p>São <b>14 dias grátis</b>. Depois, em Configurações → Assinatura, assine no <b>cartão (mensal)</b> ou no <b>Pix (anual)</b>.</p>
+
+    <h3>Dúvidas frequentes</h3>
+    <ul>
+      <li><b>Funciona no celular?</b> Sim, no celular e no computador, com o mesmo login.</li>
+      <li><b>Esqueci minha senha.</b> Na tela de login, clique em <b>“Esqueci minha senha”</b> — você recebe um link por e-mail para criar uma nova.</li>
+      <li><b>Como dou acesso a outra pessoa?</b> Configurações → Operadores → convide e escolha <b>Administrador</b> ou <b>Visualização</b>.</li>
+      <li><b>Cadastrei errado, como corrijo?</b> Na lista do efetivo, use os botões de editar/excluir da pessoa.</li>
+      <li><b>A escala continua de um mês para o outro?</b> Sim, mantenha ligada a opção de <b>continuidade</b> antes de gerar.</li>
+      <li><b>O app segue a nova lei (fim da 6x1)?</b> Sim — no tipo <b>Folga rotativa</b>, o botão <b>5x2 (nova lei)</b> já gera no formato da EC 141/2026.</li>
+      <li><b>Como coloco muita gente de uma vez?</b> Use <b>⬆ Importar por CSV</b> no efetivo.</li>
+      <li><b>Meus dados estão seguros?</b> Sim — ficam na nuvem (Brasil), isolados por organização, e as senhas são protegidas. Veja a <b>Política de Privacidade</b> em “Sobre”.</li>
+      <li><b>Preciso de ajuda?</b> Fale com a gente: <b>contato@geraescalas.com.br</b>.</li>
+    </ul>
+
+    <p class="muted" style="margin-top:10px">💡 Em breve: vídeos curtos de demonstração. Se tiver uma dúvida que não está aqui, escreva para contato@geraescalas.com.br.</p>
   </div>
 </div>
 
@@ -731,7 +827,7 @@ function isAdmin(){return !!(state.user&&(state.user.role==="admin"||state.user.
 var ADMIN_EMAILS=["lcsmbm@gmail.com","geraescalas@gmail.com"];
 function isPlatformAdmin(){return !!(state.user&&ADMIN_EMAILS.indexOf(((state.user.login)||"").toLowerCase())>=0);}
 function applyPerms(){var admin=isAdmin();var cc=document.getElementById("configcard");if(cc&&!admin)cc.style.display="none";var g=document.getElementById("btngerar");if(g)g.style.display=admin?"":"none";var c=document.getElementById("btncob");if(c)c.style.display=admin?"":"none";var cont=document.querySelector(".card .cont");if(cont)cont.style.display=admin?"":"none";var af=document.querySelector("#efetivo .addform");if(af)af.style.display=admin?"":"none";}
-function renderUserbar(){var u=state.user;if(!u)return;var admin=(u.role==="admin"||u.role==="owner");var tag=(u.role==="owner")?' <span class="rotag" style="background:rgba(231,199,102,.25);color:#ffe9a8">Proprietário</span>':(admin?'':' <span class="rotag">somente leitura</span>');document.getElementById("userbar").innerHTML='<span class="who">'+esc((u.posto?u.posto+" ":"")+u.nome)+tag+'</span>'+(isPlatformAdmin()?'<button class="ubtn" title="Painel de clientes (dono)" onclick="openClientes()">👥 Clientes</button>':'')+(admin?'<button class="ubtn ico-only" title="Configurações" aria-label="Configurações" onclick="openConfig()">⚙</button>':'')+'<button class="ubtn ico-only" title="Sair" aria-label="Sair" onclick="logout()">⎋</button>';}
+function renderUserbar(){var u=state.user;if(!u)return;var admin=(u.role==="admin"||u.role==="owner");var tag=(u.role==="owner")?' <span class="rotag" style="background:rgba(231,199,102,.25);color:#ffe9a8">Proprietário</span>':(admin?'':' <span class="rotag">somente leitura</span>');document.getElementById("userbar").innerHTML='<span class="who">'+esc((u.posto?u.posto+" ":"")+u.nome)+tag+'</span>'+'<button class="ubtn ico-only" title="Como usar / Ajuda" aria-label="Ajuda" onclick="openHelp()">❓</button>'+(isPlatformAdmin()?'<button class="ubtn" title="Painel de clientes (dono)" onclick="openClientes()">👥 Clientes</button>':'')+(admin?'<button class="ubtn ico-only" title="Configurações" aria-label="Configurações" onclick="openConfig()">⚙</button>':'')+'<button class="ubtn ico-only" title="Sair" aria-label="Sair" onclick="logout()">⎋</button>';}
 
 /* ===== REGISTRO / AUDITORIA ===== */
 function loadLog(){try{var l=localStorage.getItem("ciops:log");state.logArr=l?JSON.parse(l):[];}catch(e){state.logArr=[];}}
@@ -2018,6 +2114,8 @@ function _mapaCard(s,sched,mils,Y,Mo,Dy){
 }
 function showTab(t){["efetivo","escala","stat","mapa"].forEach(function(n){var p=document.getElementById("pane-"+n);if(p)p.style.display=(n===t)?"":"none";var b=document.getElementById("tab-"+n);if(b)b.classList.toggle("active",n===t);});if(t==="stat"){var se=document.getElementById("statempty");if(se)se.style.display=state.schedule?"none":"";}if(t==="mapa"){renderMapa();}state._tab=t;}
 function openAbout(){var m=document.getElementById("aboutmodal");if(m)m.style.display="flex";}
+function openHelp(){var m=document.getElementById("helpmodal");if(m)m.style.display="flex";}
+function closeHelp(){var m=document.getElementById("helpmodal");if(m)m.style.display="none";}
 function closeAbout(){var m=document.getElementById("aboutmodal");if(m)m.style.display="none";}
 function openClientes(){var m=document.getElementById("clientesmodal");if(!m)return;m.style.display="flex";renderClientesTabela();}
 function closeClientes(){var m=document.getElementById("clientesmodal");if(m)m.style.display="none";}
