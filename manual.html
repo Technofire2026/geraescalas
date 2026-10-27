@@ -1,0 +1,228 @@
+<!doctype html>
+<html lang="pt-BR">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Gera Escalas — Manual de uso</title>
+<meta name="description" content="Manual de uso do Gera Escalas: cadastro de efetivo, tipos de escala, férias e afastamentos, grade mensal, setores, acessos, assinatura e dúvidas frequentes.">
+<style>
+  :root{--indigo:#4f46e5;--indigo-d:#4338ca;--ink:#0f172a;--mut:#64748b;--line:#e2e8f0;--soft:#f5f6fb;--teal:#0d9488}
+  *{box-sizing:border-box;margin:0;padding:0}
+  html{scroll-behavior:smooth}
+  body{font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,Arial,sans-serif;color:var(--ink);background:#fff;line-height:1.6;-webkit-font-smoothing:antialiased}
+  a{color:var(--indigo);text-decoration:none}
+  a:hover{text-decoration:underline}
+  header{background:linear-gradient(135deg,#eef2ff,#ecfeff);border-bottom:1px solid var(--line)}
+  .hwrap{max-width:1040px;margin:0 auto;padding:22px 20px;display:flex;align-items:center;gap:14px;flex-wrap:wrap}
+  .hwrap img{width:48px;height:48px;border-radius:12px;box-shadow:0 6px 16px rgba(79,70,229,.25)}
+  .htxt .t{font-size:22px;font-weight:800;color:#1e1b4b;letter-spacing:-.3px}
+  .htxt .s{font-size:13px;color:var(--mut)}
+  .hwrap .sp{flex:1}
+  .backbtn{background:var(--indigo);color:#fff;padding:9px 16px;border-radius:10px;font-weight:700;font-size:14px}
+  .backbtn:hover{text-decoration:none;background:var(--indigo-d)}
+  .layout{max-width:1040px;margin:0 auto;padding:24px 20px 60px;display:grid;grid-template-columns:1fr;gap:28px}
+  @media(min-width:900px){.layout{grid-template-columns:230px 1fr;gap:40px;align-items:start}}
+  nav.toc{font-size:14px}
+  @media(min-width:900px){nav.toc{position:sticky;top:18px}}
+  nav.toc .ttl{font-size:12px;text-transform:uppercase;letter-spacing:.05em;color:var(--mut);font-weight:700;margin-bottom:8px}
+  nav.toc ol{list-style:none}
+  nav.toc li{margin:4px 0}
+  nav.toc a{color:#334155;display:block;padding:3px 0}
+  main{min-width:0}
+  section{margin-bottom:30px;scroll-margin-top:18px}
+  h2{font-size:19px;color:var(--indigo);margin-bottom:8px;padding-bottom:6px;border-bottom:2px solid #eef2ff}
+  h3{font-size:15px;color:#1e1b4b;margin:14px 0 4px}
+  p{margin:6px 0;color:#334155;font-size:15px}
+  ul{margin:6px 0 6px 22px}
+  li{margin:5px 0;color:#334155;font-size:15px}
+  .lead{font-size:16px;color:#475569}
+  .pill{display:inline-block;background:#ecfdf5;color:#047857;border:1px solid #a7f3d0;border-radius:999px;padding:2px 10px;font-size:13px;font-weight:700}
+  .tip{background:#eff6ff;border:1px solid #bfdbfe;color:#1e3a8a;border-radius:10px;padding:10px 12px;font-size:14px;margin:10px 0}
+  .key{display:inline-block;font-weight:700;border-radius:6px;padding:0 6px}
+  .s{color:#16a34a}.f{color:#2563eb}
+  footer{border-top:1px solid var(--line);background:var(--soft)}
+  .fwrap{max-width:1040px;margin:0 auto;padding:22px 20px;color:var(--mut);font-size:13px;text-align:center}
+  @media print{header .backbtn,nav.toc{display:none}.layout{grid-template-columns:1fr}}
+</style>
+</head>
+<body>
+<header>
+  <div class="hwrap">
+    <img src="https://geraescalas.com.br/logo.png" alt="Gera Escalas">
+    <div class="htxt"><div class="t">Gera Escalas — Manual</div><div class="s">Monte escalas de serviço em minutos</div></div>
+    <div class="sp"></div>
+    <a class="backbtn" href="https://geraescalas.com.br/app">← Voltar ao app</a>
+  </div>
+</header>
+
+<div class="layout">
+  <nav class="toc">
+    <div class="ttl">Índice</div>
+    <ol>
+      <li><a href="#inicio">Início rápido</a></li>
+      <li><a href="#efetivo">1. Cadastrar o efetivo</a></li>
+      <li><a href="#tipos">2. Tipos de escala</a></li>
+      <li><a href="#gerar">3. Gerar a escala</a></li>
+      <li><a href="#ajustar">4. Ajustar escala pronta</a></li>
+      <li><a href="#grade">5. Grade mensal</a></li>
+      <li><a href="#setores">6. Setores e Mapa do dia</a></li>
+      <li><a href="#estat">7. Estatísticas</a></li>
+      <li><a href="#config">8. Configurações</a></li>
+      <li><a href="#acessos">9. Acessos</a></li>
+      <li><a href="#imprimir">10. Imprimir e exportar</a></li>
+      <li><a href="#backup">11. Backup</a></li>
+      <li><a href="#nuvem">12. Nuvem</a></li>
+      <li><a href="#assinatura">13. Assinatura</a></li>
+      <li><a href="#faq">Dúvidas frequentes</a></li>
+    </ol>
+  </nav>
+
+  <main>
+    <section id="inicio">
+      <h2>Início rápido</h2>
+      <p class="lead">O Gera Escalas monta escalas de serviço de forma justa e automática, com continuidade entre os meses. Em 4 passos:</p>
+      <ul>
+        <li><b>1.</b> Cadastre o <b>efetivo</b> (as pessoas) na aba <b>Efetivo</b>.</li>
+        <li><b>2.</b> Escolha o <b>tipo de escala</b> e o <b>mês/ano</b>.</li>
+        <li><b>3.</b> Clique em <b>Gerar escala</b>.</li>
+        <li><b>4.</b> Confira, ajuste se precisar, e <b>imprima/exporte</b>.</li>
+      </ul>
+      <div class="tip">💡 Funciona no celular e no computador, com o mesmo login. Seus dados ficam salvos na nuvem.</div>
+    </section>
+
+    <section id="efetivo">
+      <h2>1. Cadastrar o efetivo</h2>
+      <ul>
+        <li><b>➕ Adicionar pessoa:</b> só o <b>nome</b> é obrigatório. Em “+ mais dados” você informa CPF, telefone, e-mail e endereço (opcionais).</li>
+        <li><b>⬆ Importar por CSV:</b> cadastre várias pessoas de uma vez. Baixe o modelo, preencha no Excel (salve como “CSV UTF-8”) e importe. Colunas: nome, cargo/função, cpf, telefone, email, endereço, férias.</li>
+        <li><b>Férias e atestado:</b> marque as <b>datas</b> na própria pessoa (botões de período e “+ atestado”). O número de dias de férias é ajustável por pessoa. O app considera isso ao gerar a escala.</li>
+        <li><b>Setas (ordem):</b> definem a <b>ordem inicial</b> da rotação — você escolhe quem começa.</li>
+        <li><b>Editar / remover:</b> cada pessoa tem botões de edição e exclusão na lista.</li>
+      </ul>
+    </section>
+
+    <section id="tipos">
+      <h2>2. Tipos de escala</h2>
+      <h3>Giro — 2 giros/dia</h3>
+      <p>Dois turnos por dia (1º e 2º giro) que se encadeiam: quem entra hoje faz o 1º giro e no dia seguinte o 2º. Comum em supervisão, centrais de operação e forças de segurança.</p>
+      <h3>3 Giros</h3>
+      <p>Três turnos por dia, cobrindo 24h em 3 períodos. Para operações com cobertura contínua.</p>
+      <h3>Plantão 24h</h3>
+      <p>Um plantão de 24 horas por dia, revezando as pessoas. Comum em bombeiros, saúde e segurança.</p>
+      <h3>Turno (dia ou noite)</h3>
+      <p>Um turno fixo por dia, para quem funciona só em um período.</p>
+      <h3>Ciclo por times</h3>
+      <p>Equipes fixas que se revezam por dia. No <b>regime 24h</b>: 3 times = 24×48, 4 times = 24×72. No <b>regime 12h</b>: times de dia e de noite. Você cria os times e distribui as pessoas.</p>
+      <h3>Folga rotativa (5x2, 6x1) <span class="pill">nova lei</span></h3>
+      <p>Todos trabalham e o app define <b>quem folga</b> a cada dia. Opções:</p>
+      <ul>
+        <li><b>Trabalha × Folga</b> (ex.: 6×1 ou 5×2) — há atalhos <b>6x1</b> e <b>✅ 5x2 (nova lei)</b>.</li>
+        <li><b>Máx/dia</b>: quantas pessoas podem folgar no mesmo dia.</li>
+        <li><b>Máx folgas/semana</b> por pessoa.</li>
+        <li><b>Folga no domingo</b> garantida (descanso semanal).</li>
+        <li><b>Folga só em dias específicos</b> e <b>horário</b> do expediente.</li>
+      </ul>
+      <p>O botão <b>5x2 (nova lei)</b> já aplica a escala da <b>EC 141/2026</b> (fim da 6x1). Comum em comércio, bares, restaurantes e serviços.</p>
+    </section>
+
+    <section id="gerar">
+      <h2>3. Gerar a escala</h2>
+      <ul>
+        <li>Escolha <b>mês e ano</b> e clique em <b>Gerar escala</b>.</li>
+        <li><b>Continuidade entre meses:</b> com a opção <b>🔗 Aproveitar o fim da escala do mês anterior</b> ligada, o app começa o mês novo de onde o anterior parou (evitando que alguém repita fins de semana seguidos, por exemplo).</li>
+        <li><b>Distribuição justa:</b> o app equilibra serviço, fins de semana e folgas automaticamente.</li>
+      </ul>
+    </section>
+
+    <section id="ajustar">
+      <h2>4. Ajustar uma escala já pronta</h2>
+      <ul>
+        <li><b>Trocar / permutar:</b> o botão <b>Trocar</b> permite substituir alguém num dia ou permutar (trocar) entre dois dias.</li>
+        <li><b>🩺 Aplicar afastamento</b> (giro, 24h e turno): quando a escala já está pronta e alguém pega atestado <b>depois</b>, recalcula só a partir daquele dia — o sucessor assume e os dias já cumpridos ficam intactos.</li>
+        <li><b>Folga rotativa:</b> aqui não precisa do botão — marque o afastamento e <b>gere a escala de novo</b>; o app tira a pessoa dos dias afastados e redistribui.</li>
+      </ul>
+    </section>
+
+    <section id="grade">
+      <h2>5. Grade mensal (folga rotativa)</h2>
+      <p>Na folga, alterne entre <b>Por dia</b> e <b>Grade mensal</b>. Na grade:
+        <span class="key s">S</span> = em serviço ·
+        <span class="key f">F</span> = folga ·
+        🏖️ = férias ·
+        🩹 = atestado.</p>
+    </section>
+
+    <section id="setores">
+      <h2>6. Setores e Mapa do dia</h2>
+      <p>Se sua operação tem áreas diferentes (ex.: UTI, Portaria, Pronto-Socorro), crie <b>setores</b> em Configurações. Cada setor tem <b>seu próprio efetivo e escala</b>. O <b>Mapa do dia</b> mostra, para uma data, quem está de serviço em cada setor.</p>
+    </section>
+
+    <section id="estat">
+      <h2>7. Estatísticas</h2>
+      <p>A aba de <b>Estatística</b> mostra, por pessoa, quantos serviços, fins de semana e horas. Na folga, há um alerta de <b>limite legal</b> de jornada (42h/semana a partir de 15/12/2026, conforme a EC 141/2026) para você não passar do permitido.</p>
+    </section>
+
+    <section id="config">
+      <h2>8. Responsável, logo e configurações</h2>
+      <p>Em <b>Configurações</b> você define o <b>responsável pela escala</b> (nome que assina), pode colocar a <b>logo</b> da sua organização e ajustar horários e preferências.</p>
+    </section>
+
+    <section id="acessos">
+      <h2>9. Acessos (operadores)</h2>
+      <ul>
+        <li><b>Proprietário:</b> dono da conta — administra tudo e os acessos.</li>
+        <li><b>Administrador:</b> cria e edita efetivo e escalas.</li>
+        <li><b>Visualização:</b> só vê a escala, não altera.</li>
+      </ul>
+      <p>Em <b>Configurações → Operadores</b> você convida pessoas e define o papel de cada uma. Há também a <b>senha-mestra de recuperação</b> e a opção <b>Trocar minha senha</b>.</p>
+    </section>
+
+    <section id="imprimir">
+      <h2>10. Imprimir e exportar</h2>
+      <p><b>🖨 Imprimir</b> gera uma versão limpa para papel/PDF. <b>⬇ CSV</b> exporta a escala para abrir no Excel. Confira a escala antes de publicar.</p>
+    </section>
+
+    <section id="backup">
+      <h2>11. Backup (exportar / importar)</h2>
+      <p>Em Configurações, <b>Exportar backup</b> salva um arquivo com seus dados; <b>Importar backup</b> restaura. Útil para guardar uma cópia ou levar para outro dispositivo.</p>
+    </section>
+
+    <section id="nuvem">
+      <h2>12. Nuvem e dispositivos</h2>
+      <p>Seus dados ficam salvos na <b>nuvem</b> (servidores no Brasil), separados por organização. Você acessa do <b>celular ou do computador</b>, com o mesmo login.</p>
+    </section>
+
+    <section id="assinatura">
+      <h2>13. Assinatura</h2>
+      <p>São <b>14 dias grátis</b>. Depois, em Configurações → Assinatura, assine no <b>cartão (mensal)</b> ou no <b>Pix (anual)</b>.</p>
+    </section>
+
+    <section id="faq">
+      <h2>Dúvidas frequentes</h2>
+      <h3>Funciona no celular?</h3>
+      <p>Sim, no celular e no computador, com o mesmo login.</p>
+      <h3>Esqueci minha senha.</h3>
+      <p>Na tela de login, clique em <b>“Esqueci minha senha”</b> — você recebe um link por e-mail para criar uma nova.</p>
+      <h3>Como dou acesso a outra pessoa?</h3>
+      <p>Configurações → Operadores → convide e escolha <b>Administrador</b> ou <b>Visualização</b>.</p>
+      <h3>Cadastrei errado, como corrijo?</h3>
+      <p>Na lista do efetivo, use os botões de editar/excluir da pessoa.</p>
+      <h3>A escala continua de um mês para o outro?</h3>
+      <p>Sim — mantenha ligada a opção de <b>continuidade</b> antes de gerar.</p>
+      <h3>O app segue a nova lei (fim da 6x1)?</h3>
+      <p>Sim — no tipo <b>Folga rotativa</b>, o botão <b>5x2 (nova lei)</b> já gera no formato da EC 141/2026.</p>
+      <h3>Como coloco muita gente de uma vez?</h3>
+      <p>Use <b>⬆ Importar por CSV</b> no efetivo.</p>
+      <h3>Meus dados estão seguros?</h3>
+      <p>Sim — ficam na nuvem (Brasil), isolados por organização, e as senhas são protegidas.</p>
+      <h3>Preciso de ajuda?</h3>
+      <p>Fale com a gente: <b>contato@geraescalas.com.br</b>.</p>
+    </section>
+  </main>
+</div>
+
+<footer>
+  <div class="fwrap">Gera Escalas · por Technofire · <a href="https://geraescalas.com.br">geraescalas.com.br</a> · contato@geraescalas.com.br</div>
+</footer>
+</body>
+</html>
