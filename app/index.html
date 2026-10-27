@@ -501,18 +501,18 @@
     </div>
   </section>
 
-  <footer><span class="noprint">Confira a escala antes de publicar.<br>© 2026 <b>Gera Escalas</b> · <span class="lnk" onclick="openAbout()">Sobre &amp; Política de Privacidade</span> · <span style="color:var(--mut2)">v5.3</span></span></footer>
+  <footer><span class="noprint">Confira a escala antes de publicar.<br>© 2026 <b>Gera Escalas</b> · <span class="lnk" onclick="openAbout()">Sobre &amp; Política de Privacidade</span> · <span style="color:var(--mut2)">v5.4</span></span></footer>
 </main>
 
 <div id="aboutmodal" class="modal" style="display:none" onclick="if(event.target===this)closeAbout()">
   <div class="mbox">
     <button class="xbtn" onclick="closeAbout()">Fechar ✕</button>
     <h2>Gera Escalas</h2>
-    <p class="muted">Escalas de plantão, turno e giro · Versão 5.3 · 2026</p>
+    <p class="muted">Escalas de plantão, turno e giro · Versão 5.4 · 2026</p>
 
     <h3>Autoria e direitos autorais</h3>
     <p>© 2026 <b>Gera Escalas</b> — desenvolvido por Luís Cesar. Todos os direitos reservados.</p>
-    <p>Ferramenta para elabora\u00e7\u00e3o e gest\u00e3o de escalas de servi\u00e7o (plant\u00f5es, turnos e giros) para equipes de sa\u00fade, seguran\u00e7a, ind\u00fastria e servi\u00e7os 24h. Planos: <b>14 dias gr\u00e1tis</b> e assinatura <b>anual</b>.</p>
+    <p>Ferramenta para elabora\u00e7\u00e3o e gest\u00e3o de escalas de servi\u00e7o (plant\u00f5es, turnos e giros) para equipes de sa\u00fade, seguran\u00e7a, ind\u00fastria e servi\u00e7os 24h. Planos: <b>14 dias gr\u00e1tis</b>, depois assinatura <b>mensal ou anual</b>.</p>
     <p class="muted">Contato do autor: lcsmbm@gmail.com</p>
 
     <h3>Missão</h3>
@@ -539,7 +539,7 @@
     <p><b>8. Segurança.</b> Senhas em <i>hash</i>, conexões criptografadas (HTTPS), isolamento por organização e acesso restrito por perfil. Recomendamos senhas fortes e cuidado com os dispositivos e backups sob sua guarda.</p>
     <p><b>9. Retenção e exclusão.</b> Mantemos os dados enquanto sua conta estiver ativa. Você pode solicitar a exclusão a qualquer momento; dados de cobrança podem ser mantidos pelo prazo legal/fiscal. Também é possível apagar dados locais limpando os dados do navegador.</p>
     <p><b>10. Seus direitos (LGPD).</b> Você pode solicitar acesso, correção, portabilidade ou exclusão dos seus dados e revogar consentimentos pelo e-mail <b>contato@geraescalas.com.br</b>. Para dados da equipe, os titulares podem procurar a organização controladora ou nos acionar, que encaminharemos.</p>
-    <p class="muted">Este é um texto-base informativo e não constitui aconselhamento jurídico. Recomenda-se validação por assessoria jurídica, à luz da LGPD (Lei nº 13.709/2018).</p>
+    <p class="muted">Dúvidas sobre privacidade e dados: <b>contato@geraescalas.com.br</b>.</p>
   </div>
 </div>
 
@@ -1518,7 +1518,7 @@ function setSatFolga(){var c=document.getElementById("satfolga");state.config.sa
 function renderFolgaDias(){var box=document.getElementById("fg_dias");if(!box)return;var AB=["D","S","T","Q","Q","S","S"],NM=["Domingo","Segunda","Terça","Quarta","Quinta","Sexta","Sábado"];var dias=(state.config.folgaCfg&&state.config.folgaCfg.dias)||[0,1,2,3,4,5,6];box.innerHTML=AB.map(function(l,i){var on=dias.indexOf(i)>=0;return '<label title="'+NM[i]+'" style="cursor:pointer;font-size:11px;font-weight:700;border:1px solid var(--line2);border-radius:6px;padding:2px 7px;background:'+(on?"var(--cbm)":"#fff")+';color:'+(on?"#fff":"var(--mut)")+'"><input type="checkbox" data-d="'+i+'" '+(on?"checked":"")+' onchange="setFolgaCfg()" style="display:none">'+l+'</label>';}).join("");}
 function setFolgaCfg(){var g=function(id){return document.getElementById(id);};var dias=[];document.querySelectorAll('#fg_dias input[data-d]').forEach(function(c){if(c.checked)dias.push(parseInt(c.getAttribute("data-d"),10));});if(!dias.length)dias=[0,1,2,3,4,5,6];state.config.folgaCfg={trab:Math.max(1,parseInt((g("fg_trab")||{}).value||6,10)),folga:Math.max(1,parseInt((g("fg_folga")||{}).value||1,10)),maxDia:Math.max(1,parseInt((g("fg_max")||{}).value||1,10)),domingo:!!((g("fg_dom")||{}).checked),dias:dias,hIni:(g("fg_hini")||{}).value||"18:00",hFim:(g("fg_hfim")||{}).value||"23:00",maxSem:Math.max(0,parseInt((g("fg_maxsem")||{}).value||0,10))};saveConfig();renderFolgaDias();}
 function presetFolga(t,f){var e;if(e=document.getElementById("fg_trab"))e.value=t;if(e=document.getElementById("fg_folga"))e.value=f;setFolgaCfg();}
-var TIPO_INFO={giro:"<b>Giro (2 giros/dia):</b> dois turnos por dia (1º e 2º giro) que se encadeiam — quem entra hoje faz o 1º giro e amanhã o 2º. Comum em <b>supervisão, centrais de operação e forças de segurança</b>.","3giros":"<b>3 Giros:</b> três turnos por dia em sequência, cobrindo 24h em 3 períodos. Usado em <b>centrais e operações com cobertura contínua</b>.","24h":"<b>Plantão 24h:</b> um plantão de 24 horas por dia, revezando entre as pessoas. Comum em <b>bombeiros, saúde e segurança</b>.",turno:"<b>Turno (dia ou noite):</b> um turno fixo por dia. Para operações que funcionam em <b>um período só</b> (ex.: só de dia).",ciclo:"<b>Ciclo por times:</b> times fixos que se revezam por dia (3 times = 24×48, 4 = 24×72). Comum em <b>vigilância, portaria e plantões por equipe</b>.",folga:"<b>Folga rotativa (5x2, 6x1):</b> todos trabalham e o app define <b>quem folga</b> a cada dia, de forma equilibrada e garantindo folga no domingo. J\u00e1 gera a escala <b>5x2</b> da nova lei (<b>EC 141/2026</b>, fim da 6x1). Comum em <b>com\u00e9rcio, bares, restaurantes e pizzarias</b>."};
+var TIPO_INFO={giro:"<b>Giro (2 giros/dia):</b> dois turnos por dia (1º e 2º giro) que se encadeiam — quem entra hoje faz o 1º giro e amanhã o 2º. Comum em <b>supervisão, centrais de operação e forças de segurança</b>.","3giros":"<b>3 Giros:</b> três turnos por dia em sequência, cobrindo 24h em 3 períodos. Usado em <b>centrais e operações com cobertura contínua</b>.","24h":"<b>Plantão 24h:</b> um plantão de 24 horas por dia, revezando entre as pessoas. Comum em <b>bombeiros, saúde e segurança</b>.",turno:"<b>Turno (dia ou noite):</b> um turno fixo por dia. Para operações que funcionam em <b>um período só</b> (ex.: só de dia).",ciclo:"<b>Ciclo por times:</b> times fixos que se revezam por dia (3 times = 24×48, 4 = 24×72). Comum em <b>vigilância, portaria e plantões por equipe</b>.",folga:"<b>Folga rotativa (5x2, 6x1):</b> todos trabalham e o app define <b>quem folga</b> a cada dia, de forma equilibrada e garantindo folga no domingo. J\u00e1 gera a escala <b>5x2</b> da nova lei (<b>EC 141/2026</b>, fim da 6x1). Comum em <b>com\u00e9rcio, bares, restaurantes e pizzarias</b>. <b>Afastamentos:</b> marque as f\u00e9rias/atestado da pessoa no efetivo e <b>gere a escala de novo</b> \u2014 o app tira a pessoa dos dias afastados e redistribui (a grade mostra \ud83c\udfd6\ufe0f f\u00e9rias / \ud83e\ude79 atestado)."};
 function _trocaEnts(){var res=state.schedule.result;if(res.tipo==="ciclo")return (res.turmas||state.config.turmas||[]).map(function(t){return{id:t.id,nome:t.nome};});return (state.militares||[]).map(function(m){return{id:m.id,nome:(m.posto?m.posto+" ":"")+m.nome};});}
 function _celAtual(d,ci){var res=state.schedule.result;var cov=res.cover&&res.cover[d]&&res.cover[d][ci+1];if(cov)return cov.sub;var gm=[res.g1,res.g2,res.g3][ci];return gm?gm[d]:null;}
 function _entPorId(id){var res=state.schedule.result;if(res.tipo==="ciclo")return (res.turmas||state.config.turmas||[]).find(function(t){return String(t.id)===String(id);});return byMil(isNaN(+id)?id:+id);}
