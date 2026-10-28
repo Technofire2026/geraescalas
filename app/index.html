@@ -502,14 +502,14 @@
     </div>
   </section>
 
-  <footer><span class="noprint">Confira a escala antes de publicar.<br>© 2026 <b>Gera Escalas</b> · <span class="lnk" onclick="openAbout()">Sobre &amp; Política de Privacidade</span> · <span style="color:var(--mut2)">v6.1</span></span></footer>
+  <footer><span class="noprint">Confira a escala antes de publicar.<br>© 2026 <b>Gera Escalas</b> · <span class="lnk" onclick="openAbout()">Sobre &amp; Política de Privacidade</span> · <span style="color:var(--mut2)">v6.2</span></span></footer>
 </main>
 
 <div id="aboutmodal" class="modal" style="display:none" onclick="if(event.target===this)closeAbout()">
   <div class="mbox">
     <button class="xbtn" onclick="closeAbout()">Fechar ✕</button>
     <h2>Gera Escalas</h2>
-    <p class="muted">Escalas de plantão, turno e giro · Versão 6.1 · 2026</p>
+    <p class="muted">Escalas de plantão, turno e giro · Versão 6.2 · 2026</p>
 
     <h3>Autoria e direitos autorais</h3>
     <p>© 2026 <b>Gera Escalas</b> — desenvolvido por Luís Cesar. Todos os direitos reservados.</p>
@@ -2086,10 +2086,11 @@ async function renderClientesTabela(){
   var r;try{r=await db.rpc("admin_clientes");}catch(e){box.innerHTML='<p style="color:#b91c1c">Erro: '+esc(e.message||String(e))+'</p>';return;}
   if(r.error){box.innerHTML='<p style="color:#b91c1c">Não foi possível carregar: '+esc(r.error.message)+'.<br><span class="tiny">Confirme que você rodou o SQL do painel de clientes no Supabase e que seu e-mail está na lista de donos.</span></p>';return;}
   var rows=r.data||[];
+  _clientesRows=rows;
   if(!rows.length){box.innerHTML='<p class="muted">Nenhum cliente cadastrado ainda.</p>';return;}
   var total=rows.length,assin=0,teste=0,exp=0;
   rows.forEach(function(x){if(x.situacao==="Assinante")assin++;else if(x.situacao==="Em teste")teste++;else exp++;});
-  var h='<div class="tiny" style="margin-bottom:10px">Total: <b>'+total+'</b> &nbsp;·&nbsp; Assinantes: <b style="color:#15803d">'+assin+'</b> &nbsp;·&nbsp; Em teste: <b style="color:#b45309">'+teste+'</b> &nbsp;·&nbsp; Expirados: <b style="color:#b91c1c">'+exp+'</b> <button class="ubtn" style="background:#eef2f6;color:#0f172a;margin-left:8px" onclick="renderClientesTabela()">↻ Atualizar</button></div>';
+  var h='<div class="tiny" style="margin-bottom:10px">Total: <b>'+total+'</b> &nbsp;·&nbsp; Assinantes: <b style="color:#15803d">'+assin+'</b> &nbsp;·&nbsp; Em teste: <b style="color:#b45309">'+teste+'</b> &nbsp;·&nbsp; Expirados: <b style="color:#b91c1c">'+exp+'</b> <button class="ubtn" style="background:#eef2f6;color:#0f172a;margin-left:8px" onclick="renderClientesTabela()">↻ Atualizar</button> <button class="ubtn" style="background:#eef2f6;color:#0f172a;margin-left:4px" title="Baixar CSV com os e-mails dos clientes (para campanhas no Brevo)" onclick="exportarEmailsClientes()">📤 Exportar e-mails</button></div>';
   h+='<div style="overflow:auto"><table class="esc" style="font-size:12px;min-width:760px"><thead><tr><th style="text-align:left">Organização</th><th>Cadastro</th><th>Situação</th><th>Teste até</th><th>Assin. até</th><th>Plano</th><th>Valor</th><th>Pago em</th><th>Usu.</th><th>Ação</th></tr></thead><tbody>';
   rows.forEach(function(c){
     var cor=c.situacao==="Assinante"?"#15803d":(c.situacao==="Em teste"?"#b45309":"#b91c1c");
@@ -2107,6 +2108,24 @@ async function renderClientesTabela(){
   });
   h+='</tbody></table></div>';
   box.innerHTML=h;
+}
+var _clientesRows=[];
+function exportarEmailsClientes(){
+  var seen={},lista=[];
+  (_clientesRows||[]).forEach(function(c){
+    var e=(c.email_responsavel||"").trim().toLowerCase();
+    if(e&&e.indexOf("@")>0&&!seen[e]){seen[e]=1;lista.push({email:c.email_responsavel.trim(),nome:c.organizacao||"",situacao:c.situacao||""});}
+  });
+  if(!lista.length){alert("Nenhum e-mail de cliente para exportar.");return;}
+  var csv="email;nome;situacao\r\n"+lista.map(function(x){
+    function q(v){v=String(v==null?"":v);return /[;"\n\r]/.test(v)?'"'+v.replace(/"/g,'""')+'"':v;}
+    return q(x.email)+";"+q(x.nome)+";"+q(x.situacao);
+  }).join("\r\n");
+  var blob=new Blob(["﻿"+csv],{type:"text/csv;charset=utf-8;"});
+  var url=URL.createObjectURL(blob),a=document.createElement("a");
+  var d=new Date(),ymd=d.getFullYear()+"-"+String(d.getMonth()+1).padStart(2,"0")+"-"+String(d.getDate()).padStart(2,"0");
+  a.href=url;a.download="clientes-emails-"+ymd+".csv";document.body.appendChild(a);a.click();
+  setTimeout(function(){URL.revokeObjectURL(url);a.remove();},100);
 }
 /* ================== LOGIN NA NUVEM (Supabase) ================== */
 const SB_URL="https://ebvbjepghlzqkpbgdcbk.supabase.co";
