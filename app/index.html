@@ -502,14 +502,14 @@
     </div>
   </section>
 
-  <footer><span class="noprint">Confira a escala antes de publicar.<br>© 2026 <b>Gera Escalas</b> · <span class="lnk" onclick="openAbout()">Sobre &amp; Política de Privacidade</span> · <span style="color:var(--mut2)">v6.4</span></span></footer>
+  <footer><span class="noprint">Confira a escala antes de publicar.<br>© 2026 <b>Gera Escalas</b> · <span class="lnk" onclick="openAbout()">Sobre &amp; Política de Privacidade</span> · <span style="color:var(--mut2)">v6.6</span></span></footer>
 </main>
 
 <div id="aboutmodal" class="modal" style="display:none" onclick="if(event.target===this)closeAbout()">
   <div class="mbox">
     <button class="xbtn" onclick="closeAbout()">Fechar ✕</button>
     <h2>Gera Escalas</h2>
-    <p class="muted">Escalas de plantão, turno e giro · Versão 6.4 · 2026</p>
+    <p class="muted">Escalas de plantão, turno e giro · Versão 6.6 · 2026</p>
 
     <h3>Autoria e direitos autorais</h3>
     <p>© 2026 <b>Gera Escalas</b> — desenvolvido por Luís Cesar. Todos os direitos reservados.</p>
@@ -550,6 +550,15 @@
     <h2>👥 Clientes</h2>
     <p class="muted">Painel do dono — organizações, planos, período de teste e pagamentos.</p>
     <div id="clientesbody" style="margin-top:12px"></div>
+  </div>
+</div>
+
+<div id="paineldonomodal" class="modal" style="display:none" onclick="if(event.target===this)closePainel()">
+  <div class="mbox" style="max-width:920px">
+    <button class="xbtn" onclick="closePainel()">Fechar ✕</button>
+    <h2>📊 Painel do dono</h2>
+    <p class="muted">Indicadores das assinaturas (MRR, churn, LTV) e recomendações — visível só para você.</p>
+    <div id="painelbody" style="margin-top:12px"></div>
   </div>
 </div>
 
@@ -732,7 +741,7 @@ function isAdmin(){return !!(state.user&&(state.user.role==="admin"||state.user.
 var ADMIN_EMAILS=["lcsmbm@gmail.com","geraescalas@gmail.com"];
 function isPlatformAdmin(){return !!(state.user&&ADMIN_EMAILS.indexOf(((state.user.login)||"").toLowerCase())>=0);}
 function applyPerms(){var admin=isAdmin();var cc=document.getElementById("configcard");if(cc&&!admin)cc.style.display="none";var g=document.getElementById("btngerar");if(g)g.style.display=admin?"":"none";var c=document.getElementById("btncob");if(c)c.style.display=admin?"":"none";var cont=document.querySelector(".card .cont");if(cont)cont.style.display=admin?"":"none";var af=document.querySelector("#efetivo .addform");if(af)af.style.display=admin?"":"none";}
-function renderUserbar(){var u=state.user;if(!u)return;var admin=(u.role==="admin"||u.role==="owner");var tag=(u.role==="owner")?' <span class="rotag" style="background:rgba(231,199,102,.25);color:#ffe9a8">Proprietário</span>':(admin?'':' <span class="rotag">somente leitura</span>');document.getElementById("userbar").innerHTML='<span class="who">'+esc((u.posto?u.posto+" ":"")+u.nome)+tag+'</span>'+'<button class="ubtn" title="Manual de uso" aria-label="Manual" onclick="openHelp()">📖 Manual</button>'+(isPlatformAdmin()?'<button class="ubtn" title="Painel de clientes (dono)" onclick="openClientes()">👥 Clientes</button>':'')+(admin?'<button class="ubtn ico-only" title="Configurações" aria-label="Configurações" onclick="openConfig()">⚙</button>':'')+'<button class="ubtn ico-only" title="Sair" aria-label="Sair" onclick="logout()">⎋</button>';}
+function renderUserbar(){var u=state.user;if(!u)return;var admin=(u.role==="admin"||u.role==="owner");var tag=(u.role==="owner")?' <span class="rotag" style="background:rgba(231,199,102,.25);color:#ffe9a8">Proprietário</span>':(admin?'':' <span class="rotag">somente leitura</span>');document.getElementById("userbar").innerHTML='<span class="who">'+esc((u.posto?u.posto+" ":"")+u.nome)+tag+'</span>'+'<button class="ubtn" title="Manual de uso" aria-label="Manual" onclick="openHelp()">📖 Manual</button>'+(isPlatformAdmin()?'<button class="ubtn" title="Painel do dono (métricas)" onclick="openPainel()">📊 Painel</button>':'')+(isPlatformAdmin()?'<button class="ubtn" title="Painel de clientes (dono)" onclick="openClientes()">👥 Clientes</button>':'')+(admin?'<button class="ubtn ico-only" title="Configurações" aria-label="Configurações" onclick="openConfig()">⚙</button>':'')+'<button class="ubtn ico-only" title="Sair" aria-label="Sair" onclick="logout()">⎋</button>';}
 
 /* ===== REGISTRO / AUDITORIA ===== */
 function loadLog(){try{var l=localStorage.getItem("ciops:log");state.logArr=l?JSON.parse(l):[];}catch(e){state.logArr=[];}}
@@ -2126,6 +2135,136 @@ function exportarEmailsClientes(){
   var d=new Date(),ymd=d.getFullYear()+"-"+String(d.getMonth()+1).padStart(2,"0")+"-"+String(d.getDate()).padStart(2,"0");
   a.href=url;a.download="clientes-emails-"+ymd+".csv";document.body.appendChild(a);a.click();
   setTimeout(function(){URL.revokeObjectURL(url);a.remove();},100);
+}
+/* ================== PAINEL DO DONO (métricas SaaS) ================== */
+function openPainel(){var m=document.getElementById("paineldonomodal");if(!m)return;m.style.display="flex";renderPainel();}
+function closePainel(){var m=document.getElementById("paineldonomodal");if(m)m.style.display="none";}
+function _fmtBR(v){v=Number(v)||0;return "R$ "+v.toLocaleString("pt-BR",{minimumFractionDigits:2,maximumFractionDigits:2});}
+function _fmtBR0(v){v=Number(v)||0;return "R$ "+v.toLocaleString("pt-BR",{maximumFractionDigits:0});}
+function _mesLabel(ym){var p=String(ym).split("-");var M=["jan","fev","mar","abr","mai","jun","jul","ago","set","out","nov","dez"];return (M[(+p[1]-1)]||"")+"/"+String(p[0]).slice(2);}
+function _loadCAC(){try{return JSON.parse(localStorage.getItem("ge_cac")||"{}")||{};}catch(e){return {};}}
+function _saveCAC(){try{var o={churn:val("pa_churn"),gasto:val("pa_gasto"),novos:val("pa_novos")};localStorage.setItem("ge_cac",JSON.stringify(o));}catch(e){}renderPainel();}
+function _numBR(s){return parseFloat(String(s==null?"":s).replace(/[^\d.,-]/g,"").replace(/\./g,"").replace(",","."))||0;}
+function _svgBars(data,color){
+  if(!data||!data.length)return '<p class="muted tiny">Sem dados ainda.</p>';
+  var max=0;data.forEach(function(d){if(d.value>max)max=d.value;});if(max<=0)max=1;
+  var n=data.length,bw=Math.max(16,Math.floor(540/n)-10),gap=10,W=n*(bw+gap),H=165,base=132;
+  var s='<svg viewBox="0 0 '+Math.max(W,120)+' '+H+'" style="width:100%;max-width:'+Math.max(W,120)+'px;height:auto;overflow:visible;font-family:inherit">';
+  data.forEach(function(d,i){
+    var h=Math.round((d.value/max)*108);var x=i*(bw+gap);var y=base-h;
+    s+='<rect x="'+x+'" y="'+y+'" width="'+bw+'" height="'+Math.max(h,1)+'" rx="4" fill="'+color+'"></rect>';
+    s+='<text x="'+(x+bw/2)+'" y="'+(y-5)+'" text-anchor="middle" font-size="11" fill="#334155">'+d.top+'</text>';
+    s+='<text x="'+(x+bw/2)+'" y="'+(base+16)+'" text-anchor="middle" font-size="10" fill="#94a3b8">'+esc(d.label)+'</text>';
+  });
+  s+='</svg>';return s;
+}
+function _svgLine(data,color,fmt){
+  if(!data||!data.length)return '<p class="muted tiny">Sem dados ainda.</p>';
+  var max=0;data.forEach(function(d){if(d.value>max)max=d.value;});if(max<=0)max=1;
+  var n=data.length,W=560,H=175,padL=10,padR=14,padB=26,padT=18,base=H-padB,top=padT;
+  var plotW=W-padL-padR;var stepX=n>1?plotW/(n-1):0;
+  function X(i){return padL+stepX*i;}
+  function Y(v){return base-(v/max)*(base-top);}
+  var pts=data.map(function(d,i){return X(i).toFixed(1)+","+Y(d.value).toFixed(1);}).join(" ");
+  var s='<svg viewBox="0 0 '+W+' '+H+'" style="width:100%;height:auto;overflow:visible;font-family:inherit">';
+  s+='<polyline points="'+pts+'" fill="none" stroke="'+color+'" stroke-width="2.5" stroke-linejoin="round" stroke-linecap="round"></polyline>';
+  data.forEach(function(d,i){
+    var cx=X(i),cy=Y(d.value);
+    s+='<circle cx="'+cx.toFixed(1)+'" cy="'+cy.toFixed(1)+'" r="3" fill="'+color+'"></circle>';
+    if(n<=12||i%2===0)s+='<text x="'+cx.toFixed(1)+'" y="'+(base+16)+'" text-anchor="middle" font-size="10" fill="#94a3b8">'+esc(d.label)+'</text>';
+  });
+  var li=n-1,lx=X(li),ly=Y(data[li].value);
+  s+='<text x="'+lx.toFixed(1)+'" y="'+(ly-9).toFixed(1)+'" text-anchor="end" font-size="11" font-weight="700" fill="#334155">'+(fmt?fmt(data[li].value):data[li].value)+'</text>';
+  s+='</svg>';return s;
+}
+async function renderPainel(){
+  var box=document.getElementById("painelbody");if(!box)return;
+  box.innerHTML='<p class="muted">Carregando…</p>';
+  if(!db){box.innerHTML='<p style="color:#b91c1c">Sem conexão com a nuvem.</p>';return;}
+  var r;try{r=await db.rpc("admin_clientes");}catch(e){box.innerHTML='<p style="color:#b91c1c">Erro: '+esc(e.message||String(e))+'</p>';return;}
+  if(r.error){box.innerHTML='<p style="color:#b91c1c">Não foi possível carregar: '+esc(r.error.message)+'.</p>';return;}
+  var rows=r.data||[];_clientesRows=rows;
+  var mrrHist=null;try{var rh=await db.rpc("admin_mrr_mensal",{p_meses:12});if(rh&&!rh.error)mrrHist=rh.data||[];}catch(e){}
+  var active=0,trial=0,expired=0,mrr=0,payCount=0;
+  var planos={Mensal:0,Anual:0,Cortesia:0,Outro:0};var novosMes={};
+  rows.forEach(function(c){
+    var sit=c.situacao;
+    if(sit==="Assinante")active++;else if(sit==="Em teste")trial++;else expired++;
+    var plano=(c.ultimo_plano||"");var v0=Number(c.ultimo_valor_rs)||0;
+    if(sit==="Assinante"){
+      if(plano.indexOf("Mensal")>=0){mrr+=v0;planos.Mensal++;payCount++;}
+      else if(plano.indexOf("Anual")>=0){mrr+=v0/12;planos.Anual++;payCount++;}
+      else if(plano.indexOf("Cortesia")>=0){planos.Cortesia++;}
+      else {mrr+=v0;planos.Outro++;if(v0>0)payCount++;}
+    }
+    var cad=String(c.cadastrou_em||"").slice(0,7);if(cad&&cad.length===7)novosMes[cad]=(novosMes[cad]||0)+1;
+  });
+  var arr=mrr*12;var ticket=payCount>0?(mrr/payCount):0;
+  var base0=active+expired;var cancelPct=base0>0?(expired/base0*100):0;
+  var total=active+trial+expired;
+  var cac=_loadCAC();
+  var churnM=_numBR(cac.churn);var gasto=_numBR(cac.gasto);var novos=_numBR(cac.novos);
+  var perm=churnM>0?(100/churnM):0;var ltv=perm>0?(ticket*perm):0;
+  var cacV=novos>0?(gasto/novos):0;var ltvcac=cacV>0?(ltv/cacV):0;var payback=(ticket>0&&cacV>0)?(cacV/ticket):0;
+  var months=[];var now=new Date();for(var i=11;i>=0;i--){var d=new Date(now.getFullYear(),now.getMonth()-i,1);months.push(d.getFullYear()+"-"+pad(d.getMonth()+1));}
+  var novosData=months.map(function(ym){var v=novosMes[ym]||0;return {label:_mesLabel(ym),value:v,top:v};});
+  var planData=[{label:"Mensal",value:planos.Mensal,top:planos.Mensal},{label:"Anual",value:planos.Anual,top:planos.Anual},{label:"Cortesia",value:planos.Cortesia,top:planos.Cortesia}];
+  function kpi(t,v,c){return '<div style="flex:1;min-width:120px;background:#fff;border:1px solid #e7e9f7;border-radius:12px;padding:12px 14px"><div style="font-size:12px;color:#64748b">'+t+'</div><div style="font-size:21px;font-weight:800;color:'+(c||"#1e1b4b")+'">'+v+'</div></div>';}
+  var h='';
+  h+='<div style="display:flex;flex-wrap:wrap;gap:10px">';
+  h+=kpi("MRR (receita/mês)",_fmtBR(mrr),"#4f46e5");
+  h+=kpi("ARR (ano)",_fmtBR0(arr));
+  h+=kpi("Assinantes",active,"#15803d");
+  h+=kpi("Em teste",trial,"#b45309");
+  h+=kpi("Cancelados",expired,"#b91c1c");
+  h+=kpi("Ticket médio",_fmtBR(ticket));
+  h+='</div>';
+  if(mrrHist){
+    var mrrData=mrrHist.map(function(x){return {label:_mesLabel(String(x.mes).slice(0,7)),value:(Number(x.mrr_centavos)||0)/100};});
+    h+='<div style="margin-top:16px;background:#fff;border:1px solid #e7e9f7;border-radius:12px;padding:14px"><div style="font-weight:700;color:#1e1b4b;margin-bottom:8px">MRR por mês (últimos 12 meses)</div>'+_svgLine(mrrData,"#4f46e5",_fmtBR0)+'</div>';
+  } else {
+    h+='<div class="tip" style="margin-top:16px">Para ver o histórico de MRR mês a mês, rode uma vez no Supabase o SQL <b>admin_mrr_mensal</b> (arquivo enviado). Depois recarregue o painel.</div>';
+  }
+  h+='<div style="display:flex;flex-wrap:wrap;gap:16px;margin-top:16px">';
+  h+='<div style="flex:2;min-width:300px;background:#fff;border:1px solid #e7e9f7;border-radius:12px;padding:14px"><div style="font-weight:700;color:#1e1b4b;margin-bottom:8px">Novos cadastros por mês</div>'+_svgBars(novosData,"#4f46e5")+'</div>';
+  h+='<div style="flex:1;min-width:240px;background:#fff;border:1px solid #e7e9f7;border-radius:12px;padding:14px"><div style="font-weight:700;color:#1e1b4b;margin-bottom:8px">Assinantes por plano</div>'+_svgBars(planData,"#0d9488")+'</div>';
+  h+='</div>';
+  h+='<div style="margin-top:16px;background:#f8fafc;border:1px solid #e7e9f7;border-radius:12px;padding:14px">';
+  h+='<div style="font-weight:700;color:#1e1b4b;margin-bottom:6px">Suas premissas (para LTV e CAC)</div>';
+  h+='<div style="display:flex;flex-wrap:wrap;gap:10px;align-items:end">';
+  h+='<label class="tiny" style="flex:1;min-width:120px">Churn mensal (%)<input id="pa_churn" value="'+esc(cac.churn||"")+'" inputmode="decimal" placeholder="ex.: 4" style="width:100%;padding:6px;border:1px solid #cbd5e1;border-radius:8px"></label>';
+  h+='<label class="tiny" style="flex:1;min-width:140px">Gasto de aquisição/mês (R$)<input id="pa_gasto" value="'+esc(cac.gasto||"")+'" inputmode="decimal" placeholder="ex.: 500" style="width:100%;padding:6px;border:1px solid #cbd5e1;border-radius:8px"></label>';
+  h+='<label class="tiny" style="flex:1;min-width:120px">Novos clientes/mês<input id="pa_novos" value="'+esc(cac.novos||"")+'" inputmode="decimal" placeholder="ex.: 5" style="width:100%;padding:6px;border:1px solid #cbd5e1;border-radius:8px"></label>';
+  h+='<button class="ubtn" style="background:#4f46e5;color:#fff" onclick="_saveCAC()">Calcular</button>';
+  h+='</div>';
+  h+='<div style="display:flex;flex-wrap:wrap;gap:10px;margin-top:12px">';
+  h+=kpi("LTV estimado", perm>0?_fmtBR(ltv):"—");
+  h+=kpi("CAC", cacV>0?_fmtBR(cacV):"—");
+  var lcTxt=ltvcac>0?(ltvcac.toFixed(1)+"×"):"—";var lcCor=ltvcac>=3?"#15803d":(ltvcac>0?"#b45309":"#64748b");
+  h+=kpi("LTV / CAC", lcTxt, lcCor);
+  h+=kpi("Payback do CAC", payback>0?(payback.toFixed(1)+" meses"):"—");
+  h+='</div>';
+  h+='<div class="tiny muted" style="margin-top:6px">Preencha os três campos para ver LTV, CAC e a relação LTV/CAC (regra: ≥ 3 é saudável).</div>';
+  h+='</div>';
+  var recs=[];
+  if(total===0){recs.push("Ainda sem contas. Foque em atrair os primeiros testes (Instagram + indicação).");}
+  if(trial>0){recs.push("Você tem "+trial+" conta(s) em teste — capriche no onboarding (importar efetivo + primeira escala) para convertê-las.");}
+  if(cancelPct>=20){recs.push("Cancelamento acumulado alto ("+cancelPct.toFixed(0)+"%). Priorize retenção e descubra o motivo das saídas.");}
+  if(planos.Anual<planos.Mensal){recs.push("Poucos no plano anual. Incentive o anual (Pix) — melhora o caixa e segura a retenção.");}
+  if(ltvcac>0){
+    if(ltvcac<1)recs.push("LTV/CAC abaixo de 1: cada cliente custa mais do que rende. Reduza CAC ou melhore a retenção antes de investir mais em aquisição.");
+    else if(ltvcac<3)recs.push("LTV/CAC entre 1 e 3: aquisição no limite. Barateie o canal, ajuste o preço ou melhore a retenção.");
+    else if(ltvcac<=5)recs.push("LTV/CAC saudável (≥ 3): dá para acelerar o investimento em aquisição, com cuidado.");
+    else recs.push("LTV/CAC acima de 5: você pode investir mais em aquisição para crescer mais rápido.");
+  }
+  if(!recs.length)recs.push("Base saudável. Continue medindo MRR, churn e CAC toda semana.");
+  h+='<div style="margin-top:16px;background:#eef2ff;border:1px solid #c7d2fe;border-radius:12px;padding:14px">';
+  h+='<div style="font-weight:700;color:#3730a3;margin-bottom:6px">Recomendações</div><ul style="margin:0 0 0 18px;color:#334155;font-size:14px">';
+  recs.forEach(function(x){h+='<li style="margin:4px 0">'+esc(x)+'</li>';});
+  h+='</ul>';
+  h+='<div class="tiny" style="margin-top:8px;color:#475569">Antes de acelerar: cada cliente devolve ≥ 3× o CAC? o MRR cresce já descontando cancelamentos? o payback cabe no caixa?</div>';
+  h+='</div>';
+  box.innerHTML=h;
 }
 /* ================== LOGIN NA NUVEM (Supabase) ================== */
 const SB_URL="https://ebvbjepghlzqkpbgdcbk.supabase.co";
