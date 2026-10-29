@@ -502,14 +502,14 @@
     </div>
   </section>
 
-  <footer><span class="noprint">Confira a escala antes de publicar.<br>© 2026 <b>Gera Escalas</b> · <span class="lnk" onclick="openAbout()">Sobre &amp; Política de Privacidade</span> · <span style="color:var(--mut2)">v6.6</span></span></footer>
+  <footer><span class="noprint">Confira a escala antes de publicar.<br>© 2026 <b>Gera Escalas</b> · <span class="lnk" onclick="openAbout()">Sobre &amp; Política de Privacidade</span> · <span style="color:var(--mut2)">v6.7</span></span></footer>
 </main>
 
 <div id="aboutmodal" class="modal" style="display:none" onclick="if(event.target===this)closeAbout()">
   <div class="mbox">
     <button class="xbtn" onclick="closeAbout()">Fechar ✕</button>
     <h2>Gera Escalas</h2>
-    <p class="muted">Escalas de plantão, turno e giro · Versão 6.6 · 2026</p>
+    <p class="muted">Escalas de plantão, turno e giro · Versão 6.7 · 2026</p>
 
     <h3>Autoria e direitos autorais</h3>
     <p>© 2026 <b>Gera Escalas</b> — desenvolvido por Luís Cesar. Todos os direitos reservados.</p>
@@ -2145,6 +2145,7 @@ function _mesLabel(ym){var p=String(ym).split("-");var M=["jan","fev","mar","abr
 function _loadCAC(){try{return JSON.parse(localStorage.getItem("ge_cac")||"{}")||{};}catch(e){return {};}}
 function _saveCAC(){try{var o={churn:val("pa_churn"),gasto:val("pa_gasto"),novos:val("pa_novos")};localStorage.setItem("ge_cac",JSON.stringify(o));}catch(e){}renderPainel();}
 function _numBR(s){return parseFloat(String(s==null?"":s).replace(/[^\d.,-]/g,"").replace(/\./g,"").replace(",","."))||0;}
+function _numDec(s){var v=parseFloat(String(s==null?"":s).trim().replace(",",".").replace(/[^\d.-]/g,""));return isNaN(v)?0:v;}
 function _svgBars(data,color){
   if(!data||!data.length)return '<p class="muted tiny">Sem dados ainda.</p>';
   var max=0;data.forEach(function(d){if(d.value>max)max=d.value;});if(max<=0)max=1;
@@ -2185,6 +2186,7 @@ async function renderPainel(){
   if(r.error){box.innerHTML='<p style="color:#b91c1c">Não foi possível carregar: '+esc(r.error.message)+'.</p>';return;}
   var rows=r.data||[];_clientesRows=rows;
   var mrrHist=null;try{var rh=await db.rpc("admin_mrr_mensal",{p_meses:12});if(rh&&!rh.error)mrrHist=rh.data||[];}catch(e){}
+  var kpis=null;try{var rk=await db.rpc("admin_kpis");if(rk&&!rk.error&&rk.data){kpis=Array.isArray(rk.data)?rk.data[0]:rk.data;}}catch(e){}
   var active=0,trial=0,expired=0,mrr=0,payCount=0;
   var planos={Mensal:0,Anual:0,Cortesia:0,Outro:0};var novosMes={};
   rows.forEach(function(c){
@@ -2203,7 +2205,11 @@ async function renderPainel(){
   var base0=active+expired;var cancelPct=base0>0?(expired/base0*100):0;
   var total=active+trial+expired;
   var cac=_loadCAC();
-  var churnM=_numBR(cac.churn);var gasto=_numBR(cac.gasto);var novos=_numBR(cac.novos);
+  var autoChurn=kpis?(Number(kpis.churn_pct)||0):0;
+  var autoNovos=kpis?(Number(kpis.novos_pagantes_mes)||0):0;
+  var churnStr=(cac.churn!=null&&cac.churn!=="")?cac.churn:(autoChurn?String(autoChurn):"");
+  var novosStr=(cac.novos!=null&&cac.novos!=="")?cac.novos:(autoNovos?String(autoNovos):"");
+  var churnM=_numDec(churnStr);var gasto=_numBR(cac.gasto);var novos=_numDec(novosStr);
   var perm=churnM>0?(100/churnM):0;var ltv=perm>0?(ticket*perm):0;
   var cacV=novos>0?(gasto/novos):0;var ltvcac=cacV>0?(ltv/cacV):0;var payback=(ticket>0&&cacV>0)?(cacV/ticket):0;
   var months=[];var now=new Date();for(var i=11;i>=0;i--){var d=new Date(now.getFullYear(),now.getMonth()-i,1);months.push(d.getFullYear()+"-"+pad(d.getMonth()+1));}
@@ -2232,9 +2238,9 @@ async function renderPainel(){
   h+='<div style="margin-top:16px;background:#f8fafc;border:1px solid #e7e9f7;border-radius:12px;padding:14px">';
   h+='<div style="font-weight:700;color:#1e1b4b;margin-bottom:6px">Suas premissas (para LTV e CAC)</div>';
   h+='<div style="display:flex;flex-wrap:wrap;gap:10px;align-items:end">';
-  h+='<label class="tiny" style="flex:1;min-width:120px">Churn mensal (%)<input id="pa_churn" value="'+esc(cac.churn||"")+'" inputmode="decimal" placeholder="ex.: 4" style="width:100%;padding:6px;border:1px solid #cbd5e1;border-radius:8px"></label>';
+  h+='<label class="tiny" style="flex:1;min-width:120px">Churn mensal (%) <span style="color:#16a34a;font-weight:700">auto</span><input id="pa_churn" value="'+esc(cac.churn||"")+'" inputmode="decimal" placeholder="'+(autoChurn>0?("auto: "+autoChurn):"ex.: 4")+'" style="width:100%;padding:6px;border:1px solid #cbd5e1;border-radius:8px"></label>';
   h+='<label class="tiny" style="flex:1;min-width:140px">Gasto de aquisição/mês (R$)<input id="pa_gasto" value="'+esc(cac.gasto||"")+'" inputmode="decimal" placeholder="ex.: 500" style="width:100%;padding:6px;border:1px solid #cbd5e1;border-radius:8px"></label>';
-  h+='<label class="tiny" style="flex:1;min-width:120px">Novos clientes/mês<input id="pa_novos" value="'+esc(cac.novos||"")+'" inputmode="decimal" placeholder="ex.: 5" style="width:100%;padding:6px;border:1px solid #cbd5e1;border-radius:8px"></label>';
+  h+='<label class="tiny" style="flex:1;min-width:120px">Novos clientes/mês <span style="color:#16a34a;font-weight:700">auto</span><input id="pa_novos" value="'+esc(cac.novos||"")+'" inputmode="decimal" placeholder="'+(autoNovos>0?("auto: "+autoNovos):"ex.: 5")+'" style="width:100%;padding:6px;border:1px solid #cbd5e1;border-radius:8px"></label>';
   h+='<button class="ubtn" style="background:#4f46e5;color:#fff" onclick="_saveCAC()">Calcular</button>';
   h+='</div>';
   h+='<div style="display:flex;flex-wrap:wrap;gap:10px;margin-top:12px">';
@@ -2244,7 +2250,7 @@ async function renderPainel(){
   h+=kpi("LTV / CAC", lcTxt, lcCor);
   h+=kpi("Payback do CAC", payback>0?(payback.toFixed(1)+" meses"):"—");
   h+='</div>';
-  h+='<div class="tiny muted" style="margin-top:6px">Preencha os três campos para ver LTV, CAC e a relação LTV/CAC (regra: ≥ 3 é saudável).</div>';
+  h+='<div class="tiny muted" style="margin-top:6px">Churn e novos clientes vêm automáticos das assinaturas (pode editar). Informe o gasto de aquisição/mês para ver CAC e a relação LTV/CAC (regra: ≥ 3 é saudável).</div>';
   h+='</div>';
   var recs=[];
   if(total===0){recs.push("Ainda sem contas. Foque em atrair os primeiros testes (Instagram + indicação).");}
