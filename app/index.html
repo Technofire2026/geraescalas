@@ -502,14 +502,14 @@
     </div>
   </section>
 
-  <footer><span class="noprint">Confira a escala antes de publicar.<br>© 2026 <b>Gera Escalas</b> · <span class="lnk" onclick="openAbout()">Sobre &amp; Política de Privacidade</span> · <span style="color:var(--mut2)">v6.3</span></span></footer>
+  <footer><span class="noprint">Confira a escala antes de publicar.<br>© 2026 <b>Gera Escalas</b> · <span class="lnk" onclick="openAbout()">Sobre &amp; Política de Privacidade</span> · <span style="color:var(--mut2)">v6.4</span></span></footer>
 </main>
 
 <div id="aboutmodal" class="modal" style="display:none" onclick="if(event.target===this)closeAbout()">
   <div class="mbox">
     <button class="xbtn" onclick="closeAbout()">Fechar ✕</button>
     <h2>Gera Escalas</h2>
-    <p class="muted">Escalas de plantão, turno e giro · Versão 6.3 · 2026</p>
+    <p class="muted">Escalas de plantão, turno e giro · Versão 6.4 · 2026</p>
 
     <h3>Autoria e direitos autorais</h3>
     <p>© 2026 <b>Gera Escalas</b> — desenvolvido por Luís Cesar. Todos os direitos reservados.</p>
@@ -2140,9 +2140,16 @@ function cloudReady(){
   return true;
 }
 function cgmsg(t,c){var m=document.getElementById("cg_msg");if(m){m.textContent=t||"";m.style.color=c||"var(--mut)";}}
+function cloudOfflineHTML(){
+  var off=(typeof navigator!=="undefined"&&navigator.onLine===false);
+  var ttl=off?"Você está offline":"Sem conexão com o serviço";
+  var txt=off?"Conecte-se à internet para entrar e carregar suas escalas. O app foi aberto a partir do seu aparelho.":"Não foi possível carregar o serviço agora. Verifique sua conexão e tente novamente.";
+  return '<div style="max-width:380px;margin:0 auto;text-align:center">'+AUTH_BRAND+'<div style="background:#eff6ff;border:1px solid #bfdbfe;color:#1e3a8a;border-radius:10px;padding:14px;font-size:14px;text-align:left">📶 <b>'+ttl+'</b><br><span style="color:#334155">'+txt+'</span></div><button class="btn primary" style="width:100%;justify-content:center;margin-top:12px" onclick="location.reload()">Tentar novamente</button></div>';
+}
 function renderCloudGate(mode){
   mode=mode||"entrar";var box=document.getElementById("authbox");
   if(!cloudReady()){
+    if(SB_KEY&&SB_KEY.indexOf("COLE_")!==0){box.innerHTML=cloudOfflineHTML();return;}
     box.innerHTML=`<div style="max-width:380px;margin:0 auto;text-align:left">${AUTH_BRAND}<div style="background:#fff7ed;border:1px solid #fed7aa;color:#9a3412;border-radius:10px;padding:12px;font-size:13px">Falta colar sua <b>Publishable key</b> no c\u00f3digo (const SB_KEY). Abra o arquivo num editor, cole a chave <code>sb_publishable_...</code>, salve e recarregue.</div></div>`;
     return;
   }
