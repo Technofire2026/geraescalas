@@ -1,0 +1,340 @@
+<!doctype html>
+<html lang="pt-BR">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Gera Escalas — Curso de Vendas e Onboarding</title>
+<meta name="description" content="Treinamento interno do Gera Escalas: o produto, como o negócio cresce (MRR, CAC, LTV, churn), segmentos, aquisição (inbound e outbound), onboarding, retenção e biblioteca de scripts.">
+<style>
+  :root{--indigo:#4f46e5;--indigo-d:#4338ca;--navy:#1e1b4b;--ink:#0f172a;--mut:#64748b;--line:#e2e8f0;--soft:#f5f6fb;--teal:#0d9488}
+  *{box-sizing:border-box;margin:0;padding:0}
+  html{scroll-behavior:smooth}
+  body{font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,Arial,sans-serif;color:var(--ink);background:#fff;line-height:1.6;-webkit-font-smoothing:antialiased}
+  a{color:var(--indigo);text-decoration:none}
+  a:hover{text-decoration:underline}
+  header{background:linear-gradient(135deg,#eef2ff,#ecfeff);border-bottom:1px solid var(--line)}
+  .hwrap{max-width:1060px;margin:0 auto;padding:24px 20px;display:flex;align-items:center;gap:14px;flex-wrap:wrap}
+  .hwrap img{width:52px;height:52px;border-radius:13px;box-shadow:0 6px 16px rgba(79,70,229,.25)}
+  .htxt .t{font-size:23px;font-weight:800;color:var(--navy);letter-spacing:-.3px}
+  .htxt .s{font-size:13px;color:var(--mut)}
+  .hwrap .sp{flex:1}
+  .backbtn{background:var(--indigo);color:#fff;padding:9px 16px;border-radius:10px;font-weight:700;font-size:14px}
+  .backbtn:hover{text-decoration:none;background:var(--indigo-d)}
+  .intro{max-width:1060px;margin:0 auto;padding:20px 20px 0}
+  .intro .lead{font-size:16px;color:#475569;max-width:760px}
+  .layout{max-width:1060px;margin:0 auto;padding:20px 20px 70px;display:grid;grid-template-columns:1fr;gap:28px}
+  @media(min-width:920px){.layout{grid-template-columns:250px 1fr;gap:42px;align-items:start}}
+  nav.toc{font-size:14px}
+  @media(min-width:920px){nav.toc{position:sticky;top:18px;max-height:calc(100vh - 36px);overflow:auto}}
+  nav.toc .ttl{font-size:12px;text-transform:uppercase;letter-spacing:.05em;color:var(--mut);font-weight:700;margin:10px 0 8px}
+  nav.toc ol{list-style:none}
+  nav.toc li{margin:5px 0}
+  nav.toc a{color:#334155;display:block;padding:2px 0}
+  main{min-width:0}
+  .mod{margin-bottom:34px;scroll-margin-top:16px;border-top:2px solid #eef2ff;padding-top:18px}
+  .mod:first-child{border-top:none;padding-top:0}
+  .badge{display:inline-flex;align-items:center;justify-content:center;width:30px;height:30px;border-radius:9px;background:var(--indigo);color:#fff;font-weight:800;font-size:15px;margin-right:10px;vertical-align:middle}
+  h2{font-size:21px;color:var(--navy);margin-bottom:6px;display:flex;align-items:center}
+  h2 .sub{font-size:13px;color:var(--mut);font-weight:600;margin-left:40px;display:block}
+  h3{font-size:15.5px;color:var(--navy);margin:18px 0 4px}
+  p{margin:7px 0;color:#334155;font-size:15px}
+  ul,ol{margin:7px 0 7px 22px}
+  li{margin:5px 0;color:#334155;font-size:15px}
+  table{border-collapse:collapse;width:100%;margin:12px 0;font-size:14px}
+  th,td{border:1px solid var(--line);padding:8px 10px;text-align:left;vertical-align:top}
+  th{background:#f8fafc;color:var(--navy);font-weight:700}
+  .tbwrap{overflow:auto}
+  .tip{background:#eff6ff;border:1px solid #bfdbfe;color:#1e3a8a;border-radius:10px;padding:11px 13px;font-size:14px;margin:12px 0}
+  .warn{background:#fff7ed;border:1px solid #fed7aa;color:#9a3412;border-radius:10px;padding:11px 13px;font-size:14px;margin:12px 0}
+  .goal{background:#ecfdf5;border:1px solid #a7f3d0;color:#065f46;border-radius:10px;padding:11px 13px;font-size:14px;margin:12px 0;font-weight:600}
+  .script{background:#f8fafc;border:1px solid var(--line);border-radius:12px;padding:12px 14px;margin:10px 0;position:relative}
+  .script .lbl{font-size:12px;font-weight:700;color:var(--indigo);text-transform:uppercase;letter-spacing:.04em;margin-bottom:6px}
+  .script .scripttext{font-size:14.5px;color:#1e293b;white-space:pre-wrap;line-height:1.55}
+  .script .cp{position:absolute;top:10px;right:10px;background:#eef2ff;color:var(--indigo);border:none;border-radius:8px;padding:5px 11px;font-size:12px;font-weight:700;cursor:pointer}
+  .script .cp:hover{background:#e0e7ff}
+  details{background:#f8fafc;border:1px solid var(--line);border-radius:10px;padding:10px 14px;margin:8px 0}
+  summary{cursor:pointer;font-weight:600;color:var(--navy)}
+  details[open] summary{margin-bottom:6px}
+  .pill{display:inline-block;background:#eef2ff;color:var(--indigo);border-radius:999px;padding:2px 10px;font-size:13px;font-weight:700}
+  footer{border-top:1px solid var(--line);background:var(--soft)}
+  .fwrap{max-width:1060px;margin:0 auto;padding:22px 20px;color:var(--mut);font-size:13px;text-align:center}
+  @media print{header .backbtn,nav.toc{display:none}.layout{grid-template-columns:1fr}.script .cp{display:none}}
+</style>
+</head>
+<body>
+<header>
+  <div class="hwrap">
+    <img src="https://geraescalas.com.br/logo.png" alt="Gera Escalas">
+    <div class="htxt"><div class="t">Gera Escalas — Curso de Vendas e Onboarding</div><div class="s">Treinamento interno · para a equipe comercial e de suporte</div></div>
+    <div class="sp"></div>
+    <a class="backbtn" href="https://geraescalas.com.br/app">Abrir o app</a>
+  </div>
+</header>
+
+<div class="intro">
+  <p class="lead">Este curso prepara qualquer pessoa da equipe para atrair clientes, fazer o onboarding e reter assinantes do Gera Escalas. Leia na ordem dos módulos; ao final há uma autoavaliação. Os scripts podem ser copiados com um clique.</p>
+</div>
+
+<div class="layout">
+  <nav class="toc">
+    <div class="ttl">Módulos</div>
+    <ol>
+      <li><a href="#m1">1. O produto e o negócio</a></li>
+      <li><a href="#m2">2. Como o negócio cresce</a></li>
+      <li><a href="#m3">3. Para quem vender</a></li>
+      <li><a href="#m4">4. Como atrair clientes</a></li>
+      <li><a href="#m5">5. Onboarding</a></li>
+      <li><a href="#m6">6. Retenção</a></li>
+      <li><a href="#m7">7. Biblioteca de scripts</a></li>
+      <li><a href="#m8">8. Rotina do operador</a></li>
+      <li><a href="#quiz">Autoavaliação</a></li>
+    </ol>
+  </nav>
+
+  <main>
+
+    <!-- M1 -->
+    <section class="mod" id="m1">
+      <h2><span class="badge">1</span> O produto e o negócio</h2>
+      <p>O <b>Gera Escalas</b> monta escalas de serviço (plantões, turnos e giros) em minutos. Ele substitui a planilha e o trabalho manual, respeitando folgas, férias e o revezamento de fim de semana — tudo automático.</p>
+
+      <h3>Para quem serve</h3>
+      <p>Qualquer equipe que trabalha por turnos ou plantões: segurança, saúde, indústria, comércio, bares e restaurantes, transporte, órgãos públicos.</p>
+
+      <h3>Os 6 tipos de escala</h3>
+      <ul>
+        <li><b>Giro 12h</b> (2 giros por dia) e <b>3 giros</b> (turnos de 8h)</li>
+        <li><b>Plantão 24h</b> (24×48, 24×72)</li>
+        <li><b>Turno</b> dia/noite</li>
+        <li><b>Ciclo por turmas</b> (12×36 e outros)</li>
+        <li><b>Folga rotativa</b> — 6x1 e a <b>5x2 da nova lei</b> (EC 141/2026)</li>
+      </ul>
+
+      <h3>Diferenciais (o que falar para o cliente)</h3>
+      <ul>
+        <li>Gera a escala do mês inteiro em 1 clique</li>
+        <li>Respeita férias, folgas e nunca repete o fim de semana na mesma pessoa</li>
+        <li>Já faz a escala 5x2 exigida pela nova lei</li>
+        <li>Exporta em PDF e CSV, pronto para imprimir/publicar</li>
+        <li>Funciona no celular e no computador (dá para instalar como app), com dados na nuvem</li>
+      </ul>
+
+      <h3>Planos e preços</h3>
+      <div class="tbwrap"><table>
+        <tr><th>Plano</th><th>Preço</th><th>Para quem</th></tr>
+        <tr><td>Essencial</td><td>R$ 99/mês (ou anual no Pix, mais barato)</td><td>Equipes menores</td></tr>
+        <tr><td>Profissional</td><td>R$ 199/mês</td><td>Vários setores, suporte prioritário</td></tr>
+        <tr><td>Sob consulta</td><td>Negociado</td><td>Órgãos públicos e grandes operações</td></tr>
+      </table></div>
+      <p><span class="pill">Teste grátis: 14 dias</span> &nbsp; Mensal no cartão (recorrente) · Anual no Pix.</p>
+    </section>
+
+    <!-- M2 -->
+    <section class="mod" id="m2">
+      <h2><span class="badge">2</span> Como o negócio cresce<span class="sub">as métricas que guiam tudo</span></h2>
+      <p>O Gera Escalas é um negócio de assinatura. Ele cresce quando cada cliente <b>custa pouco para entrar</b>, <b>fica muito tempo</b> e <b>rende várias vezes o que custou</b>.</p>
+      <div class="tbwrap"><table>
+        <tr><th>Métrica</th><th>O que é</th><th>Como calcular</th></tr>
+        <tr><td>MRR</td><td>Receita recorrente mensal</td><td>Soma das assinaturas ativas (anual = 1/12 por mês)</td></tr>
+        <tr><td>ARR</td><td>Receita recorrente anual</td><td>MRR × 12</td></tr>
+        <tr><td>CAC</td><td>Custo para conquistar um cliente</td><td>(marketing + tempo + ferramentas) ÷ novos clientes</td></tr>
+        <tr><td>LTV</td><td>Quanto o cliente rende no tempo</td><td>Ticket médio × meses de permanência</td></tr>
+        <tr><td>Churn</td><td>Cancelamento no período</td><td>% de clientes (ou de receita) perdidos</td></tr>
+        <tr><td>LTV/CAC</td><td>Eficiência da aquisição</td><td>LTV ÷ CAC — <b>saudável a partir de 3</b></td></tr>
+      </table></div>
+      <div class="tip"><b>As 3 perguntas antes de acelerar o investimento:</b><br>1) Cada cliente devolve pelo menos 3× o CAC? &nbsp; 2) O MRR cresce mês a mês já descontando cancelamentos? &nbsp; 3) O payback do CAC cabe no caixa?<br>Se as três forem "sim", pode acelerar. Se não, o problema está em preço, retenção ou canal.</div>
+      <p>No app, o <b>Painel do dono</b> mostra esses números automaticamente (MRR, evolução, assinantes por plano, churn e LTV/CAC).</p>
+    </section>
+
+    <!-- M3 -->
+    <section class="mod" id="m3">
+      <h2><span class="badge">3</span> Para quem vender<span class="sub">segmentos priorizados</span></h2>
+      <div class="tbwrap"><table>
+        <tr><th>Segmento</th><th>Dor de escala</th><th>Prioridade</th></tr>
+        <tr><td>Segurança privada (vigilância, portaria)</td><td>12x36, muitos postos, rotatividade</td><td>Alta</td></tr>
+        <tr><td>Saúde (clínicas, home care, laboratórios, hospitais pequenos)</td><td>Plantões 24h/12h de enfermagem</td><td>Alta</td></tr>
+        <tr><td>Bares, restaurantes e comércio</td><td>Migração da 6x1 para a 5x2 (nova lei)</td><td>Média-alta</td></tr>
+        <tr><td>Indústria</td><td>Turnos contínuos e turmas</td><td>Média</td></tr>
+        <tr><td>Órgãos públicos</td><td>Plantões e supervisão de operações</td><td>Média (ciclo longo)</td></tr>
+      </table></div>
+      <div class="goal">Foco principal: segurança privada e saúde (maior dor e ticket). Use o gancho da nova lei 5x2 para atrair comércio, bares e restaurantes.</div>
+    </section>
+
+    <!-- M4 -->
+    <section class="mod" id="m4">
+      <h2><span class="badge">4</span> Como atrair clientes<span class="sub">inbound e outbound</span></h2>
+
+      <h3>Inbound — o cliente vem até nós</h3>
+      <ul>
+        <li><b>Instagram</b> (@geraescalas): postar com constância, usar o gancho da 5x2.</li>
+        <li><b>Conteúdo/SEO</b>: textos como "como montar escala 5x2", "escala 12x36 na prática".</li>
+        <li><b>Indicação</b>: 1 mês grátis para quem indica um cliente que assina.</li>
+      </ul>
+
+      <h3>Outbound — nós vamos até o cliente</h3>
+      <p>Outbound é <b>prospecção ativa</b>: em vez de esperar, você procura empresas que têm turnos/plantões e oferece o Gera Escalas. É o caminho mais rápido para os segmentos de maior ticket (segurança e saúde).</p>
+
+      <h4 style="margin:14px 0 2px;color:var(--navy);font-size:15px">Passo 1 — Montar a lista</h4>
+      <ul>
+        <li>Google Maps: busque "empresa de segurança", "clínica", "home care" na sua cidade/região.</li>
+        <li>Instagram e sites de associações e sindicatos do setor.</li>
+        <li>Indicações de clientes atuais e da sua rede.</li>
+        <li>Anote: nome da empresa, contato (WhatsApp), e quem decide.</li>
+      </ul>
+
+      <h4 style="margin:14px 0 2px;color:var(--navy);font-size:15px">Passo 2 — Qualificar (a empresa tem fit?)</h4>
+      <ul>
+        <li>A empresa trabalha com equipes em turnos ou plantões?</li>
+        <li>Quantas pessoas entram na escala?</li>
+        <li>Como fazem hoje (planilha, papel, WhatsApp)?</li>
+        <li>Quem monta/decide a escala? (é com essa pessoa que você fala)</li>
+      </ul>
+
+      <h4 style="margin:14px 0 2px;color:var(--navy);font-size:15px">Passo 3 — Abordar e fazer follow-up</h4>
+      <p>A maioria não responde no primeiro contato — o follow-up é o que traz resultado. Siga uma cadência:</p>
+      <div class="tbwrap"><table>
+        <tr><th>Dia</th><th>Ação</th></tr>
+        <tr><td>Dia 0</td><td>1ª abordagem (WhatsApp ou ligação)</td></tr>
+        <tr><td>Dia 2–3</td><td>Follow-up 1, se não respondeu</td></tr>
+        <tr><td>Dia 7</td><td>Follow-up 2, com novo ângulo (a nova lei 5x2)</td></tr>
+        <tr><td>Dia 14</td><td>Follow-up 3, leve e final</td></tr>
+        <tr><td>Depois</td><td>Guardar e retomar em 1–2 meses</td></tr>
+      </table></div>
+      <div class="goal">Objetivo do outbound: levar a empresa a começar o teste grátis de 14 dias e já agendar o onboarding (Módulo 5).</div>
+
+      <h4 style="margin:14px 0 2px;color:var(--navy);font-size:15px">Métricas do outbound (acompanhar)</h4>
+      <p>Nº de abordagens por dia · taxa de resposta · nº de testes iniciados · nº de assinaturas. Com o tempo, você descobre quantas abordagens geram uma venda — e aí é só aumentar o volume.</p>
+      <div class="tip">Os textos de abordagem e follow-up de outbound estão no <b>Módulo 7 — Biblioteca de scripts</b>.</div>
+    </section>
+
+    <!-- M5 -->
+    <section class="mod" id="m5">
+      <h2><span class="badge">5</span> Onboarding<span class="sub">transformar teste em cliente</span></h2>
+      <p>Onboarding é levar o cliente novo ao primeiro resultado rápido — efetivo cadastrado e primeira escala gerada — nos primeiros dias. É a ação de maior impacto na retenção: quem gera a primeira escala na primeira semana dificilmente cancela.</p>
+      <div class="goal">Meta: falar com o cliente em até 48h do cadastro e, na 1ª semana, ele já ter gerado a primeira escala real.</div>
+
+      <h3>Gatilhos e prazos</h3>
+      <div class="tbwrap"><table>
+        <tr><th>Momento</th><th>Ação</th><th>Prazo</th></tr>
+        <tr><td>Novo cadastro</td><td>Boas-vindas + oferta de ajuda</td><td>Até 48h</td></tr>
+        <tr><td>Não gerou escala</td><td>Chamar para ajuda rápida</td><td>Dia 3</td></tr>
+        <tr><td>Metade do teste</td><td>Check-in de dúvidas</td><td>Dia 7</td></tr>
+        <tr><td>Fim do teste chegando</td><td>Lembrete + convite para assinar</td><td>Dia 11</td></tr>
+        <tr><td>Último dia</td><td>Ajudar a assinar</td><td>Dia 14</td></tr>
+      </table></div>
+
+      <h3>Checklist da primeira sessão</h3>
+      <p>O alvo é sair da sessão com a <b>primeira escala real gerada</b>:</p>
+      <ul>
+        <li>Confirmar o segmento e o tipo de escala</li>
+        <li>Cadastrar o efetivo (ou importar por CSV)</li>
+        <li>Registrar férias e afastamentos conhecidos</li>
+        <li>Gerar a primeira escala do mês</li>
+        <li>Mostrar como ajustar à mão e exportar em PDF/CSV</li>
+        <li>Apontar o botão Manual e o suporte por WhatsApp</li>
+        <li>Sugerir instalar o app no celular</li>
+        <li>Combinar o próximo check-in</li>
+      </ul>
+
+      <h3>Conversão para assinatura</h3>
+      <ul>
+        <li>Reforce o valor já sentido ("você montou a escala de X pessoas em minutos").</li>
+        <li>Apresente os planos de forma simples e destaque o anual (Pix), mais barato.</li>
+        <li>Facilite: mande o caminho (Configurações → Assinatura) e ofereça acompanhar.</li>
+        <li>Objeção de preço: compare com o custo de ter alguém montando escala na mão.</li>
+      </ul>
+    </section>
+
+    <!-- M6 -->
+    <section class="mod" id="m6">
+      <h2><span class="badge">6</span> Retenção<span class="sub">manter o cliente</span></h2>
+      <p>Depois que assina, o trabalho é manter. Reduzir churn vale tanto quanto vender.</p>
+      <h3>Sinais de alerta</h3>
+      <ul>
+        <li><b>Parou de gerar escala no mês</b> — churn silencioso. Chame e pergunte o que mudou.</li>
+        <li><b>Reclamou e não teve resposta</b> — resolva rápido; suporte lento é o motivo nº 1 de saída.</li>
+        <li><b>Mensal perto de vencer</b> — confirme que o cartão renovou.</li>
+        <li><b>Caiu para "Expirado"</b> — tente reconquistar com mensagem pessoal.</li>
+      </ul>
+      <h3>Boas práticas</h3>
+      <ul>
+        <li>Responder no mesmo dia.</li>
+        <li>Lembrete mensal amigável ("hora de gerar a escala do próximo mês").</li>
+        <li>Incentivar o plano anual (quem paga o ano fica o ano).</li>
+        <li>Perguntar o motivo de quem cancela e atacar as causas que se repetem.</li>
+      </ul>
+    </section>
+
+    <!-- M7 -->
+    <section class="mod" id="m7">
+      <h2><span class="badge">7</span> Biblioteca de scripts<span class="sub">copie e troque [Nome] e [Seu nome]</span></h2>
+
+      <h3>Outbound — abordagem</h3>
+      <div class="script"><button class="cp" onclick="copyScript(this)">Copiar</button><div class="lbl">Abordagem fria (WhatsApp)</div><div class="scripttext">Olá, [Nome]! Sou [Seu nome], do Gera Escalas. A gente ajuda empresas de [segmento] a montar a escala de plantão/turno em minutos, sem planilha — respeitando folgas, férias e a nova regra 5x2. Vi que a [Empresa] trabalha com equipes em turno; faz sentido eu te mostrar como funciona, com 14 dias grátis? Posso te mandar um resumo rápido.</div></div>
+      <div class="script"><button class="cp" onclick="copyScript(this)">Copiar</button><div class="lbl">Follow-up (ângulo da nova lei)</div><div class="scripttext">Oi, [Nome]! Complementando: com a mudança da 6x1 para a 5x2 (EC 141/2026), muita empresa está tendo que refazer as escalas. O Gera Escalas já faz isso automático. Quer que eu te mostre em 5 minutos?</div></div>
+
+      <h3>Onboarding — do cadastro à assinatura</h3>
+      <div class="script"><button class="cp" onclick="copyScript(this)">Copiar</button><div class="lbl">1. Boas-vindas (dia 0)</div><div class="scripttext">Olá, [Nome]! Aqui é [Seu nome], da equipe do Gera Escalas 👋 Vi que você criou sua conta — seja bem-vindo! Seu teste de 14 dias já está ativo. Quer uma ajuda rápida para deixar sua primeira escala pronta hoje? Me diz quantas pessoas são e o tipo de escala (giro, 24h, turno, folga…) que eu te oriento.</div></div>
+      <div class="script"><button class="cp" onclick="copyScript(this)">Copiar</button><div class="lbl">2. Destravar (dia 3)</div><div class="scripttext">Oi, [Nome]! Passando para ajudar 🙂 Notei que você ainda não gerou uma escala. Em uns 10 minutos a gente deixa a primeira pronta — posso te mandar o passo a passo ou fazemos juntos por chamada. Qual prefere?</div></div>
+      <div class="script"><button class="cp" onclick="copyScript(this)">Copiar</button><div class="lbl">3. Check-in (dia 7)</div><div class="scripttext">Oi, [Nome]! Como está indo com o Gera Escalas? Conseguiu montar a escala da sua equipe? Se tiver qualquer dúvida ou precisar ajustar algo, é só me chamar por aqui.</div></div>
+      <div class="script"><button class="cp" onclick="copyScript(this)">Copiar</button><div class="lbl">4. Fim do teste chegando (dia 11)</div><div class="scripttext">Oi, [Nome]! Seu teste do Gera Escalas termina em 3 dias. Se já está te ajudando, posso te mostrar como continuar: R$ 99/mês no Essencial ou, no plano anual pelo Pix, sai mais barato. Quer que eu te passe o caminho para assinar?</div></div>
+      <div class="script"><button class="cp" onclick="copyScript(this)">Copiar</button><div class="lbl">5. Último dia (dia 14)</div><div class="scripttext">Oi, [Nome]! Hoje é o último dia do seu teste. Para não perder suas escalas e seus dados, é só ativar o plano em Configurações → Assinatura (cartão mensal ou Pix anual). Qualquer dúvida na hora de assinar, me chama que eu te ajudo agora.</div></div>
+      <div class="script"><button class="cp" onclick="copyScript(this)">Copiar</button><div class="lbl">6. Pós-assinatura</div><div class="scripttext">Que ótimo ter você com a gente, [Nome]! 🎉 Obrigado pela confiança. Qualquer dúvida ou ideia de melhoria, é só me chamar por aqui. E sempre que precisar, o Manual completo está no botão "Manual" dentro do app.</div></div>
+      <div class="script"><button class="cp" onclick="copyScript(this)">Copiar</button><div class="lbl">7. Reativação (parou de usar)</div><div class="scripttext">Oi, [Nome]! Tudo bem? Vi que faz um tempinho que você não gera uma escala no Gera Escalas. Está tudo certo? Se tiver algo travando ou se precisar de ajuda para a escala deste mês, me conta que eu te ajudo.</div></div>
+    </section>
+
+    <!-- M8 -->
+    <section class="mod" id="m8">
+      <h2><span class="badge">8</span> Rotina do operador<span class="sub">o que fazer todo dia e toda semana</span></h2>
+      <h3>Todo dia</h3>
+      <ul>
+        <li>Abrir o <b>Painel de Clientes</b> e ver quem cadastrou/entrou em teste.</li>
+        <li>Mandar boas-vindas aos novos cadastros (em até 48h).</li>
+        <li>Responder todas as mensagens de clientes no mesmo dia.</li>
+        <li>Fazer os follow-ups de onboarding conforme os gatilhos (dia 3, 7, 11, 14).</li>
+        <li>Fazer um número combinado de abordagens de outbound (ex.: 5 a 10 por dia).</li>
+      </ul>
+      <h3>Toda semana</h3>
+      <ul>
+        <li>Olhar o <b>Painel do dono</b>: MRR, novos clientes, churn, LTV/CAC.</li>
+        <li>Revisar quem está perto de acabar o teste e preparar a conversão.</li>
+        <li>Reativar quem parou de usar.</li>
+        <li>Postar/agendar conteúdo no Instagram.</li>
+      </ul>
+      <div class="warn"><b>Importante:</b> no primeiro contato, sempre se apresente como equipe do Gera Escalas e deixe claro o motivo do contato. Trate os dados dos clientes (telefone, e-mail) só para suporte e comunicação do serviço.</div>
+    </section>
+
+    <!-- QUIZ -->
+    <section class="mod" id="quiz">
+      <h2><span class="badge">✓</span> Autoavaliação</h2>
+      <p>Responda mentalmente e confira. Se errar, volte ao módulo indicado.</p>
+      <details><summary>1. Qual a meta de tempo para o primeiro contato com um novo cadastro?</summary>Até 48 horas. (Módulo 5)</details>
+      <details><summary>2. A partir de qual relação LTV/CAC a aquisição é considerada saudável?</summary>A partir de 3 (LTV pelo menos 3× o CAC). (Módulo 2)</details>
+      <details><summary>3. Qual o objetivo da primeira sessão de onboarding?</summary>Sair com a primeira escala real gerada. (Módulo 5)</details>
+      <details><summary>4. Cite dois segmentos prioritários.</summary>Segurança privada e saúde. (Módulo 3)</details>
+      <details><summary>5. O que é outbound?</summary>Prospecção ativa — ir atrás do cliente (empresas com turnos/plantões), em vez de esperar que ele venha. (Módulo 4)</details>
+      <details><summary>6. Por que o follow-up é essencial no outbound?</summary>A maioria não responde no primeiro contato; o resultado vem da insistência educada ao longo da cadência. (Módulo 4)</details>
+      <details><summary>7. Qual é o sinal de "churn silencioso"?</summary>O cliente parou de gerar escala no mês, mesmo sem cancelar. (Módulo 6)</details>
+    </section>
+
+  </main>
+</div>
+
+<footer>
+  <div class="fwrap">© 2026 <b>Gera Escalas</b> — por Technofire · Treinamento interno · <a href="https://geraescalas.com.br">geraescalas.com.br</a></div>
+</footer>
+
+<script>
+function copyScript(btn){
+  var box=btn.parentElement, t=box&&box.querySelector('.scripttext');
+  if(!t)return;
+  var s=t.innerText;
+  function done(){var o=btn.textContent;btn.textContent='Copiado!';setTimeout(function(){btn.textContent='Copiar';},1500);}
+  try{
+    if(navigator.clipboard&&navigator.clipboard.writeText){navigator.clipboard.writeText(s).then(done,function(){window.prompt('Copie o texto:',s);});}
+    else{window.prompt('Copie o texto:',s);}
+  }catch(e){window.prompt('Copie o texto:',s);}
+}
+</script>
+</body>
+</html>
