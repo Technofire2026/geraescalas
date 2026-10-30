@@ -456,7 +456,7 @@
         <label class="fld"><span>Nome</span><input id="op_nome"></label>
         <label class="fld"><span>Posto</span><input id="op_posto" style="width:110px"></label>
         <label class="fld"><span>E-mail</span><input id="op_login" type="email" placeholder="email@exemplo.com"></label>
-        <label class="fld"><span>Senha</span><div class="pwwrap"><input id="op_senha" type="password"><button type="button" class="eye" onclick="togglePw('op_senha',this)" aria-label="Mostrar senha">👁</button></div></label><label class="fld"><span>Acesso</span><select id="op_role" style="font:inherit;padding:6px;border:1px solid var(--line2);border-radius:6px"><option value="view">Visualização</option><option value="admin">Administrador</option></select></label>
+        <label class="fld"><span>Senha</span><div class="pwwrap"><input id="op_senha" type="password"><button type="button" class="eye" onclick="togglePw('op_senha',this)" aria-label="Mostrar senha">👁</button></div></label><label class="fld"><span>Acesso</span><select id="op_role" style="font:inherit;padding:6px;border:1px solid var(--line2);border-radius:6px"><option value="view">Visualização</option><option value="admin">Administrador</option><option value="membro">Funcionário</option></select></label><label class="fld"><span>Pessoa na escala (funcionário)</span><input id="op_pessoa" placeholder="nome exato na escala"></label>
         <button class="btn dark" onclick="criarOperador()">Adicionar operador</button>
       </div>
       <span class="tiny" id="cfg_opmsg"></span>
@@ -502,14 +502,14 @@
     </div>
   </section>
 
-  <footer><span class="noprint">Confira a escala antes de publicar.<br>© 2026 <b>Gera Escalas</b> · <span class="lnk" onclick="openAbout()">Sobre &amp; Política de Privacidade</span> · <span style="color:var(--mut2)">v6.9</span></span></footer>
+  <footer><span class="noprint">Confira a escala antes de publicar.<br>© 2026 <b>Gera Escalas</b> · <span class="lnk" onclick="openAbout()">Sobre &amp; Política de Privacidade</span> · <span style="color:var(--mut2)">v7.0</span></span></footer>
 </main>
 
 <div id="aboutmodal" class="modal" style="display:none" onclick="if(event.target===this)closeAbout()">
   <div class="mbox">
     <button class="xbtn" onclick="closeAbout()">Fechar ✕</button>
     <h2>Gera Escalas</h2>
-    <p class="muted">Escalas de plantão, turno e giro · Versão 6.9 · 2026</p>
+    <p class="muted">Escalas de plantão, turno e giro · Versão 7.0 · 2026</p>
 
     <h3>Autoria e direitos autorais</h3>
     <p>© 2026 <b>Gera Escalas</b> — desenvolvido por Luís Cesar. Todos os direitos reservados.</p>
@@ -559,6 +559,32 @@
     <h2>📊 Painel do dono</h2>
     <p class="muted">Indicadores das assinaturas (MRR, churn, LTV) e recomendações — visível só para você.</p>
     <div id="painelbody" style="margin-top:12px"></div>
+  </div>
+</div>
+
+<div id="notifmodal" class="modal" style="display:none" onclick="if(event.target===this)closeNotif()">
+  <div class="mbox" style="max-width:560px">
+    <button class="xbtn" onclick="closeNotif()">Fechar ✕</button>
+    <h2>🔔 Avisos</h2>
+    <div id="notifbody" style="margin-top:12px"></div>
+  </div>
+</div>
+
+<div id="permutamodal" class="modal" style="display:none" onclick="if(event.target===this)closePermuta()">
+  <div class="mbox" style="max-width:600px">
+    <button class="xbtn" onclick="closePermuta()">Fechar ✕</button>
+    <h2>🔁 Permutas de serviço</h2>
+    <p class="muted">Solicite uma permuta ou substituição ao administrador. Ele recebe o pedido e aprova ou nega.</p>
+    <div style="background:#f8fafc;border:1px solid #e7e9f7;border-radius:12px;padding:12px;margin:10px 0">
+      <div class="row" style="gap:8px;flex-wrap:wrap">
+        <label class="fld"><span>Tipo</span><select id="pm_tipo" style="font:inherit;padding:6px;border:1px solid #cbd5e1;border-radius:6px"><option value="permuta">Permuta</option><option value="substituicao">Substituição</option><option value="outro">Outro</option></select></label>
+        <label class="fld"><span>Data do serviço</span><input id="pm_data" placeholder="ex.: 15/11"></label>
+      </div>
+      <label class="fld" style="margin-top:6px;display:block"><span>Detalhe (com quem / motivo)</span><input id="pm_detalhe" placeholder="ex.: trocar meu plantão do dia 15 com o João" style="width:100%"></label>
+      <button class="btn primary" style="margin-top:8px" onclick="enviarPermuta()">Enviar solicitação</button>
+      <span class="tiny" id="pm_msg" style="margin-left:8px"></span>
+    </div>
+    <div id="permutalist" style="margin-top:8px"></div>
   </div>
 </div>
 
@@ -735,13 +761,13 @@ function reiniciarApp(){
   try{location.reload();}catch(e){try{location.href=location.pathname;}catch(_){}}
 }
 async function logout(){try{if(db)await db.auth.signOut();}catch(e){}try{["ciops:militares","ciops:carry","ciops:config","ciops:log","ciops:schedule"].forEach(function(k){localStorage.removeItem(k);});}catch(e){}state.user=null;state.editing=null;state.militares=[];state.schedule=null;state.carry={};document.getElementById("app").style.display="none";document.getElementById("authgate").style.display="flex";renderCloudGate("entrar");}
-function showApp(){document.getElementById("authgate").style.display="none";document.getElementById("app").style.display="";var _cc=document.getElementById("configcard");if(_cc)_cc.style.display="none";renderUserbar();renderSetorSel();renderAddSetor();renderRoster();renderContControls();applyPerms();renderProBanner();var _m=state.config.modo||"auto";var _r=document.querySelector('input[name="modo"][value="'+_m+'"]');if(_r)_r.checked=true;var _sf=document.getElementById("satfolga");if(_sf)_sf.checked=!!state.config.satFolga2c;var _tp=document.getElementById("tipo");if(_tp)_tp.value=(state.schedule&&state.schedule.result&&state.schedule.result.tipo)||state.config.tipo||"giro";var _ts=document.getElementById("turnosel");if(_ts&&state.config.hor&&state.config.hor.turno)_ts.value=state.config.hor.turno.sel||"dia";setTipo();if(state.schedule){var _ms=document.getElementById("mes");if(_ms)_ms.value=state.schedule.month;var _an=document.getElementById("ano");if(_an)_an.value=state.schedule.year;renderSchedule();renderStats();}showTab(state.schedule?"escala":"efetivo");}
+function showApp(){document.getElementById("authgate").style.display="none";document.getElementById("app").style.display="";var _cc=document.getElementById("configcard");if(_cc)_cc.style.display="none";renderUserbar();renderSetorSel();renderAddSetor();renderRoster();renderContControls();applyPerms();renderProBanner();var _m=state.config.modo||"auto";var _r=document.querySelector('input[name="modo"][value="'+_m+'"]');if(_r)_r.checked=true;var _sf=document.getElementById("satfolga");if(_sf)_sf.checked=!!state.config.satFolga2c;var _tp=document.getElementById("tipo");if(_tp)_tp.value=(state.schedule&&state.schedule.result&&state.schedule.result.tipo)||state.config.tipo||"giro";var _ts=document.getElementById("turnosel");if(_ts&&state.config.hor&&state.config.hor.turno)_ts.value=state.config.hor.turno.sel||"dia";setTipo();if(state.schedule){var _ms=document.getElementById("mes");if(_ms)_ms.value=state.schedule.month;var _an=document.getElementById("ano");if(_an)_an.value=state.schedule.year;renderSchedule();renderStats();}showTab(state.schedule?"escala":"efetivo");try{refreshNotifCount();}catch(e){}}
 function isOwner(){return !!(state.user&&state.user.role==="owner");}
 function isAdmin(){return !!(state.user&&(state.user.role==="admin"||state.user.role==="owner"));}
 var ADMIN_EMAILS=["lcsmbm@gmail.com","geraescalas@gmail.com"];
 function isPlatformAdmin(){return !!(state.user&&ADMIN_EMAILS.indexOf(((state.user.login)||"").toLowerCase())>=0);}
 function applyPerms(){var admin=isAdmin();var cc=document.getElementById("configcard");if(cc&&!admin)cc.style.display="none";var g=document.getElementById("btngerar");if(g)g.style.display=admin?"":"none";var c=document.getElementById("btncob");if(c)c.style.display=admin?"":"none";var cont=document.querySelector(".card .cont");if(cont)cont.style.display=admin?"":"none";var af=document.querySelector("#efetivo .addform");if(af)af.style.display=admin?"":"none";}
-function renderUserbar(){var u=state.user;if(!u)return;var admin=(u.role==="admin"||u.role==="owner");var tag=(u.role==="owner")?' <span class="rotag" style="background:rgba(231,199,102,.25);color:#ffe9a8">Proprietário</span>':(admin?'':' <span class="rotag">somente leitura</span>');document.getElementById("userbar").innerHTML='<span class="who">'+esc((u.posto?u.posto+" ":"")+u.nome)+tag+'</span>'+'<button class="ubtn" title="Manual de uso" aria-label="Manual" onclick="openHelp()">📖 Manual</button>'+(isPlatformAdmin()?'<button class="ubtn" title="Painel do dono (métricas)" onclick="openPainel()">📊 Painel</button>':'')+(isPlatformAdmin()?'<button class="ubtn" title="Painel de clientes (dono)" onclick="openClientes()">👥 Clientes</button>':'')+(isPlatformAdmin()?'<button class="ubtn" title="Curso de treinamento (dono)" onclick="window.open(\'/curso.html\',\'_blank\',\'noopener\')">🎓 Curso</button>':'')+(admin?'<button class="ubtn ico-only" title="Configurações" aria-label="Configurações" onclick="openConfig()">⚙</button>':'')+'<button class="ubtn ico-only" title="Sair" aria-label="Sair" onclick="logout()">⎋</button>';}
+function renderUserbar(){var u=state.user;if(!u)return;var admin=(u.role==="admin"||u.role==="owner");var tag=(u.role==="owner")?' <span class="rotag" style="background:rgba(231,199,102,.25);color:#ffe9a8">Proprietário</span>':(admin?'':(u.role==="membro"?' <span class="rotag">Funcionário</span>':' <span class="rotag">somente leitura</span>'));document.getElementById("userbar").innerHTML='<span class="who">'+esc((u.posto?u.posto+" ":"")+u.nome)+tag+'</span>'+'<button class="ubtn" title="Manual de uso" aria-label="Manual" onclick="openHelp()">📖 Manual</button>'+'<button class="ubtn" title="Avisos" onclick="openNotif()">🔔'+(state.notifCount?(' <b style="color:#b91c1c">'+state.notifCount+'</b>'):'')+'</button>'+'<button class="ubtn" title="Permutas de serviço" onclick="openPermuta()">🔁 Permutas</button>'+(isPlatformAdmin()?'<button class="ubtn" title="Painel do dono (métricas)" onclick="openPainel()">📊 Painel</button>':'')+(isPlatformAdmin()?'<button class="ubtn" title="Painel de clientes (dono)" onclick="openClientes()">👥 Clientes</button>':'')+(isPlatformAdmin()?'<button class="ubtn" title="Curso de treinamento (dono)" onclick="window.open(\'/curso.html\',\'_blank\',\'noopener\')">🎓 Curso</button>':'')+(admin?'<button class="ubtn ico-only" title="Configurações" aria-label="Configurações" onclick="openConfig()">⚙</button>':'')+'<button class="ubtn ico-only" title="Sair" aria-label="Sair" onclick="logout()">⎋</button>';}
 
 /* ===== REGISTRO / AUDITORIA ===== */
 function loadLog(){try{var l=localStorage.getItem("ciops:log");state.logArr=l?JSON.parse(l):[];}catch(e){state.logArr=[];}}
@@ -813,6 +839,7 @@ async function renderOperadoresCloud(){
     var isMe=(state.user&&u.user_id===state.user.uid);
     var ident=esc((u.posto?u.posto+" ":"")+(u.nome||"(sem nome)"))+(u.email?' \u2014 <b>'+esc(u.email)+'</b>':'')+(isMe?' <span class="tiny">(voc\u00ea)</span>':'');
     if(u.role==="owner"){oh+='<div class="oprow">\U0001F451 <b>Propriet\u00e1rio</b> \u2014 '+ident+'</div>';return;}
+    if(u.role==="membro"){oh+='<div class="oprow">\U0001F477 '+ident+' <span class="tiny">(Funcion\u00e1rio)</span>'+(owner?' <button class="mini" title="Remover" onclick="removeOperadorCloud(\''+u.user_id+'\')">\U0001F5D1</button>':'')+'</div>';return;}
     if(owner){
       oh+='<div class="oprow">'+ident+' <select onchange="setOperRoleCloud(\''+u.user_id+'\',this.value)"><option value="admin"'+(u.role==="admin"?" selected":"")+'>Administrador</option><option value="view"'+(u.role!=="admin"?" selected":"")+'>Visualiza\u00e7\u00e3o</option></select> <button class="mini" title="Remover" onclick="removeOperadorCloud(\''+u.user_id+'\')">\U0001F5D1</button></div>';
     }else{
@@ -835,11 +862,13 @@ async function criarOperador(){
   if(r.error){say("Falha: "+r.error.message,"#b91c1c");return;}
   var newId=r.data.user&&r.data.user.id;
   if(!newId){say("N\u00e3o foi poss\u00edvel criar (o 'Confirm email' pode estar ligado no Supabase).","#b91c1c");return;}
-  var r2=await db.from("members").insert({org_id:state.user.orgId,user_id:newId,nome:nome,posto:posto,role:role,email:email});
+  var _ins={org_id:state.user.orgId,user_id:newId,nome:nome,posto:posto,role:role,email:email};
+  if(role==="membro"){_ins.pessoa_nome=(val("op_pessoa")||"").trim()||null;}
+  var r2=await db.from("members").insert(_ins);
   if(r2.error){say("Usu\u00e1rio criado, mas falhou vincular \u00e0 organiza\u00e7\u00e3o: "+r2.error.message,"#b91c1c");return;}
   log("Cadastro de operador",email+" ("+role+")");
-  ["op_nome","op_posto","op_login","op_senha"].forEach(function(id){var e=document.getElementById(id);if(e)e.value="";});
-  say("Operador criado! Entregue o e-mail e a senha a ele (ele pode trocar a senha depois).","#15803d");
+  ["op_nome","op_posto","op_login","op_senha","op_pessoa"].forEach(function(id){var e=document.getElementById(id);if(e)e.value="";});
+  say((role==="membro"?"Funcion\u00e1rio":"Operador")+" criado! Entregue o e-mail e a senha a ele (pode trocar depois).","#15803d");
   renderOperadoresCloud();
 }
 async function setOperRoleCloud(userId,role){
@@ -2283,6 +2312,81 @@ async function renderPainel(){
   h+='<div class="tiny" style="margin-top:8px;color:#475569">Antes de acelerar: cada cliente devolve ≥ 3× o CAC? o MRR cresce já descontando cancelamentos? o payback cabe no caixa?</div>';
   h+='</div>';
   box.innerHTML=h;
+}
+/* ================== AVISOS E PERMUTAS (funcionários) ================== */
+async function refreshNotifCount(){
+  if(!db||!state.user){return;}
+  try{
+    var r=await db.from("notificacoes").select("id",{count:"exact",head:true}).eq("lida",false);
+    state.notifCount=(r&&typeof r.count==="number")?r.count:0;
+  }catch(e){state.notifCount=0;}
+  try{renderUserbar();}catch(e){}
+}
+function openNotif(){var m=document.getElementById("notifmodal");if(!m)return;m.style.display="flex";renderNotif();}
+function closeNotif(){var m=document.getElementById("notifmodal");if(m)m.style.display="none";refreshNotifCount();}
+async function renderNotif(){
+  var box=document.getElementById("notifbody");if(!box)return;
+  box.innerHTML='<p class="muted">Carregando…</p>';
+  if(!db){box.innerHTML='<p class="muted">Sem conexão.</p>';return;}
+  var head=isAdmin()?'<div style="margin-bottom:10px"><button class="btn primary" onclick="avisarEquipe()">📣 Avisar a equipe sobre alteração</button></div>':'';
+  var r;try{r=await db.from("notificacoes").select("id,titulo,corpo,lida,criado_em").order("criado_em",{ascending:false}).limit(100);}catch(e){box.innerHTML='<p style="color:#b91c1c">Erro: '+esc(e.message||String(e))+'</p>';return;}
+  if(r.error){box.innerHTML=head+'<p style="color:#b91c1c">Não foi possível carregar: '+esc(r.error.message)+'.<br><span class="tiny">Confirme que o SQL de permutas/avisos foi rodado no Supabase.</span></p>';return;}
+  var rows=r.data||[];var h=head;
+  if(!rows.length){h+='<p class="muted">Nenhum aviso.</p>';}
+  else{rows.forEach(function(n){h+='<div style="border:1px solid #e7e9f7;border-radius:10px;padding:10px 12px;margin:6px 0;background:'+(n.lida?"#fff":"#eef2ff")+'"><div style="font-weight:700;color:#1e1b4b;font-size:14px">'+(n.lida?"":"🔵 ")+esc(n.titulo||"Aviso")+'</div><div style="font-size:13px;color:#334155;margin-top:2px">'+esc(n.corpo||"")+'</div><div class="tiny" style="color:#94a3b8;margin-top:3px">'+_brd(n.criado_em)+'</div></div>';});}
+  box.innerHTML=h;
+  try{await db.from("notificacoes").update({lida:true}).eq("lida",false);state.notifCount=0;}catch(e){}
+}
+async function avisarEquipe(){
+  if(!isAdmin())return;
+  var t=prompt("Mensagem para a equipe:","Escala atualizada — confiram a nova versão.");
+  if(t==null)return;t=t.trim();if(!t)return;
+  try{var r=await db.rpc("notificar_equipe",{p_titulo:"Escala atualizada",p_corpo:t});if(r&&r.error){alert("Falha: "+r.error.message);return;}}catch(e){alert("Erro: "+(e.message||e));return;}
+  alert("Equipe avisada.");renderNotif();
+}
+function openPermuta(){var m=document.getElementById("permutamodal");if(!m)return;m.style.display="flex";renderPermuta();}
+function closePermuta(){var m=document.getElementById("permutamodal");if(m)m.style.display="none";}
+async function enviarPermuta(){
+  var tipo=(document.getElementById("pm_tipo")||{}).value||"permuta";
+  var data=(val("pm_data")||"").trim();var det=(val("pm_detalhe")||"").trim();
+  var msg=document.getElementById("pm_msg");
+  function say(t,c){if(msg){msg.textContent=t;msg.style.color=c||"var(--mut)";}}
+  if(!det){say("Descreva o pedido (com quem e por quê).","#b91c1c");return;}
+  say("Enviando…");
+  try{var r=await db.rpc("criar_solicitacao",{p_tipo:tipo,p_data:data,p_detalhe:det});if(r&&r.error){say("Falha: "+r.error.message,"#b91c1c");return;}}catch(e){say("Erro: "+(e.message||e),"#b91c1c");return;}
+  var e1=document.getElementById("pm_detalhe");if(e1)e1.value="";var e2=document.getElementById("pm_data");if(e2)e2.value="";
+  say("Solicitação enviada! O administrador vai analisar.","#15803d");
+  renderPermuta();
+}
+async function renderPermuta(){
+  var box=document.getElementById("permutalist");if(!box)return;
+  box.innerHTML='<p class="muted">Carregando…</p>';
+  if(!db||!state.user){box.innerHTML='<p class="muted">Sem conexão.</p>';return;}
+  var h='';
+  if(isAdmin()){
+    var rp;try{rp=await db.from("solicitacoes").select("id,solicitante_nome,tipo,data_servico,detalhe,status,criado_em").order("criado_em",{ascending:false}).limit(100);}catch(e){rp={error:{message:String(e)}};}
+    if(rp.error){h+='<p style="color:#b91c1c">Erro ao listar: '+esc(rp.error.message)+'.<br><span class="tiny">Confirme que o SQL de permutas foi rodado no Supabase.</span></p>';}
+    else{
+      var pend=(rp.data||[]).filter(function(x){return x.status==="pendente";});
+      h+='<h3 style="margin:4px 0 6px;font-size:15px;color:#1e1b4b">Solicitações da equipe'+(pend.length?' ('+pend.length+' pendente'+(pend.length>1?'s':'')+')':'')+'</h3>';
+      if(!pend.length)h+='<p class="muted tiny">Nenhuma solicitação pendente.</p>';
+      pend.forEach(function(s){h+='<div style="border:1px solid #e7e9f7;border-radius:10px;padding:10px 12px;margin:6px 0"><div style="font-weight:700;color:#1e1b4b;font-size:14px">'+esc(s.solicitante_nome||"Funcionário")+' · '+esc(s.tipo||"permuta")+(s.data_servico?(' · '+esc(s.data_servico)):'')+'</div><div style="font-size:13px;color:#334155;margin:3px 0">'+esc(s.detalhe||"")+'</div><div style="display:flex;gap:8px;margin-top:6px"><button class="ubtn" style="background:#dcfce7;color:#15803d" onclick="decidirSolic(\''+s.id+'\',true)">✓ Aprovar</button><button class="ubtn" style="background:#fee2e2;color:#b91c1c" onclick="decidirSolic(\''+s.id+'\',false)">✕ Negar</button></div></div>';});
+      h+='<hr style="border:none;border-top:1px solid #e7e9f7;margin:14px 0">';
+    }
+  }
+  var rm;try{rm=await db.from("solicitacoes").select("tipo,data_servico,detalhe,status,resposta,criado_em").eq("solicitante_user",state.user.uid).order("criado_em",{ascending:false}).limit(50);}catch(e){rm={error:{message:String(e)}};}
+  h+='<h3 style="margin:4px 0 6px;font-size:15px;color:#1e1b4b">Minhas solicitações</h3>';
+  if(rm.error){h+='<p style="color:#b91c1c">Erro: '+esc(rm.error.message)+'</p>';}
+  else if(!(rm.data||[]).length){h+='<p class="muted tiny">Você ainda não fez solicitações.</p>';}
+  else{(rm.data||[]).forEach(function(s){var cor=s.status==="aprovada"?"#15803d":(s.status==="negada"?"#b91c1c":"#b45309");h+='<div style="border:1px solid #e7e9f7;border-radius:10px;padding:9px 12px;margin:5px 0"><div style="font-size:13px"><b style="color:'+cor+'">'+esc(String(s.status||"pendente").toUpperCase())+'</b> · '+esc(s.tipo||"permuta")+(s.data_servico?(' · '+esc(s.data_servico)):'')+'</div><div style="font-size:13px;color:#334155">'+esc(s.detalhe||"")+'</div>'+(s.resposta?('<div class="tiny" style="color:#475569;margin-top:2px">Resposta: '+esc(s.resposta)+'</div>'):'')+'</div>';});}
+  box.innerHTML=h;
+}
+async function decidirSolic(id,aprovar){
+  if(!isAdmin())return;
+  var resp="";
+  if(!aprovar){resp=prompt("Motivo da recusa (opcional):","")||"";}
+  try{var r=await db.rpc("decidir_solicitacao",{p_id:id,p_aprovar:!!aprovar,p_resposta:resp});if(r&&r.error){alert("Falha: "+r.error.message);return;}}catch(e){alert("Erro: "+(e.message||e));return;}
+  renderPermuta();refreshNotifCount();
 }
 /* ================== LOGIN NA NUVEM (Supabase) ================== */
 const SB_URL="https://ebvbjepghlzqkpbgdcbk.supabase.co";
