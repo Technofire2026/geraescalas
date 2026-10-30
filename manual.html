@@ -98,6 +98,7 @@
       <ul>
         <li><b>➕ Adicionar pessoa:</b> só o <b>nome</b> é obrigatório. Em “+ mais dados” você informa CPF, telefone, e-mail e endereço (opcionais).</li>
         <li><b>⬆ Importar por CSV:</b> cadastre várias pessoas de uma vez. Baixe o modelo, preencha no Excel (salve como “CSV UTF-8”) e importe. Colunas: nome, cargo/função, cpf, telefone, email, endereço, férias.</li>
+        <li><b>Criar o login da equipe na importação:</b> ao importar, o <b>proprietário</b> pode marcar a opção <b>“Criar login de funcionário”</b>. Quem tiver <b>e-mail</b> no CSV ganha acesso automaticamente e recebe um convite por e-mail para <b>definir a própria senha</b>. O funcionário entra vinculado ao <b>setor selecionado</b> no momento da importação. É a forma mais rápida de dar acesso a equipes grandes, sem cadastrar um por um.</li>
         <li><b>Férias e atestado:</b> marque as <b>datas</b> na própria pessoa (botões de período e “+ atestado”). O número de dias de férias é ajustável por pessoa. O app considera isso ao gerar a escala.</li>
         <li><b>Setas (ordem):</b> definem a <b>ordem inicial</b> da rotação — você escolhe quem começa.</li>
         <li><b>Editar / remover:</b> cada pessoa tem botões de edição e exclusão na lista.</li>
@@ -225,12 +226,14 @@
       <p>Além de administradores, você pode dar acesso a <b>funcionários</b>: cada um entra com o próprio login, vê a escala, pede permuta e recebe avisos.</p>
 
       <h3>Criar o acesso do funcionário</h3>
-      <p>Em <b>Configurações → Operadores</b>, preencha nome, e-mail e senha e escolha o acesso <b>Funcionário</b>. Em seguida informe:</p>
+      <p>Há dois caminhos:</p>
+      <p><b>1) Vários de uma vez (recomendado para equipes grandes):</b> na aba <b>Efetivo</b>, use <b>⬆ Importar por CSV</b> com a coluna <b>email</b> preenchida e marque <b>“Criar login de funcionário”</b>. Cada pessoa com e-mail recebe um convite para <b>definir a própria senha</b> e já entra vinculada ao <b>setor selecionado</b>. Veja <a href="#efetivo">Cadastrar o efetivo</a>.</p>
+      <p><b>2) Um por um:</b> em <b>Configurações → Operadores</b>, preencha nome, e-mail e senha e escolha o acesso <b>Funcionário</b>. Em seguida informe:</p>
       <ul>
         <li><b>Pessoa na escala:</b> o nome exato dele no efetivo (é o que liga o login à pessoa da escala).</li>
         <li><b>Setor:</b> a qual setor ele pertence (define quais avisos ele recebe).</li>
       </ul>
-      <p>Entregue o e-mail e a senha ao funcionário; ele pode trocar a senha depois.</p>
+      <p>No caminho “um por um”, entregue o e-mail e a senha ao funcionário; ele pode trocar a senha depois.</p>
 
       <h3>O funcionário pede a permuta</h3>
       <p>No app do funcionário, no botão <b>🔁 Permutas</b>, ele escolhe:</p>
