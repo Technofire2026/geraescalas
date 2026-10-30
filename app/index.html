@@ -73,8 +73,8 @@
   .warn{background:#fffbeb;border:1px solid #fde68a;color:#92400e;border-radius:8px;padding:10px 14px;margin-bottom:16px;font-size:13px}
   .warn div{margin:2px 0}
   .addform input{width:100%;margin-bottom:8px}
-  .addform .two{display:flex;gap:8px}
-  .addform .two>*{width:50%}
+  .addform .two{display:flex;gap:8px;flex-wrap:wrap}
+  .addform .two>*{flex:1 1 140px;min-width:0;width:auto;box-sizing:border-box}
   ul.mil{list-style:none;margin:0;padding:0}
   ul.mil li{border-top:1px solid #f1f5f9;padding:10px 0;display:flex;gap:8px;align-items:flex-start}
   ul.mil li:first-child{border-top:none}
@@ -332,7 +332,7 @@
           <input id="nome" placeholder="Nome da pessoa" onkeydown="if(event.key==='Enter')addMilitar()">
           <div class="two">
             <input id="posto" placeholder="Cargo/função (ex.: Enfermeiro)" onkeydown="if(event.key==='Enter')addMilitar()">
-            <label class="fld" style="width:50%">1º período de férias (opcional)<input type="date" id="fer" style="width:100%"></label>
+            <label class="fld" style="min-width:0">1º período de férias (opcional)<input type="date" id="fer" style="width:100%;max-width:100%;box-sizing:border-box"></label>
           </div>
           <label class="fld" id="add_time_wrap" style="display:none;margin-top:2px"><span>Time (escala por ciclo)</span><select id="add_time" style="width:100%;font:inherit;padding:8px;border:1px solid var(--line2);border-radius:8px"></select></label>
           <div style="margin-top:2px"><span class="lnk tiny" onclick="var e=document.getElementById('maisdados');e.style.display=(e.style.display==='none'||!e.style.display)?'block':'none';">+ mais dados (opcional)</span></div>
@@ -502,14 +502,14 @@
     </div>
   </section>
 
-  <footer><span class="noprint">Confira a escala antes de publicar.<br>© 2026 <b>Gera Escalas</b> · <span class="lnk" onclick="openAbout()">Sobre &amp; Política de Privacidade</span> · <span style="color:var(--mut2)">v7.6</span></span></footer>
+  <footer><span class="noprint">Confira a escala antes de publicar.<br>© 2026 <b>Gera Escalas</b> · <span class="lnk" onclick="openAbout()">Sobre &amp; Política de Privacidade</span> · <span style="color:var(--mut2)">v7.7</span></span></footer>
 </main>
 
 <div id="aboutmodal" class="modal" style="display:none" onclick="if(event.target===this)closeAbout()">
   <div class="mbox">
     <button class="xbtn" onclick="closeAbout()">Fechar ✕</button>
     <h2>Gera Escalas</h2>
-    <p class="muted">Escalas de plantão, turno e giro · Versão 7.6 · 2026</p>
+    <p class="muted">Escalas de plantão, turno e giro · Versão 7.7 · 2026</p>
 
     <h3>Autoria e direitos autorais</h3>
     <p>© 2026 <b>Gera Escalas</b> — desenvolvido por Luís Cesar. Todos os direitos reservados.</p>
