@@ -502,14 +502,14 @@
     </div>
   </section>
 
-  <footer><span class="noprint">Confira a escala antes de publicar.<br>© 2026 <b>Gera Escalas</b> · <span class="lnk" onclick="openAbout()">Sobre &amp; Política de Privacidade</span> · <span style="color:var(--mut2)">v7.1</span></span></footer>
+  <footer><span class="noprint">Confira a escala antes de publicar.<br>© 2026 <b>Gera Escalas</b> · <span class="lnk" onclick="openAbout()">Sobre &amp; Política de Privacidade</span> · <span style="color:var(--mut2)">v7.3</span></span></footer>
 </main>
 
 <div id="aboutmodal" class="modal" style="display:none" onclick="if(event.target===this)closeAbout()">
   <div class="mbox">
     <button class="xbtn" onclick="closeAbout()">Fechar ✕</button>
     <h2>Gera Escalas</h2>
-    <p class="muted">Escalas de plantão, turno e giro · Versão 7.1 · 2026</p>
+    <p class="muted">Escalas de plantão, turno e giro · Versão 7.3 · 2026</p>
 
     <h3>Autoria e direitos autorais</h3>
     <p>© 2026 <b>Gera Escalas</b> — desenvolvido por Luís Cesar. Todos os direitos reservados.</p>
@@ -752,8 +752,8 @@ function reiniciarApp(){
   try{["ciops:militares","ciops:carry","ciops:config","ciops:log","ciops:auth","ciops:schedule"].forEach(function(k){localStorage.removeItem(k);});}catch(e){}
   try{location.reload();}catch(e){try{location.href=location.pathname;}catch(_){}}
 }
-async function logout(){try{if(db)await db.auth.signOut();}catch(e){}try{["ciops:militares","ciops:carry","ciops:config","ciops:log","ciops:schedule"].forEach(function(k){localStorage.removeItem(k);});}catch(e){}state.user=null;state.editing=null;state.militares=[];state.schedule=null;state.carry={};document.getElementById("app").style.display="none";document.getElementById("authgate").style.display="flex";renderCloudGate("entrar");}
-function showApp(){document.getElementById("authgate").style.display="none";document.getElementById("app").style.display="";var _cc=document.getElementById("configcard");if(_cc)_cc.style.display="none";renderUserbar();renderSetorSel();renderAddSetor();renderRoster();renderContControls();applyPerms();renderProBanner();var _m=state.config.modo||"auto";var _r=document.querySelector('input[name="modo"][value="'+_m+'"]');if(_r)_r.checked=true;var _sf=document.getElementById("satfolga");if(_sf)_sf.checked=!!state.config.satFolga2c;var _tp=document.getElementById("tipo");if(_tp)_tp.value=(state.schedule&&state.schedule.result&&state.schedule.result.tipo)||state.config.tipo||"giro";var _ts=document.getElementById("turnosel");if(_ts&&state.config.hor&&state.config.hor.turno)_ts.value=state.config.hor.turno.sel||"dia";setTipo();if(state.schedule){var _ms=document.getElementById("mes");if(_ms)_ms.value=state.schedule.month;var _an=document.getElementById("ano");if(_an)_an.value=state.schedule.year;renderSchedule();renderStats();}showTab(state.schedule?"escala":"efetivo");try{refreshNotifCount();}catch(e){}}
+async function logout(){try{stopNotifRealtime();}catch(e){}try{if(db)await db.auth.signOut();}catch(e){}try{["ciops:militares","ciops:carry","ciops:config","ciops:log","ciops:schedule"].forEach(function(k){localStorage.removeItem(k);});}catch(e){}state.user=null;state.editing=null;state.militares=[];state.schedule=null;state.carry={};document.getElementById("app").style.display="none";document.getElementById("authgate").style.display="flex";renderCloudGate("entrar");}
+function showApp(){document.getElementById("authgate").style.display="none";document.getElementById("app").style.display="";var _cc=document.getElementById("configcard");if(_cc)_cc.style.display="none";renderUserbar();renderSetorSel();renderAddSetor();renderRoster();renderContControls();applyPerms();renderProBanner();var _m=state.config.modo||"auto";var _r=document.querySelector('input[name="modo"][value="'+_m+'"]');if(_r)_r.checked=true;var _sf=document.getElementById("satfolga");if(_sf)_sf.checked=!!state.config.satFolga2c;var _tp=document.getElementById("tipo");if(_tp)_tp.value=(state.schedule&&state.schedule.result&&state.schedule.result.tipo)||state.config.tipo||"giro";var _ts=document.getElementById("turnosel");if(_ts&&state.config.hor&&state.config.hor.turno)_ts.value=state.config.hor.turno.sel||"dia";setTipo();if(state.schedule){var _ms=document.getElementById("mes");if(_ms)_ms.value=state.schedule.month;var _an=document.getElementById("ano");if(_an)_an.value=state.schedule.year;renderSchedule();renderStats();}showTab(state.schedule?"escala":"efetivo");try{state._somOff=localStorage.getItem("ge_som")==="off";}catch(e){}try{refreshNotifCount();}catch(e){}try{startNotifRealtime();}catch(e){}try{document.addEventListener("click",_unlockAudio,{once:true});document.addEventListener("touchstart",_unlockAudio,{once:true});}catch(e){}}
 function isOwner(){return !!(state.user&&state.user.role==="owner");}
 function isAdmin(){return !!(state.user&&(state.user.role==="admin"||state.user.role==="owner"));}
 var ADMIN_EMAILS=["lcsmbm@gmail.com","geraescalas@gmail.com"];
@@ -2308,11 +2308,55 @@ async function renderPainel(){
 /* ================== AVISOS E PERMUTAS (funcionários) ================== */
 async function refreshNotifCount(){
   if(!db||!state.user){return;}
-  try{
-    var r=await db.from("notificacoes").select("id",{count:"exact",head:true}).eq("lida",false);
-    state.notifCount=(r&&typeof r.count==="number")?r.count:0;
-  }catch(e){state.notifCount=0;}
+  var prev=state.notifCount;
+  try{var r=await db.from("notificacoes").select("id",{count:"exact",head:true}).eq("lida",false);state.notifCount=(r&&typeof r.count==="number")?r.count:0;}catch(e){state.notifCount=0;}
   try{renderUserbar();}catch(e){}
+  if(typeof prev==="number"&&state.notifCount>prev){alertNewNotif("Novo aviso","Você tem "+state.notifCount+" aviso(s) não lido(s).");}
+}
+function _unlockAudio(){try{var AC=window.AudioContext||window.webkitAudioContext;if(!AC)return;state._ac=state._ac||new AC();if(state._ac.state==="suspended")state._ac.resume();}catch(e){}}
+function _beep(){
+  if(state._somOff)return;
+  try{var AC=window.AudioContext||window.webkitAudioContext;if(!AC)return;state._ac=state._ac||new AC();var ac=state._ac;if(ac.state==="suspended")ac.resume();
+    var t=ac.currentTime;
+    function tone(f,st,du){var o=ac.createOscillator(),g=ac.createGain();o.type="sine";o.frequency.value=f;g.gain.value=0.0001;o.connect(g);g.connect(ac.destination);o.start(t+st);g.gain.exponentialRampToValueAtTime(0.2,t+st+0.02);g.gain.exponentialRampToValueAtTime(0.0001,t+st+du);o.stop(t+st+du+0.03);}
+    tone(880,0,0.3);tone(1175,0.16,0.34);
+  }catch(e){}
+}
+function toast(titulo,corpo){
+  try{var w=document.getElementById("getoast");if(!w){w=document.createElement("div");w.id="getoast";w.style.cssText="position:fixed;right:14px;bottom:14px;z-index:100000;display:flex;flex-direction:column;gap:8px;max-width:340px";document.body.appendChild(w);}
+    var el=document.createElement("div");el.style.cssText="background:#1e1b4b;color:#fff;border-radius:12px;padding:12px 14px;box-shadow:0 10px 30px rgba(0,0,0,.3);cursor:pointer;font:14px -apple-system,BlinkMacSystemFont,Segoe UI,Roboto,Arial";
+    el.innerHTML='<div style="font-weight:700">🔔 '+esc(titulo||"Novo aviso")+'</div>'+(corpo?'<div style="font-size:13px;color:#c7d2fe;margin-top:2px">'+esc(corpo)+'</div>':'');
+    el.onclick=function(){try{openNotif();}catch(e){}el.remove();};
+    w.appendChild(el);
+    setTimeout(function(){try{el.style.transition="opacity .4s";el.style.opacity="0";setTimeout(function(){el.remove();},420);}catch(e){}},6000);
+  }catch(e){}
+}
+function alertNewNotif(titulo,corpo){var now=Date.now();if(state._notifAlertAt&&(now-state._notifAlertAt)<2500)return;state._notifAlertAt=now;toast(titulo,corpo);_beep();}
+function toggleSom(){var c=document.getElementById("som_chk");state._somOff=!(c&&c.checked);try{localStorage.setItem("ge_som",state._somOff?"off":"on");}catch(e){}if(!state._somOff)_beep();}
+function startNotifRealtime(){
+  if(!db||!state.user||!state.user.uid)return;
+  stopNotifRealtime();
+  try{state._notifChan=db.channel("notif-"+state.user.uid).on("postgres_changes",{event:"INSERT",schema:"public",table:"notificacoes",filter:"para_user=eq."+state.user.uid},function(p){var n=(p&&p.new)||{};alertNewNotif(n.titulo||"Novo aviso",n.corpo||"");try{refreshNotifCount();}catch(e){}}).subscribe();}catch(e){}
+  if(!state._notifPoll){state._notifPoll=setInterval(function(){try{refreshNotifCount();}catch(e){}},30000);}
+}
+function stopNotifRealtime(){try{if(state._notifChan&&db){db.removeChannel(state._notifChan);}}catch(e){}state._notifChan=null;if(state._notifPoll){clearInterval(state._notifPoll);state._notifPoll=null;}}
+function _urlB64ToU8(base64){var pad="=".repeat((4-base64.length%4)%4);var b64=(base64+pad).replace(/-/g,"+").replace(/_/g,"/");var raw=atob(b64);var out=new Uint8Array(raw.length);for(var i=0;i<raw.length;i++)out[i]=raw.charCodeAt(i);return out;}
+async function ativarPush(){
+  var m=document.getElementById("pushmsg");
+  function say(t,c){if(m){m.textContent=t;m.style.color=c||"var(--mut)";}}
+  if(!("serviceWorker" in navigator)||!("PushManager" in window)||!("Notification" in window)){say("Este navegador/aparelho não suporta notificações push.","#b91c1c");return;}
+  try{
+    var perm=await Notification.requestPermission();
+    if(perm!=="granted"){say("Permissão negada. Ative as notificações nas configurações do navegador/app.","#b91c1c");return;}
+    var reg=await navigator.serviceWorker.ready;
+    var sub=await reg.pushManager.getSubscription();
+    if(!sub){sub=await reg.pushManager.subscribe({userVisibleOnly:true,applicationServerKey:_urlB64ToU8(VAPID_PUBLIC)});}
+    var j=sub.toJSON();var p256=j.keys&&j.keys.p256dh,au=j.keys&&j.keys.auth;
+    if(!p256||!au){say("Não consegui obter as chaves da assinatura.","#b91c1c");return;}
+    var r=await db.from("push_subs").upsert({user_id:state.user.uid,endpoint:sub.endpoint,p256dh:p256,auth:au},{onConflict:"endpoint"});
+    if(r&&r.error){say("Falha ao salvar: "+r.error.message,"#b91c1c");return;}
+    say("Notificações ativadas neste aparelho! ✓","#15803d");
+  }catch(e){say("Erro: "+(e.message||e),"#b91c1c");}
 }
 function openNotif(){var m=document.getElementById("notifmodal");if(!m)return;m.style.display="flex";renderNotif();}
 function closeNotif(){var m=document.getElementById("notifmodal");if(m)m.style.display="none";refreshNotifCount();}
@@ -2320,7 +2364,7 @@ async function renderNotif(){
   var box=document.getElementById("notifbody");if(!box)return;
   box.innerHTML='<p class="muted">Carregando…</p>';
   if(!db){box.innerHTML='<p class="muted">Sem conexão.</p>';return;}
-  var head=isAdmin()?'<div style="margin-bottom:10px"><button class="btn primary" onclick="avisarEquipe()">📣 Avisar a equipe sobre alteração</button></div>':'';
+  var head=(isAdmin()?'<div style="margin-bottom:10px"><button class="btn primary" onclick="avisarEquipe()">📣 Avisar a equipe sobre alteração</button></div>':'')+'<div class="tiny" style="margin-bottom:8px"><label><input type="checkbox" id="som_chk" '+(state._somOff?'':'checked')+' onchange="toggleSom()"> 🔔 Tocar som ao chegar aviso</label></div>'+'<div style="margin-bottom:10px"><button class="ubtn" onclick="ativarPush()">📲 Ativar notificações no celular</button> <span class="tiny" id="pushmsg"></span></div>';
   var r;try{r=await db.from("notificacoes").select("id,titulo,corpo,lida,criado_em").order("criado_em",{ascending:false}).limit(100);}catch(e){box.innerHTML='<p style="color:#b91c1c">Erro: '+esc(e.message||String(e))+'</p>';return;}
   if(r.error){box.innerHTML=head+'<p style="color:#b91c1c">Não foi possível carregar: '+esc(r.error.message)+'.<br><span class="tiny">Confirme que o SQL de permutas/avisos foi rodado no Supabase.</span></p>';return;}
   var rows=r.data||[];var h=head;
@@ -2470,6 +2514,7 @@ async function decidirSolic(id,aprovar){
 /* ================== LOGIN NA NUVEM (Supabase) ================== */
 const SB_URL="https://ebvbjepghlzqkpbgdcbk.supabase.co";
 const SB_KEY="sb_publishable_7tOgGEsmgJxts_-YpUGWuA_JAzvWRCM"; /* <-- cole sua sb_publishable_... aqui */
+const VAPID_PUBLIC="BBGQCYrvMxOSveliLDQmCKZFLV_oV4oB-aipui3joIizLRq2GE5w0xAjHimGqU2nBjxwAXkgPr2dZ_SLEwZ12J0";
 let db=null;
 function cloudReady(){
   if(!SB_KEY||SB_KEY.indexOf("COLE_")===0)return false;

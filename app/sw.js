@@ -5,7 +5,7 @@
    - Chamadas externas (Supabase, CDNs) e requisições não-GET: passam direto, sem cache.
    - Offline: qualquer navegação dentro de /app/ cai no app guardado (./ ou ./index.html).
 */
-var VERSION = "ge-cache-v2";
+var VERSION = "ge-cache-v3";
 var CORE = "./";              /* app shell = start_url do PWA (a pasta /app/) */
 var SHELL = ["./", "./index.html"];
 
@@ -87,4 +87,24 @@ self.addEventListener("fetch", function (e) {
       }).catch(function () { return hit; });
     })
   );
+});
+
+/* ===== PUSH (notificação com o app fechado) ===== */
+self.addEventListener("push", function (e) {
+  var d = { title: "Gera Escalas", body: "", url: "/app/" };
+  try { if (e.data) { d = Object.assign(d, e.data.json()); } } catch (err) { try { d.body = e.data.text(); } catch (_) {} }
+  e.waitUntil(self.registration.showNotification(d.title || "Gera Escalas", {
+    body: d.body || "",
+    icon: "/logo.png",
+    badge: "/logo.png",
+    data: { url: d.url || "/app/" }
+  }));
+});
+self.addEventListener("notificationclick", function (e) {
+  e.notification.close();
+  var url = (e.notification.data && e.notification.data.url) || "/app/";
+  e.waitUntil(self.clients.matchAll({ type: "window", includeUncontrolled: true }).then(function (list) {
+    for (var i = 0; i < list.length; i++) { var c = list[i]; if (c.url.indexOf("/app") >= 0 && "focus" in c) return c.focus(); }
+    if (self.clients.openWindow) return self.clients.openWindow(url);
+  }));
 });
