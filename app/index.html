@@ -502,14 +502,14 @@
     </div>
   </section>
 
-  <footer><span class="noprint">Confira a escala antes de publicar.<br>© 2026 <b>Gera Escalas</b> · <span class="lnk" onclick="openAbout()">Sobre &amp; Política de Privacidade</span> · <span style="color:var(--mut2)">v7.0</span></span></footer>
+  <footer><span class="noprint">Confira a escala antes de publicar.<br>© 2026 <b>Gera Escalas</b> · <span class="lnk" onclick="openAbout()">Sobre &amp; Política de Privacidade</span> · <span style="color:var(--mut2)">v7.1</span></span></footer>
 </main>
 
 <div id="aboutmodal" class="modal" style="display:none" onclick="if(event.target===this)closeAbout()">
   <div class="mbox">
     <button class="xbtn" onclick="closeAbout()">Fechar ✕</button>
     <h2>Gera Escalas</h2>
-    <p class="muted">Escalas de plantão, turno e giro · Versão 7.0 · 2026</p>
+    <p class="muted">Escalas de plantão, turno e giro · Versão 7.1 · 2026</p>
 
     <h3>Autoria e direitos autorais</h3>
     <p>© 2026 <b>Gera Escalas</b> — desenvolvido por Luís Cesar. Todos os direitos reservados.</p>
@@ -575,15 +575,7 @@
     <button class="xbtn" onclick="closePermuta()">Fechar ✕</button>
     <h2>🔁 Permutas de serviço</h2>
     <p class="muted">Solicite uma permuta ou substituição ao administrador. Ele recebe o pedido e aprova ou nega.</p>
-    <div style="background:#f8fafc;border:1px solid #e7e9f7;border-radius:12px;padding:12px;margin:10px 0">
-      <div class="row" style="gap:8px;flex-wrap:wrap">
-        <label class="fld"><span>Tipo</span><select id="pm_tipo" style="font:inherit;padding:6px;border:1px solid #cbd5e1;border-radius:6px"><option value="permuta">Permuta</option><option value="substituicao">Substituição</option><option value="outro">Outro</option></select></label>
-        <label class="fld"><span>Data do serviço</span><input id="pm_data" placeholder="ex.: 15/11"></label>
-      </div>
-      <label class="fld" style="margin-top:6px;display:block"><span>Detalhe (com quem / motivo)</span><input id="pm_detalhe" placeholder="ex.: trocar meu plantão do dia 15 com o João" style="width:100%"></label>
-      <button class="btn primary" style="margin-top:8px" onclick="enviarPermuta()">Enviar solicitação</button>
-      <span class="tiny" id="pm_msg" style="margin-left:8px"></span>
-    </div>
+    <div id="permutaform" style="background:#f8fafc;border:1px solid #e7e9f7;border-radius:12px;padding:12px;margin:10px 0"></div>
     <div id="permutalist" style="margin-top:8px"></div>
   </div>
 </div>
@@ -2344,33 +2336,110 @@ async function avisarEquipe(){
   try{var r=await db.rpc("notificar_equipe",{p_titulo:"Escala atualizada",p_corpo:t});if(r&&r.error){alert("Falha: "+r.error.message);return;}}catch(e){alert("Erro: "+(e.message||e));return;}
   alert("Equipe avisada.");renderNotif();
 }
+var _solicPayloads={};
+function renderPermutaForm(){
+  var box=document.getElementById("permutaform");if(!box)return;
+  var sch=state.schedule, res=sch&&sch.result;
+  var common='<div class="tiny" id="pm_msg" style="margin-top:8px"></div>';
+  if(!res){
+    box.innerHTML='<div class="row" style="gap:8px;flex-wrap:wrap"><label class="fld"><span>Tipo</span><select id="pm_tipo" style="font:inherit;padding:6px;border:1px solid #cbd5e1;border-radius:6px"><option value="permuta">Permuta</option><option value="substituicao">Substituição</option><option value="outro">Outro</option></select></label><label class="fld"><span>Data</span><input id="pm_data" placeholder="ex.: 15/11"></label></div><label class="fld" style="margin-top:6px;display:block"><span>Detalhe (com quem / motivo)</span><input id="pm_detalhe" placeholder="ex.: trocar meu plantão do dia 15 com o João" style="width:100%"></label><button class="btn primary" style="margin-top:8px" onclick="enviarPermuta()">Enviar solicitação</button>'+common;
+    return;
+  }
+  var dOpts=_diaOpts();
+  if(res.tipo==="folga"){
+    var pes=(state.militares||[]).map(function(x){return '<option value="'+x.id+'">'+esc((x.posto?x.posto+" ":"")+x.nome)+'</option>';}).join("");
+    box.innerHTML='<div style="font-weight:700;color:#1e1b4b;margin-bottom:6px">Permutar folga</div><div class="row" style="gap:6px;flex-wrap:wrap;align-items:center">Minha folga: dia <select id="pm_fdA">'+dOpts+'</select> <select id="pm_fpA">'+pes+'</select></div><div class="row" style="gap:6px;flex-wrap:wrap;align-items:center;margin-top:6px">trocar com: dia <select id="pm_fdB">'+dOpts+'</select> <select id="pm_fpB">'+pes+'</select></div><button class="btn primary" style="margin-top:8px" onclick="enviarPermuta()">Enviar solicitação</button>'+common;
+    return;
+  }
+  var cols=_colsOf(res);var colOpts=cols.map(function(c,i){return '<option value="'+i+'">'+esc(c.lab)+'</option>';}).join("");
+  var ents=_trocaEnts().map(function(e){return '<option value="'+e.id+'">'+esc(e.nome)+'</option>';}).join("");
+  var colSel=cols.length>1?('Coluna <select id="pm_c">'+colOpts+'</select>'):('<input type="hidden" id="pm_c" value="0">');
+  var colSel2=cols.length>1?('Coluna <select id="pm_c2">'+colOpts+'</select>'):('<input type="hidden" id="pm_c2" value="0">');
+  box.innerHTML='<div style="font-weight:700;color:#1e1b4b;margin-bottom:6px">Pedir permuta / substituição</div>'
+    +'<div class="row" style="gap:12px;flex-wrap:wrap"><label><input type="radio" name="pm_acao" value="sub" checked onchange="renderPermutaFormAcao()"> Substituição</label><label><input type="radio" name="pm_acao" value="perm" onchange="renderPermutaFormAcao()"> Permuta entre 2 dias</label></div>'
+    +'<div class="row" style="gap:6px;flex-wrap:wrap;align-items:center;margin-top:6px">Dia <select id="pm_d">'+dOpts+'</select> '+colSel+'</div>'
+    +'<div id="pm_subrow" class="row" style="gap:6px;flex-wrap:wrap;align-items:center;margin-top:6px">Quem assume: <select id="pm_alvo">'+ents+'</select></div>'
+    +'<div id="pm_permrow" class="row" style="gap:6px;flex-wrap:wrap;align-items:center;margin-top:6px;display:none">trocar com dia <select id="pm_d2">'+dOpts+'</select> '+colSel2+'</div>'
+    +'<button class="btn primary" style="margin-top:8px" onclick="enviarPermuta()">Enviar solicitação</button>'+common;
+}
+function renderPermutaFormAcao(){var a=(document.querySelector('input[name="pm_acao"]:checked')||{}).value;var s=document.getElementById("pm_subrow"),p=document.getElementById("pm_permrow");if(s)s.style.display=a==="perm"?"none":"";if(p)p.style.display=a==="perm"?"":"none";}
+function _aplicarPermutaPayload(p){
+  if(!p||!p.op)return {ok:false,msg:"pedido sem dados estruturados (foi em texto livre)"};
+  if(!state.schedule||!state.schedule.result)return {ok:false,msg:"abra a escala para aplicar"};
+  var res=state.schedule.result;
+  if(p.year!=null&&(p.year!==state.schedule.year||p.month!==state.schedule.month))return {ok:false,msg:"a escala aberta é de outro mês/ano"};
+  var ehFolga=(res.tipo==="folga");
+  if(p.op==="folgaPerm"){
+    if(!ehFolga)return {ok:false,msg:"a escala atual não é de folga rotativa"};
+    res.folga=res.folga||{};res.folga[p.dA]=res.folga[p.dA]||[];res.folga[p.dB]=res.folga[p.dB]||[];
+    if(!res.folga[p.dA].some(function(m){return m.id===p.pA;})||!res.folga[p.dB].some(function(m){return m.id===p.pB;}))return {ok:false,msg:"as pessoas não folgam mais nesses dias"};
+    res.folga[p.dA]=res.folga[p.dA].map(function(m){return m.id===p.pA?byMil(p.pB):m;});
+    res.folga[p.dB]=res.folga[p.dB].map(function(m){return m.id===p.pB?byMil(p.pA):m;});
+    computeStatsFolga(res,state.militares,state.schedule.year,state.schedule.month);
+  }else if(p.op==="sub"){
+    if(ehFolga)return {ok:false,msg:"tipo de escala diferente do pedido"};
+    res.cover=res.cover||{};var novo=_entPorId(p.alvoId);var atual=_celAtual(p.d,p.ci)||{nome:"—"};
+    res.cover[p.d]=res.cover[p.d]||{};res.cover[p.d][p.ci+1]={was:atual,sub:novo,badge:"substituição",motivo:"permuta aprovada"};
+    computeStats(res,state.militares,state.schedule.year,state.schedule.month);
+  }else if(p.op==="perm"){
+    if(ehFolga)return {ok:false,msg:"tipo de escala diferente do pedido"};
+    res.cover=res.cover||{};var pA=_celAtual(p.d,p.ci),pB=_celAtual(p.d2,p.c2);
+    res.cover[p.d]=res.cover[p.d]||{};res.cover[p.d2]=res.cover[p.d2]||{};
+    res.cover[p.d][p.ci+1]={was:pA||{nome:"—"},sub:pB,badge:"permuta",motivo:"permuta aprovada"};
+    res.cover[p.d2][p.c2+1]={was:pB||{nome:"—"},sub:pA,badge:"permuta",motivo:"permuta aprovada"};
+    computeStats(res,state.militares,state.schedule.year,state.schedule.month);
+  }else{return {ok:false,msg:"tipo de pedido não suportado"};}
+  try{log("Permuta aplicada",JSON.stringify(p));}catch(e){}
+  renderSchedule();saveSchedule();
+  return {ok:true};
+}
 function openPermuta(){var m=document.getElementById("permutamodal");if(!m)return;m.style.display="flex";renderPermuta();}
 function closePermuta(){var m=document.getElementById("permutamodal");if(m)m.style.display="none";}
 async function enviarPermuta(){
-  var tipo=(document.getElementById("pm_tipo")||{}).value||"permuta";
-  var data=(val("pm_data")||"").trim();var det=(val("pm_detalhe")||"").trim();
   var msg=document.getElementById("pm_msg");
   function say(t,c){if(msg){msg.textContent=t;msg.style.color=c||"var(--mut)";}}
-  if(!det){say("Descreva o pedido (com quem e por quê).","#b91c1c");return;}
+  var res=state.schedule&&state.schedule.result;
+  var tipoReq="permuta",data="",det="",payload=null;
+  if(!res){
+    tipoReq=(document.getElementById("pm_tipo")||{}).value||"permuta";
+    data=(val("pm_data")||"").trim();det=(val("pm_detalhe")||"").trim();
+    if(!det){say("Descreva o pedido (com quem e por quê).","#b91c1c");return;}
+  }else if(res.tipo==="folga"){
+    var dA=+val("pm_fdA"),pA=+val("pm_fpA"),dB=+val("pm_fdB"),pB=+val("pm_fpB");
+    tipoReq="permuta";data="dia "+dA+" ↔ "+dB;det="Permutar folga do dia "+dA+" com o dia "+dB;
+    payload={op:"folgaPerm",dA:dA,pA:pA,dB:dB,pB:pB,year:state.schedule.year,month:state.schedule.month,tipo:"folga"};
+  }else{
+    var acao=(document.querySelector('input[name="pm_acao"]:checked')||{}).value||"sub";
+    var d=+val("pm_d"),ci=+val("pm_c");var cols=_colsOf(res);var colLab=(cols[ci]&&cols[ci].lab)||("coluna "+(ci+1));
+    if(acao==="sub"){
+      var alvo=val("pm_alvo");var alvoE=_entPorId(alvo);var alvoNome=alvoE?((alvoE.posto?alvoE.posto+" ":"")+(alvoE.nome||"")):String(alvo);
+      tipoReq="substituicao";data="dia "+d;det="Substituir no dia "+d+" ("+colLab+") por "+alvoNome;
+      payload={op:"sub",d:d,ci:ci,alvoId:alvo,year:state.schedule.year,month:state.schedule.month,tipo:res.tipo};
+    }else{
+      var d2=+val("pm_d2"),c2=+val("pm_c2");
+      tipoReq="permuta";data="dia "+d+" ↔ "+d2;det="Permutar dia "+d+" ("+colLab+") com o dia "+d2;
+      payload={op:"perm",d:d,ci:ci,d2:d2,c2:c2,year:state.schedule.year,month:state.schedule.month,tipo:res.tipo};
+    }
+  }
   say("Enviando…");
-  try{var r=await db.rpc("criar_solicitacao",{p_tipo:tipo,p_data:data,p_detalhe:det});if(r&&r.error){say("Falha: "+r.error.message,"#b91c1c");return;}}catch(e){say("Erro: "+(e.message||e),"#b91c1c");return;}
-  var e1=document.getElementById("pm_detalhe");if(e1)e1.value="";var e2=document.getElementById("pm_data");if(e2)e2.value="";
+  try{var r=await db.rpc("criar_solicitacao",{p_tipo:tipoReq,p_data:data,p_detalhe:det,p_payload:payload});if(r&&r.error){say("Falha: "+r.error.message,"#b91c1c");return;}}catch(e){say("Erro: "+(e.message||e),"#b91c1c");return;}
   say("Solicitação enviada! O administrador vai analisar.","#15803d");
   renderPermuta();
 }
 async function renderPermuta(){
+  try{renderPermutaForm();}catch(e){}
   var box=document.getElementById("permutalist");if(!box)return;
   box.innerHTML='<p class="muted">Carregando…</p>';
   if(!db||!state.user){box.innerHTML='<p class="muted">Sem conexão.</p>';return;}
   var h='';
   if(isAdmin()){
-    var rp;try{rp=await db.from("solicitacoes").select("id,solicitante_nome,tipo,data_servico,detalhe,status,criado_em").order("criado_em",{ascending:false}).limit(100);}catch(e){rp={error:{message:String(e)}};}
+    var rp;try{rp=await db.from("solicitacoes").select("id,solicitante_nome,tipo,data_servico,detalhe,status,criado_em,payload").order("criado_em",{ascending:false}).limit(100);}catch(e){rp={error:{message:String(e)}};}
     if(rp.error){h+='<p style="color:#b91c1c">Erro ao listar: '+esc(rp.error.message)+'.<br><span class="tiny">Confirme que o SQL de permutas foi rodado no Supabase.</span></p>';}
     else{
       var pend=(rp.data||[]).filter(function(x){return x.status==="pendente";});
       h+='<h3 style="margin:4px 0 6px;font-size:15px;color:#1e1b4b">Solicitações da equipe'+(pend.length?' ('+pend.length+' pendente'+(pend.length>1?'s':'')+')':'')+'</h3>';
       if(!pend.length)h+='<p class="muted tiny">Nenhuma solicitação pendente.</p>';
-      pend.forEach(function(s){h+='<div style="border:1px solid #e7e9f7;border-radius:10px;padding:10px 12px;margin:6px 0"><div style="font-weight:700;color:#1e1b4b;font-size:14px">'+esc(s.solicitante_nome||"Funcionário")+' · '+esc(s.tipo||"permuta")+(s.data_servico?(' · '+esc(s.data_servico)):'')+'</div><div style="font-size:13px;color:#334155;margin:3px 0">'+esc(s.detalhe||"")+'</div><div style="display:flex;gap:8px;margin-top:6px"><button class="ubtn" style="background:#dcfce7;color:#15803d" onclick="decidirSolic(\''+s.id+'\',true)">✓ Aprovar</button><button class="ubtn" style="background:#fee2e2;color:#b91c1c" onclick="decidirSolic(\''+s.id+'\',false)">✕ Negar</button></div></div>';});
+      pend.forEach(function(s){_solicPayloads[s.id]=s.payload||null;h+='<div style="border:1px solid #e7e9f7;border-radius:10px;padding:10px 12px;margin:6px 0"><div style="font-weight:700;color:#1e1b4b;font-size:14px">'+(s.payload?'<span title="Aplica automático na escala">⚡ </span>':'')+esc(s.solicitante_nome||"Funcionário")+' · '+esc(s.tipo||"permuta")+(s.data_servico?(' · '+esc(s.data_servico)):'')+'</div><div style="font-size:13px;color:#334155;margin:3px 0">'+esc(s.detalhe||"")+'</div><div style="display:flex;gap:8px;margin-top:6px"><button class="ubtn" style="background:#dcfce7;color:#15803d" onclick="decidirSolic(\''+s.id+'\',true)">✓ Aprovar</button><button class="ubtn" style="background:#fee2e2;color:#b91c1c" onclick="decidirSolic(\''+s.id+'\',false)">✕ Negar</button></div></div>';});
       h+='<hr style="border:none;border-top:1px solid #e7e9f7;margin:14px 0">';
     }
   }
@@ -2386,6 +2455,16 @@ async function decidirSolic(id,aprovar){
   var resp="";
   if(!aprovar){resp=prompt("Motivo da recusa (opcional):","")||"";}
   try{var r=await db.rpc("decidir_solicitacao",{p_id:id,p_aprovar:!!aprovar,p_resposta:resp});if(r&&r.error){alert("Falha: "+r.error.message);return;}}catch(e){alert("Erro: "+(e.message||e));return;}
+  if(aprovar){
+    var p=_solicPayloads&&_solicPayloads[id];
+    if(p){
+      var ap=_aplicarPermutaPayload(p);
+      if(ap.ok){alert("Aprovado e aplicado na escala. ✓");}
+      else{alert("Aprovado (o funcionário foi avisado), mas não apliquei na escala automaticamente: "+ap.msg+".\nVocê pode aplicar manualmente em 🔁 Trocar / Substituir.");}
+    }else{
+      alert("Aprovado. Este pedido veio em texto livre, então aplique a troca manualmente em 🔁 Trocar / Substituir.");
+    }
+  }
   renderPermuta();refreshNotifCount();
 }
 /* ================== LOGIN NA NUVEM (Supabase) ================== */
