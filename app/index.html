@@ -457,7 +457,7 @@
         <label class="fld"><span>Posto</span><input id="op_posto" style="width:110px"></label>
         <label class="fld"><span>E-mail</span><input id="op_login" type="email" placeholder="email@exemplo.com"></label>
         <label class="fld"><span>Senha</span><div class="pwwrap"><input id="op_senha" type="password"><button type="button" class="eye" onclick="togglePw('op_senha',this)" aria-label="Mostrar senha">👁</button></div></label><label class="fld"><span>Acesso</span><select id="op_role" style="font:inherit;padding:6px;border:1px solid var(--line2);border-radius:6px"><option value="view">Visualização</option><option value="admin">Administrador</option><option value="membro">Funcionário</option></select></label><label class="fld"><span>Pessoa na escala (funcionário)</span><input id="op_pessoa" placeholder="nome exato na escala"></label><label class="fld"><span>Setor (funcionário)</span><select id="op_setor_sel" style="font:inherit;padding:6px;border:1px solid var(--line2);border-radius:6px"></select></label>
-        <button class="btn dark" onclick="criarOperador()">Adicionar operador</button> <button class="btn ghost" onclick="openFuncImport()">⬆ Importar funcionários (CSV)</button>
+        <button class="btn dark" onclick="criarOperador()">Adicionar operador</button>
       </div>
       <span class="tiny" id="cfg_opmsg"></span>
       <div id="takeoverbox" style="display:none;margin-top:10px;padding:10px;border:1px solid #fed7aa;background:#fff7ed;border-radius:8px">
@@ -502,14 +502,14 @@
     </div>
   </section>
 
-  <footer><span class="noprint">Confira a escala antes de publicar.<br>© 2026 <b>Gera Escalas</b> · <span class="lnk" onclick="openAbout()">Sobre &amp; Política de Privacidade</span> · <span style="color:var(--mut2)">v7.8</span></span></footer>
+  <footer><span class="noprint">Confira a escala antes de publicar.<br>© 2026 <b>Gera Escalas</b> · <span class="lnk" onclick="openAbout()">Sobre &amp; Política de Privacidade</span> · <span style="color:var(--mut2)">v7.9</span></span></footer>
 </main>
 
 <div id="aboutmodal" class="modal" style="display:none" onclick="if(event.target===this)closeAbout()">
   <div class="mbox">
     <button class="xbtn" onclick="closeAbout()">Fechar ✕</button>
     <h2>Gera Escalas</h2>
-    <p class="muted">Escalas de plantão, turno e giro · Versão 7.8 · 2026</p>
+    <p class="muted">Escalas de plantão, turno e giro · Versão 7.9 · 2026</p>
 
     <h3>Autoria e direitos autorais</h3>
     <p>© 2026 <b>Gera Escalas</b> — desenvolvido por Luís Cesar. Todos os direitos reservados.</p>
@@ -606,10 +606,11 @@
   <div class="mbox" style="max-width:620px">
     <button class="xbtn" onclick="closeImport()">Fechar ✕</button>
     <h2>⬆ Importar efetivo (CSV)</h2>
-    <p class="muted">Cadastre várias pessoas de uma vez. Colunas aceitas (o nome é o único obrigatório): <b>nome</b>, cargo/função, cpf, telefone, email, endereço, férias (data). As pessoas entram no <b>setor atualmente selecionado</b>.</p>
+    <p class="muted">Cadastre várias pessoas de uma vez. Colunas aceitas (o nome é o único obrigatório): <b>nome</b>, cargo/função, cpf, telefone, <b>email</b>, endereço, férias (data). As pessoas entram no <b>setor atualmente selecionado</b>. Preencha o <b>e-mail</b> de quem for ter login de funcionário.</p>
     <div style="margin:10px 0"><button class="btn ghost" onclick="baixarModeloCSV()">⬇ Baixar modelo CSV</button> <span class="tiny" style="color:var(--mut)">No Excel, salve como <b>“CSV UTF-8”</b> para os acentos saírem certos.</span></div>
     <label class="fld"><span>Escolher arquivo .csv</span><input type="file" accept=".csv,text/csv" onchange="_impFile(this)" style="width:100%"></label>
     <label class="fld" style="margin-top:8px"><span>…ou cole o conteúdo do CSV aqui</span><textarea id="imp_txt" rows="7" style="width:100%;font:inherit;font-size:13px;padding:8px;border:1px solid var(--line2);border-radius:8px" placeholder="nome;cargo;cpf;telefone;email;endereco;ferias&#10;Ana Paula Souza;Enfermeira;;;;;&#10;Bruno Lima;Técnico;;;;;15/01/2026"></textarea></label>
+    <label id="imp_acesso_wrap" class="fld" style="display:none;flex-direction:row;align-items:flex-start;gap:8px;margin-top:10px;background:#f5f6fb;border:1px solid var(--line2);border-radius:8px;padding:10px"><input type="checkbox" id="imp_acesso" style="width:18px;height:18px;margin-top:2px;flex:0 0 auto"><span style="font-size:13px;line-height:1.4">Criar <b>login de funcionário</b> para quem tiver e-mail e enviar um convite para a pessoa <b>definir a própria senha</b>.<br><span class="tiny" style="color:var(--mut)">Cada pessoa recebe um e-mail com o link de acesso. Pode levar alguns minutos.</span></span></label>
     <button class="btn primary" style="width:100%;justify-content:center;margin-top:10px" onclick="importarCSV()">Importar</button>
     <div id="imp_msg" class="tiny" style="margin-top:8px"></div>
   </div>
@@ -2143,7 +2144,7 @@ async function liberarAcesso(orgId,nome){
   alert("✅ Acesso liberado"+(fim?(" até "+_brd(fim)):"")+".");
   renderClientesTabela();
 }
-function openImport(){if(!isAdmin())return;var m=document.getElementById("importmodal");if(!m)return;var t=document.getElementById("imp_txt");if(t)t.value="";var mm=document.getElementById("imp_msg");if(mm)mm.textContent="";m.style.display="flex";}
+function openImport(){if(!isAdmin())return;var m=document.getElementById("importmodal");if(!m)return;var t=document.getElementById("imp_txt");if(t)t.value="";var mm=document.getElementById("imp_msg");if(mm)mm.textContent="";var aw=document.getElementById("imp_acesso_wrap");if(aw)aw.style.display=(isOwner()&&cloudReady())?"flex":"none";var ac=document.getElementById("imp_acesso");if(ac)ac.checked=false;m.style.display="flex";}
 function closeImport(){var m=document.getElementById("importmodal");if(m)m.style.display="none";}
 function _impFile(input){var f=input.files&&input.files[0];if(!f)return;var rd=new FileReader();rd.onload=function(){var t=document.getElementById("imp_txt");if(t)t.value=rd.result;};rd.readAsText(f,"utf-8");}
 function _normH(s){return String(s||"").toLowerCase().normalize("NFD").replace(/[̀-ͯ]/g,"").replace(/[^a-z0-9]/g,"");}
@@ -2151,14 +2152,17 @@ function _p2(n){n=String(n);return n.length<2?("0"+n):n;}
 function _parseDataBR(s){s=String(s||"").trim();if(!s)return "";var m=s.match(/^(\d{1,2})\/(\d{1,2})\/(\d{2,4})$/);if(m){var y=m[3].length===2?("20"+m[3]):m[3];return y+"-"+_p2(m[2])+"-"+_p2(m[1]);}var m2=s.match(/^(\d{4})-(\d{1,2})-(\d{1,2})/);if(m2)return m2[1]+"-"+_p2(m2[2])+"-"+_p2(m2[3]);return "";}
 function _splitCsvLine(l,delim){var out=[],cur="",q=false;for(var i=0;i<l.length;i++){var ch=l[i];if(q){if(ch==='"'){if(l[i+1]==='"'){cur+='"';i++;}else q=false;}else cur+=ch;}else{if(ch==='"')q=true;else if(ch===delim){out.push(cur);cur="";}else cur+=ch;}}out.push(cur);return out.map(function(x){return x.trim();});}
 function _parseCSV(txt){txt=String(txt).replace(/^﻿/,"").replace(/\r\n/g,"\n").replace(/\r/g,"\n").trim();if(!txt)return {header:[],rows:[]};var lines=txt.split("\n").filter(function(l){return l.trim()!=="";});var first=lines[0]||"";var delim=(first.split(";").length>first.split(",").length)?";":",";var header=_splitCsvLine(lines[0],delim).map(_normH);var rows=[];for(var i=1;i<lines.length;i++){var cells=_splitCsvLine(lines[i],delim);var o={};header.forEach(function(h,idx){o[h]=(cells[idx]||"").trim();});rows.push(o);}return {header:header,rows:rows};}
-function importarCSV(){
+async function importarCSV(){
   if(!isAdmin())return;if(bloqueadoPro())return;
   var m=document.getElementById("imp_msg");function mm(t,c){if(m){m.innerHTML=t;m.style.color=c||"var(--mut)";}}
   var txt=(document.getElementById("imp_txt")||{}).value||"";
   if(!txt.trim()){mm("Cole o CSV ou escolha um arquivo primeiro.","#b91c1c");return;}
   var parsed=_parseCSV(txt);
   if(!parsed.rows.length){mm("Não encontrei linhas de dados no CSV (confira se tem o cabeçalho e ao menos uma pessoa).","#b91c1c");return;}
-  var add=0,pulados=0;
+  var acEl=document.getElementById("imp_acesso");
+  var criarAcesso=!!(acEl&&acEl.checked&&isOwner()&&cloudReady());
+  var setorSel=(typeof setorNome==="function"?setorNome():"")||"";
+  var add=0,pulados=0,comEmail=[];
   parsed.rows.forEach(function(o){
     var nome=(o.nome||o.nomecompleto||o.nomedapessoa||o.pessoa||"").trim();
     if(!nome){pulados++;return;}
@@ -2170,17 +2174,36 @@ function importarCSV(){
     var fer=_parseDataBR(o.ferias||o.feriasinicio||o.inicioferias||o.feria||"");
     state.militares.push({id:uid(),nome:nome,posto:posto,cpf:cpf,email:email,tel:tel,end:end,turmaId:null,ferias:fer?[{id:uid(),start:fer}]:[],atestados:[]});
     add++;
+    if(criarAcesso&&email&&email.indexOf("@")>0)comEmail.push({nome:nome,email:email,pessoa:nome,setor:setorSel});
   });
   saveMil();renderRoster();
   log("Importação de efetivo (CSV)",add+" pessoa(s)");
-  mm("✅ Importadas <b>"+add+"</b> pessoa(s)"+(pulados?(" · "+pulados+" linha(s) sem nome ignorada(s)"):"")+". Pode fechar.","#15803d");
+  var baseMsg="✅ Importadas <b>"+add+"</b> pessoa(s)"+(pulados?(" · "+pulados+" linha(s) sem nome ignorada(s)"):"");
   var t=document.getElementById("imp_txt");if(t)t.value="";
+  if(!criarAcesso){mm(baseMsg+". Pode fechar.","#15803d");return;}
+  if(!comEmail.length){mm(baseMsg+".<br><span style=\"color:#b45309\">Nenhuma pessoa tinha e-mail — nenhum acesso foi criado.</span>","#15803d");return;}
+  mm(baseMsg+".<br><span class=\"muted\">Criando "+comEmail.length+" login(s) e enviando convites de senha… pode levar alguns minutos.</span>","#334155");
+  var r;try{r=await db.functions.invoke("criar-funcionarios",{body:{funcionarios:comEmail}});}catch(e){mm(baseMsg+".<br><span style=\"color:#b91c1c\">Pessoas cadastradas, mas falhou ao criar os acessos: "+esc(e.message||String(e))+"</span>","#b45309");return;}
+  if(r.error||!(r.data&&r.data.ok)){var em=(r.error&&r.error.message)||(r.data&&r.data.error)||"falha";mm(baseMsg+".<br><span style=\"color:#b91c1c\">Pessoas cadastradas, mas falhou ao criar os acessos: "+esc(em)+".<br><span class=\"tiny\">Confirme que a função criar-funcionarios está publicada no Supabase.</span></span>","#b45309");return;}
+  var res=(r.data.resultados||[]);
+  var criados=res.filter(function(x){return x.status==="criado"||x.status==="parcial";});
+  var redir=window.location.origin+window.location.pathname;
+  var enviados=0,falhasEnvio=0;
+  for(var i=0;i<criados.length;i++){
+    try{var rr=await db.auth.resetPasswordForEmail(criados[i].email,{redirectTo:redir});if(rr&&rr.error)falhasEnvio++;else enviados++;}catch(e){falhasEnvio++;}
+    if(i<criados.length-1)await new Promise(function(ok){setTimeout(ok,1500);});
+  }
+  var erros=res.filter(function(x){return x.status==="erro";}).length;
+  var h=baseMsg+".<br><b>"+criados.length+"</b> acesso(s) criado(s)"+(erros?(" · "+erros+" com erro (ex.: e-mail já cadastrado)"):"")+".<br><b>"+enviados+"</b> convite(s) de senha enviado(s)"+(falhasEnvio?(" · "+falhasEnvio+" não enviado(s)"):"")+".";
+  h+="<br><span class=\"tiny\" style=\"color:#64748b\">Cada pessoa recebe um e-mail para definir a própria senha. Peça para olharem a caixa de entrada (e o spam).</span>";
+  mm(h,"#15803d");
+  try{renderOperadoresCloud();}catch(e){}
 }
 function baixarModeloCSV(){
   var csv="nome;cargo;cpf;telefone;email;endereco;ferias\n"+
           "Ana Paula Souza;Enfermeira;;;ana@exemplo.com;;\n"+
-          "Bruno Lima;Técnico;;;;;15/01/2026\n"+
-          "Carla Mendes;Recepção;;;;;\n";
+          "Bruno Lima;Técnico;;;bruno@exemplo.com;;15/01/2026\n"+
+          "Carla Mendes;Recepção;;;carla@exemplo.com;;\n";
   var blob=new Blob(["﻿"+csv],{type:"text/csv;charset=utf-8"});
   var a=document.createElement("a");a.href=URL.createObjectURL(blob);a.download="modelo_efetivo.csv";document.body.appendChild(a);a.click();setTimeout(function(){document.body.removeChild(a);URL.revokeObjectURL(a.href);},600);
 }
@@ -2435,6 +2458,7 @@ async function ativarPush(){
   }catch(e){say("Erro: "+(e.message||e),"#b91c1c");}
 }
 var NOVIDADES=[
+  {ver:"7.9",titulo:"Login da equipe em 1 passo",itens:["Importe o efetivo por CSV e crie os logins na mesma hora","Cada funcionário recebe e-mail para definir a própria senha"]},
   {ver:"7.4",titulo:"Avisos direcionados",itens:["Permuta avisa só os dois envolvidos","Alteração de escala avisa só o setor afetado"]},
   {ver:"7.3",titulo:"Notificação no celular (app fechado)",itens:["Push mesmo com o app fechado — ative em 🔔 Avisos → 📲"]},
   {ver:"7.2",titulo:"Avisos na tela, com som",itens:["Pop-up e bip ao chegar um aviso com o app aberto"]},
