@@ -1,0 +1,142 @@
+<!doctype html>
+<html lang="pt-BR">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Gera Escalas — Novidades e versões</title>
+<meta name="description" content="Histórico de versões e melhorias do Gera Escalas: permutas, avisos, push, painel do dono, app no celular, nova lei 5x2 e mais.">
+<style>
+  :root{--indigo:#4f46e5;--indigo-d:#4338ca;--navy:#1e1b4b;--ink:#0f172a;--mut:#64748b;--line:#e2e8f0;--soft:#f5f6fb;--teal:#0d9488}
+  *{box-sizing:border-box;margin:0;padding:0}
+  html{scroll-behavior:smooth}
+  body{font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,Arial,sans-serif;color:var(--ink);background:#fff;line-height:1.6;-webkit-font-smoothing:antialiased}
+  a{color:var(--indigo);text-decoration:none}a:hover{text-decoration:underline}
+  header{background:linear-gradient(135deg,#eef2ff,#ecfeff);border-bottom:1px solid var(--line)}
+  .hwrap{max-width:860px;margin:0 auto;padding:22px 20px;display:flex;align-items:center;gap:14px;flex-wrap:wrap}
+  .hwrap img{width:50px;height:50px;border-radius:13px;box-shadow:0 6px 16px rgba(79,70,229,.25)}
+  .htxt .t{font-size:22px;font-weight:800;color:var(--navy);letter-spacing:-.3px}
+  .htxt .s{font-size:13px;color:var(--mut)}
+  .hwrap .sp{flex:1}
+  .backbtn{background:var(--indigo);color:#fff;padding:9px 16px;border-radius:10px;font-weight:700;font-size:14px}
+  .backbtn:hover{text-decoration:none;background:var(--indigo-d)}
+  .wrap{max-width:860px;margin:0 auto;padding:24px 20px 64px}
+  .lead{font-size:16px;color:#475569;margin-bottom:22px}
+  .rel{border:1px solid var(--line);border-radius:14px;padding:18px 20px;margin:14px 0;background:#fff;box-shadow:0 10px 30px rgba(30,27,75,.05)}
+  .rel .top{display:flex;align-items:center;gap:10px;flex-wrap:wrap;margin-bottom:4px}
+  .ver{display:inline-block;background:var(--indigo);color:#fff;font-weight:800;font-size:13px;padding:3px 10px;border-radius:999px}
+  .date{font-size:13px;color:var(--mut)}
+  .rel h2{font-size:18px;color:var(--navy);margin:2px 0 8px}
+  .rel ul{margin:0 0 0 20px}
+  .rel li{margin:5px 0;color:#334155;font-size:15px}
+  .tag{display:inline-block;font-size:11px;font-weight:700;border-radius:999px;padding:1px 8px;margin-left:4px;vertical-align:middle}
+  .tag.novo{background:#dcfce7;color:#15803d}
+  .tag.melhoria{background:#eef2ff;color:#4f46e5}
+  footer{border-top:1px solid var(--line);background:var(--soft)}
+  .fwrap{max-width:860px;margin:0 auto;padding:22px 20px;color:var(--mut);font-size:13px;text-align:center}
+  @media print{header .backbtn{display:none}}
+</style>
+</head>
+<body>
+<header>
+  <div class="hwrap">
+    <img src="https://geraescalas.com.br/logo.png" alt="Gera Escalas">
+    <div class="htxt"><div class="t">Gera Escalas — Novidades e versões</div><div class="s">O que mudou em cada atualização</div></div>
+    <div class="sp"></div>
+    <a class="backbtn" href="https://geraescalas.com.br/app">Abrir o app</a>
+  </div>
+</header>
+
+<div class="wrap">
+  <p class="lead">Aqui ficam registradas as melhorias do Gera Escalas, das mais recentes para as mais antigas. A versão atual aparece no rodapé do app.</p>
+
+  <div class="rel">
+    <div class="top"><span class="ver">v7.4</span><span class="date">30/10/2026</span><span class="tag novo">Novo</span></div>
+    <h2>Avisos direcionados</h2>
+    <ul>
+      <li>Permuta aprovada avisa <b>apenas os dois envolvidos</b> na troca.</li>
+      <li>Alteração que afeta o setor (ex.: atestado) avisa <b>só o setor</b> — o funcionário é vinculado a um setor no cadastro.</li>
+    </ul>
+  </div>
+
+  <div class="rel">
+    <div class="top"><span class="ver">v7.3</span><span class="date">30/10/2026</span><span class="tag novo">Novo</span></div>
+    <h2>Notificação no celular (app fechado)</h2>
+    <ul>
+      <li>Push no celular mesmo com o app fechado (ativar em 🔔 Avisos → 📲).</li>
+      <li>No iPhone, requer o app instalado na tela inicial (iOS 16.4+).</li>
+    </ul>
+  </div>
+
+  <div class="rel">
+    <div class="top"><span class="ver">v7.2</span><span class="date">29/10/2026</span><span class="tag novo">Novo</span></div>
+    <h2>Avisos na tela, com som</h2>
+    <ul>
+      <li>Pop-up e bip ao chegar um aviso com o app aberto; liga/desliga do som.</li>
+      <li>Atualização em tempo real (quando o Realtime está ativo).</li>
+    </ul>
+  </div>
+
+  <div class="rel">
+    <div class="top"><span class="ver">v7.0 – v7.1</span><span class="date">29/10/2026</span><span class="tag novo">Novo</span></div>
+    <h2>Funcionários e permutas</h2>
+    <ul>
+      <li>Funcionário com <b>login próprio</b>, vê a escala e usa o celular.</li>
+      <li>Solicita <b>permuta/substituição</b> pelo app; o administrador aprova ou nega.</li>
+      <li>Ao aprovar, a <b>escala muda automaticamente</b>.</li>
+    </ul>
+  </div>
+
+  <div class="rel">
+    <div class="top"><span class="ver">v6.5 – v6.9</span><span class="date">29/10/2026</span><span class="tag melhoria">Melhoria</span></div>
+    <h2>Painel do dono (métricas)</h2>
+    <ul>
+      <li>MRR, ARR, assinantes, ticket, gráfico de MRR mês a mês e por plano.</li>
+      <li>Churn e novos clientes automáticos; LTV, CAC e LTV/CAC com recomendações.</li>
+      <li>Painel de clientes com <b>WhatsApp</b> para contato e exportação de e-mails.</li>
+    </ul>
+  </div>
+
+  <div class="rel">
+    <div class="top"><span class="ver">v6.3 – v6.4</span><span class="date">28/10/2026</span><span class="tag novo">Novo</span></div>
+    <h2>App no celular (instalar e offline)</h2>
+    <ul>
+      <li>Instalação na tela inicial como aplicativo e abertura mais rápida.</li>
+      <li>Abre offline para visualizar; mensagem clara quando sem internet.</li>
+    </ul>
+  </div>
+
+  <div class="rel">
+    <div class="top"><span class="ver">v5.6 – v6.2</span><span class="date">28/10/2026</span><span class="tag melhoria">Melhoria</span></div>
+    <h2>Gestão, importação e manual</h2>
+    <ul>
+      <li>Importar equipe por <b>CSV</b>; grade mensal mais clara.</li>
+      <li>Liberação de acesso de cortesia por período.</li>
+      <li><b>Manual</b> completo no botão 📖 e guia de uso.</li>
+    </ul>
+  </div>
+
+  <div class="rel">
+    <div class="top"><span class="ver">v5.0 – v5.5</span><span class="date">27/10/2026</span><span class="tag melhoria">Melhoria</span></div>
+    <h2>Segurança e ajustes</h2>
+    <ul>
+      <li>Recuperação de senha por e-mail corrigida.</li>
+      <li>Política de privacidade (LGPD) e correções de textos.</li>
+    </ul>
+  </div>
+
+  <div class="rel">
+    <div class="top"><span class="ver">v4.8 – v4.9</span><span class="date">26/10/2026</span><span class="tag novo">Novo</span></div>
+    <h2>Nova lei 5x2 e planos</h2>
+    <ul>
+      <li>Escala <b>5x2</b> da nova lei (EC 141/2026) com alerta de jornada.</li>
+      <li>Planos Essencial, Profissional e Sob consulta; teste de 14 dias.</li>
+    </ul>
+  </div>
+
+</div>
+
+<footer>
+  <div class="fwrap">© 2026 <b>Gera Escalas</b> — por Technofire · <a href="https://geraescalas.com.br">geraescalas.com.br</a></div>
+</footer>
+</body>
+</html>
