@@ -456,7 +456,7 @@
         <label class="fld"><span>Nome</span><input id="op_nome"></label>
         <label class="fld"><span>Posto</span><input id="op_posto" style="width:110px"></label>
         <label class="fld"><span>E-mail</span><input id="op_login" type="email" placeholder="email@exemplo.com"></label>
-        <label class="fld"><span>Senha</span><div class="pwwrap"><input id="op_senha" type="password"><button type="button" class="eye" onclick="togglePw('op_senha',this)" aria-label="Mostrar senha">👁</button></div></label><label class="fld"><span>Acesso</span><select id="op_role" style="font:inherit;padding:6px;border:1px solid var(--line2);border-radius:6px"><option value="view">Visualização</option><option value="admin">Administrador</option><option value="membro">Funcionário</option></select></label><label class="fld"><span>Pessoa na escala (funcionário)</span><input id="op_pessoa" placeholder="nome exato na escala"></label>
+        <label class="fld"><span>Senha</span><div class="pwwrap"><input id="op_senha" type="password"><button type="button" class="eye" onclick="togglePw('op_senha',this)" aria-label="Mostrar senha">👁</button></div></label><label class="fld"><span>Acesso</span><select id="op_role" style="font:inherit;padding:6px;border:1px solid var(--line2);border-radius:6px"><option value="view">Visualização</option><option value="admin">Administrador</option><option value="membro">Funcionário</option></select></label><label class="fld"><span>Pessoa na escala (funcionário)</span><input id="op_pessoa" placeholder="nome exato na escala"></label><label class="fld"><span>Setor (funcionário)</span><select id="op_setor_sel" style="font:inherit;padding:6px;border:1px solid var(--line2);border-radius:6px"></select></label>
         <button class="btn dark" onclick="criarOperador()">Adicionar operador</button>
       </div>
       <span class="tiny" id="cfg_opmsg"></span>
@@ -502,14 +502,14 @@
     </div>
   </section>
 
-  <footer><span class="noprint">Confira a escala antes de publicar.<br>© 2026 <b>Gera Escalas</b> · <span class="lnk" onclick="openAbout()">Sobre &amp; Política de Privacidade</span> · <span style="color:var(--mut2)">v7.3</span></span></footer>
+  <footer><span class="noprint">Confira a escala antes de publicar.<br>© 2026 <b>Gera Escalas</b> · <span class="lnk" onclick="openAbout()">Sobre &amp; Política de Privacidade</span> · <span style="color:var(--mut2)">v7.4</span></span></footer>
 </main>
 
 <div id="aboutmodal" class="modal" style="display:none" onclick="if(event.target===this)closeAbout()">
   <div class="mbox">
     <button class="xbtn" onclick="closeAbout()">Fechar ✕</button>
     <h2>Gera Escalas</h2>
-    <p class="muted">Escalas de plantão, turno e giro · Versão 7.3 · 2026</p>
+    <p class="muted">Escalas de plantão, turno e giro · Versão 7.4 · 2026</p>
 
     <h3>Autoria e direitos autorais</h3>
     <p>© 2026 <b>Gera Escalas</b> — desenvolvido por Luís Cesar. Todos os direitos reservados.</p>
@@ -839,6 +839,7 @@ async function renderOperadoresCloud(){
     }
   });
   box.innerHTML=oh||'<span class="tiny">nenhum</span>';
+  try{var ss=document.getElementById("op_setor_sel");if(ss){var ls=(state.setores||[{id:"principal",nome:"Setor principal"}]);ss.innerHTML=ls.map(function(x){return '<option value="'+esc(x.nome)+'">'+esc(x.nome)+'</option>';}).join("");}}catch(e){}
 }
 async function criarOperador(){
   if(!isOwner())return;
@@ -855,7 +856,7 @@ async function criarOperador(){
   var newId=r.data.user&&r.data.user.id;
   if(!newId){say("N\u00e3o foi poss\u00edvel criar (o 'Confirm email' pode estar ligado no Supabase).","#b91c1c");return;}
   var _ins={org_id:state.user.orgId,user_id:newId,nome:nome,posto:posto,role:role,email:email};
-  if(role==="membro"){_ins.pessoa_nome=(val("op_pessoa")||"").trim()||null;}
+  if(role==="membro"){_ins.pessoa_nome=(val("op_pessoa")||"").trim()||null;_ins.setor=(val("op_setor_sel")||"").trim()||null;}
   var r2=await db.from("members").insert(_ins);
   if(r2.error){say("Usu\u00e1rio criado, mas falhou vincular \u00e0 organiza\u00e7\u00e3o: "+r2.error.message,"#b91c1c");return;}
   log("Cadastro de operador",email+" ("+role+")");
@@ -2364,7 +2365,7 @@ async function renderNotif(){
   var box=document.getElementById("notifbody");if(!box)return;
   box.innerHTML='<p class="muted">Carregando…</p>';
   if(!db){box.innerHTML='<p class="muted">Sem conexão.</p>';return;}
-  var head=(isAdmin()?'<div style="margin-bottom:10px"><button class="btn primary" onclick="avisarEquipe()">📣 Avisar a equipe sobre alteração</button></div>':'')+'<div class="tiny" style="margin-bottom:8px"><label><input type="checkbox" id="som_chk" '+(state._somOff?'':'checked')+' onchange="toggleSom()"> 🔔 Tocar som ao chegar aviso</label></div>'+'<div style="margin-bottom:10px"><button class="ubtn" onclick="ativarPush()">📲 Ativar notificações no celular</button> <span class="tiny" id="pushmsg"></span></div>';
+  var head=(isAdmin()?'<div style="margin-bottom:10px"><button class="btn primary" onclick="avisarEquipe()">📣 Avisar '+((typeof setorNome==="function"&&setorNome())?('o setor '+esc(setorNome())):'a equipe')+' sobre alteração</button></div>':'')+'<div class="tiny" style="margin-bottom:8px"><label><input type="checkbox" id="som_chk" '+(state._somOff?'':'checked')+' onchange="toggleSom()"> 🔔 Tocar som ao chegar aviso</label></div>'+'<div style="margin-bottom:10px"><button class="ubtn" onclick="ativarPush()">📲 Ativar notificações no celular</button> <span class="tiny" id="pushmsg"></span></div>';
   var r;try{r=await db.from("notificacoes").select("id,titulo,corpo,lida,criado_em").order("criado_em",{ascending:false}).limit(100);}catch(e){box.innerHTML='<p style="color:#b91c1c">Erro: '+esc(e.message||String(e))+'</p>';return;}
   if(r.error){box.innerHTML=head+'<p style="color:#b91c1c">Não foi possível carregar: '+esc(r.error.message)+'.<br><span class="tiny">Confirme que o SQL de permutas/avisos foi rodado no Supabase.</span></p>';return;}
   var rows=r.data||[];var h=head;
@@ -2375,10 +2376,19 @@ async function renderNotif(){
 }
 async function avisarEquipe(){
   if(!isAdmin())return;
-  var t=prompt("Mensagem para a equipe:","Escala atualizada — confiram a nova versão.");
+  var setor=(typeof setorNome==="function"?setorNome():"")||"";
+  var alvo=setor?("o setor "+setor):"a equipe toda";
+  var t=prompt("Aviso de alteração na escala para "+alvo+":","Escala atualizada — confiram a nova versão.");
   if(t==null)return;t=t.trim();if(!t)return;
-  try{var r=await db.rpc("notificar_equipe",{p_titulo:"Escala atualizada",p_corpo:t});if(r&&r.error){alert("Falha: "+r.error.message);return;}}catch(e){alert("Erro: "+(e.message||e));return;}
-  alert("Equipe avisada.");renderNotif();
+  try{
+    var r;
+    if(setor){r=await db.rpc("notificar_setor",{p_setor:setor,p_titulo:"Escala atualizada",p_corpo:t});}
+    else{r=await db.rpc("notificar_equipe",{p_titulo:"Escala atualizada",p_corpo:t});}
+    if(r&&r.error){alert("Falha: "+r.error.message);return;}
+    var n=(r&&typeof r.data==="number")?r.data:null;
+    alert("Aviso enviado"+(n!=null?(" para "+n+" funcionário(s)"):"")+(setor?(" do setor "+setor):"")+".");
+  }catch(e){alert("Erro: "+(e.message||e));return;}
+  renderNotif();
 }
 var _solicPayloads={};
 function renderPermutaForm(){
@@ -2412,19 +2422,24 @@ function _aplicarPermutaPayload(p){
   if(!state.schedule||!state.schedule.result)return {ok:false,msg:"abra a escala para aplicar"};
   var res=state.schedule.result;
   if(p.year!=null&&(p.year!==state.schedule.year||p.month!==state.schedule.month))return {ok:false,msg:"a escala aberta é de outro mês/ano"};
-  var ehFolga=(res.tipo==="folga");
+  var ehFolga=(res.tipo==="folga");var avisos=[];var _sn=(typeof setorNome==="function"?setorNome():"")||"";var _sfx=_sn?(" ("+_sn+")"):"";
   if(p.op==="folgaPerm"){
     if(!ehFolga)return {ok:false,msg:"a escala atual não é de folga rotativa"};
     res.folga=res.folga||{};res.folga[p.dA]=res.folga[p.dA]||[];res.folga[p.dB]=res.folga[p.dB]||[];
     if(!res.folga[p.dA].some(function(m){return m.id===p.pA;})||!res.folga[p.dB].some(function(m){return m.id===p.pB;}))return {ok:false,msg:"as pessoas não folgam mais nesses dias"};
+    var fmA=byMil(p.pA),fmB=byMil(p.pB);
     res.folga[p.dA]=res.folga[p.dA].map(function(m){return m.id===p.pA?byMil(p.pB):m;});
     res.folga[p.dB]=res.folga[p.dB].map(function(m){return m.id===p.pB?byMil(p.pA):m;});
     computeStatsFolga(res,state.militares,state.schedule.year,state.schedule.month);
+    if(fmA&&fmA.nome)avisos.push({nome:fmA.nome,corpo:"Permuta de folga aprovada: sua folga passou do dia "+p.dA+" para o dia "+p.dB+_sfx+"."});
+    if(fmB&&fmB.nome)avisos.push({nome:fmB.nome,corpo:"Permuta de folga aprovada: sua folga passou do dia "+p.dB+" para o dia "+p.dA+_sfx+"."});
   }else if(p.op==="sub"){
     if(ehFolga)return {ok:false,msg:"tipo de escala diferente do pedido"};
     res.cover=res.cover||{};var novo=_entPorId(p.alvoId);var atual=_celAtual(p.d,p.ci)||{nome:"—"};
     res.cover[p.d]=res.cover[p.d]||{};res.cover[p.d][p.ci+1]={was:atual,sub:novo,badge:"substituição",motivo:"permuta aprovada"};
     computeStats(res,state.militares,state.schedule.year,state.schedule.month);
+    if(novo&&novo.nome)avisos.push({nome:novo.nome,corpo:"Substituição aprovada: você assumiu o serviço do dia "+p.d+_sfx+"."});
+    if(atual&&atual.nome&&atual.nome!=="—")avisos.push({nome:atual.nome,corpo:"Substituição aprovada: seu serviço do dia "+p.d+_sfx+" foi coberto por outra pessoa."});
   }else if(p.op==="perm"){
     if(ehFolga)return {ok:false,msg:"tipo de escala diferente do pedido"};
     res.cover=res.cover||{};var pA=_celAtual(p.d,p.ci),pB=_celAtual(p.d2,p.c2);
@@ -2432,9 +2447,12 @@ function _aplicarPermutaPayload(p){
     res.cover[p.d][p.ci+1]={was:pA||{nome:"—"},sub:pB,badge:"permuta",motivo:"permuta aprovada"};
     res.cover[p.d2][p.c2+1]={was:pB||{nome:"—"},sub:pA,badge:"permuta",motivo:"permuta aprovada"};
     computeStats(res,state.militares,state.schedule.year,state.schedule.month);
+    if(pA&&pA.nome)avisos.push({nome:pA.nome,corpo:"Permuta aprovada: seu serviço do dia "+p.d+_sfx+" passou para o dia "+p.d2+"."});
+    if(pB&&pB.nome)avisos.push({nome:pB.nome,corpo:"Permuta aprovada: seu serviço do dia "+p.d2+_sfx+" passou para o dia "+p.d+"."});
   }else{return {ok:false,msg:"tipo de pedido não suportado"};}
   try{log("Permuta aplicada",JSON.stringify(p));}catch(e){}
   renderSchedule();saveSchedule();
+  try{avisos.forEach(function(a){try{db.rpc("notificar_pessoa",{p_pessoa_nome:a.nome,p_titulo:"Alteração na sua escala",p_corpo:a.corpo});}catch(e){}});}catch(e){}
   return {ok:true};
 }
 function openPermuta(){var m=document.getElementById("permutamodal");if(!m)return;m.style.display="flex";renderPermuta();}
