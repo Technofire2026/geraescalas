@@ -503,14 +503,14 @@
     </div>
   </section>
 
-  <footer><span class="noprint">Confira a escala antes de publicar.<br>© 2026 <b>Gera Escalas</b> · <span class="lnk" onclick="openAbout()">Sobre &amp; Política de Privacidade</span> · <span style="color:var(--mut2)">v9.2</span></span></footer>
+  <footer><span class="noprint">Confira a escala antes de publicar.<br>© 2026 <b>Gera Escalas</b> · <span class="lnk" onclick="openAbout()">Sobre &amp; Política de Privacidade</span> · <span style="color:var(--mut2)">v9.3</span></span></footer>
 </main>
 
 <div id="aboutmodal" class="modal" style="display:none" onclick="if(event.target===this)closeAbout()">
   <div class="mbox">
     <button class="xbtn" onclick="closeAbout()">Fechar ✕</button>
     <h2>Gera Escalas</h2>
-    <p class="muted">Escalas de plantão, turno e giro · Versão 9.2 · 2026</p>
+    <p class="muted">Escalas de plantão, turno e giro · Versão 9.3 · 2026</p>
 
     <h3>Autoria e direitos autorais</h3>
     <p>© 2026 <b>Gera Escalas</b> — desenvolvido por Luís Cesar. Todos os direitos reservados.</p>
@@ -639,6 +639,44 @@
       <button class="btn ghost" onclick="imprimirRel()">🖨 Imprimir / PDF</button>
     </div>
     <div id="rel_body" style="overflow:auto"></div>
+  </div>
+</div>
+
+<div id="pontomodal" style="display:none;position:fixed;inset:0;z-index:100001;background:#0b1020;color:#fff;overflow:auto">
+  <div style="max-width:900px;margin:0 auto;padding:16px 16px 40px">
+    <div style="display:flex;align-items:center;gap:10px;flex-wrap:wrap;margin-bottom:10px">
+      <div style="font-size:20px;font-weight:800">🕒 Controle de ponto</div>
+      <div style="flex:1"></div>
+      <button class="btn ghost" style="color:#fff;border-color:#334" onclick="pontoMode('cad')">👤 Cadastrar rostos</button>
+      <button class="btn primary" onclick="pontoMode('kiosk')">📷 Modo quiosque</button>
+      <button class="btn ghost" style="color:#fff;border-color:#334" onclick="closePonto()">Sair ✕</button>
+    </div>
+    <div id="ponto_status" style="font-size:13px;color:#a7b0d0;margin-bottom:10px"></div>
+
+    <div id="ponto_cad" style="display:none">
+      <p style="font-size:13px;color:#a7b0d0;margin:0 0 8px">O administrador cadastra o rosto de cada funcionário. É preciso o <b>consentimento</b> da pessoa (LGPD — biometria é dado sensível).</p>
+      <div style="display:flex;gap:16px;flex-wrap:wrap;align-items:flex-start">
+        <div style="flex:1 1 320px;min-width:280px">
+          <video id="ponto_vid_cad" autoplay playsinline muted style="width:100%;max-width:420px;background:#000;border-radius:12px;transform:scaleX(-1)"></video>
+        </div>
+        <div style="flex:1 1 280px;min-width:260px">
+          <label style="display:block;font-size:13px;margin-bottom:4px">Funcionário</label>
+          <select id="ponto_pessoa" style="width:100%;font:inherit;padding:8px;border-radius:8px;border:1px solid #334;background:#11162a;color:#fff"></select>
+          <label style="display:flex;gap:8px;align-items:flex-start;margin-top:10px;font-size:13px;cursor:pointer"><input type="checkbox" id="ponto_consent" style="margin-top:3px"> <span>O funcionário <b>autorizou</b> o uso da biometria facial para controle de ponto.</span></label>
+          <button class="btn primary" style="width:100%;justify-content:center;margin-top:10px" onclick="pontoCapturar()">📸 Capturar e salvar rosto</button>
+          <div id="ponto_cadmsg" style="font-size:13px;margin-top:8px"></div>
+          <div id="ponto_cadlist" style="margin-top:12px;font-size:13px"></div>
+        </div>
+      </div>
+    </div>
+
+    <div id="ponto_kiosk" style="display:none;text-align:center">
+      <video id="ponto_vid_k" autoplay playsinline muted style="width:100%;max-width:520px;background:#000;border-radius:14px;transform:scaleX(-1)"></video>
+      <div id="ponto_kstatus" style="font-size:18px;font-weight:700;margin:12px 0;min-height:26px">Aponte o rosto para a câmera</div>
+      <div id="ponto_comprov" style="max-width:420px;margin:0 auto"></div>
+      <div style="margin-top:10px"><button id="ponto_kbtn" class="btn primary" onclick="pontoKioskToggle()">▶ Iniciar quiosque</button></div>
+      <p style="font-size:12px;color:#8089a8;margin-top:10px">Deixe esta tela aberta no tablet na entrada. Reconhecimento no próprio aparelho. Anti-fraude básico (sem prova de vivacidade robusta).</p>
+    </div>
   </div>
 </div>
 
@@ -806,7 +844,7 @@ function isAdmin(){return !!(state.user&&(state.user.role==="admin"||state.user.
 var ADMIN_EMAILS=["lcsmbm@gmail.com","geraescalas@gmail.com"];
 function isPlatformAdmin(){return !!(state.user&&ADMIN_EMAILS.indexOf(((state.user.login)||"").toLowerCase())>=0);}
 function applyPerms(){var admin=isAdmin();var cc=document.getElementById("configcard");if(cc&&!admin)cc.style.display="none";var g=document.getElementById("btngerar");if(g)g.style.display=admin?"":"none";var c=document.getElementById("btncob");if(c)c.style.display=admin?"":"none";["btnhe","btnrel","btntroca","btncsv"].forEach(function(id){var b=document.getElementById(id);if(b)b.style.display=admin?"":"none";});var _tst=document.getElementById("tab-stat");if(_tst)_tst.style.display=admin?"":"none";if(!admin&&state._tab==="stat"){try{showTab("escala");}catch(e){}}var cont=document.querySelector(".card .cont");if(cont)cont.style.display=admin?"":"none";var af=document.querySelector("#efetivo .addform");if(af)af.style.display=admin?"":"none";}
-function renderUserbar(){var u=state.user;if(!u)return;var admin=(u.role==="admin"||u.role==="owner");var tag=(u.role==="owner")?' <span class="rotag" style="background:rgba(231,199,102,.25);color:#ffe9a8">Proprietário</span>':(admin?'':(u.role==="membro"?' <span class="rotag">Funcionário</span>':' <span class="rotag">somente leitura</span>'));document.getElementById("userbar").innerHTML='<span class="who">'+esc((u.posto?u.posto+" ":"")+u.nome)+tag+'</span>'+'<button class="ubtn" title="Manual de uso" aria-label="Manual" onclick="openHelp()">📖 Manual</button>'+'<button class="ubtn" title="Avisos" onclick="openNotif()">🔔'+(state.notifCount?(' <b style="color:#b91c1c">'+state.notifCount+'</b>'):'')+'</button>'+'<button class="ubtn" title="Permutas de serviço" onclick="openPermuta()">🔁 Permutas</button>'+((isPlatformAdmin()&&admin)?'<button class="ubtn" title="Painel do dono (métricas)" onclick="openPainel()">📊 Painel</button>':'')+((isPlatformAdmin()&&admin)?'<button class="ubtn" title="Painel de clientes (dono)" onclick="openClientes()">👥 Clientes</button>':'')+((isPlatformAdmin()&&admin)?'<button class="ubtn" title="Curso de treinamento (dono)" onclick="window.open(\'/curso.html\',\'_blank\',\'noopener\')">🎓 Curso</button>':'')+(admin?'<button class="ubtn ico-only" title="Configurações" aria-label="Configurações" onclick="openConfig()">⚙</button>':'')+'<button class="ubtn ico-only" title="Sair" aria-label="Sair" onclick="logout()">⎋</button>';}
+function renderUserbar(){var u=state.user;if(!u)return;var admin=(u.role==="admin"||u.role==="owner");var tag=(u.role==="owner")?' <span class="rotag" style="background:rgba(231,199,102,.25);color:#ffe9a8">Proprietário</span>':(admin?'':(u.role==="membro"?' <span class="rotag">Funcionário</span>':' <span class="rotag">somente leitura</span>'));document.getElementById("userbar").innerHTML='<span class="who">'+esc((u.posto?u.posto+" ":"")+u.nome)+tag+'</span>'+'<button class="ubtn" title="Manual de uso" aria-label="Manual" onclick="openHelp()">📖 Manual</button>'+'<button class="ubtn" title="Avisos" onclick="openNotif()">🔔'+(state.notifCount?(' <b style="color:#b91c1c">'+state.notifCount+'</b>'):'')+'</button>'+'<button class="ubtn" title="Permutas de serviço" onclick="openPermuta()">🔁 Permutas</button>'+(admin?'<button class="ubtn" title="Controle de ponto (quiosque facial)" onclick="openPonto()">🕒 Ponto</button>':'')+((isPlatformAdmin()&&admin)?'<button class="ubtn" title="Painel do dono (métricas)" onclick="openPainel()">📊 Painel</button>':'')+((isPlatformAdmin()&&admin)?'<button class="ubtn" title="Painel de clientes (dono)" onclick="openClientes()">👥 Clientes</button>':'')+((isPlatformAdmin()&&admin)?'<button class="ubtn" title="Curso de treinamento (dono)" onclick="window.open(\'/curso.html\',\'_blank\',\'noopener\')">🎓 Curso</button>':'')+(admin?'<button class="ubtn ico-only" title="Configurações" aria-label="Configurações" onclick="openConfig()">⚙</button>':'')+'<button class="ubtn ico-only" title="Sair" aria-label="Sair" onclick="logout()">⎋</button>';}
 
 /* ===== REGISTRO / AUDITORIA ===== */
 function loadLog(){try{var l=localStorage.getItem("ciops:log");state.logArr=l?JSON.parse(l):[];}catch(e){state.logArr=[];}}
@@ -2039,6 +2077,131 @@ function arquivarResumo(){if(!state.schedule||!state.schedule.result)return;if(!
 var _relCache=null;
 function _relHist(){try{return JSON.parse(localStorage.getItem("ciops:relhist")||"{}");}catch(e){return {};}}
 function _mesNome(ym){var p=ym.split("-");return MESES[(+p[1]-1)]+"/"+p[0];}
+// ===== Controle de ponto (quiosque facial) — Fase 1 =====
+var FACE_LIB="https://cdn.jsdelivr.net/npm/@vladmandic/face-api@1.7.13/dist/face-api.js";
+var FACE_MODELS="https://cdn.jsdelivr.net/npm/@vladmandic/face-api@1.7.13/model";
+var _ponto={faceLoaded:false,stream:null,kiosk:false,matcher:null,lastHit:{},raf:null};
+function _pstatus(t){var e=document.getElementById("ponto_status");if(e)e.textContent=t||"";}
+function _loadScript(src){return new Promise(function(res,rej){var s=document.createElement("script");s.src=src;s.onload=function(){res();};s.onerror=function(){rej(new Error("falha ao baixar "+src));};document.head.appendChild(s);});}
+async function _ensureFace(){
+  if(_ponto.faceLoaded)return true;
+  if(!window.faceapi){_pstatus("Carregando reconhecimento facial…");await _loadScript(FACE_LIB);}
+  if(!window.faceapi)throw new Error("biblioteca de rosto não carregou");
+  _pstatus("Carregando modelos (pode levar alguns segundos na 1ª vez)…");
+  await faceapi.nets.ssdMobilenetv1.loadFromUri(FACE_MODELS);
+  await faceapi.nets.faceLandmark68Net.loadFromUri(FACE_MODELS);
+  await faceapi.nets.faceRecognitionNet.loadFromUri(FACE_MODELS);
+  _ponto.faceLoaded=true;_pstatus("");return true;
+}
+async function openPonto(){
+  if(!isAdmin())return;
+  if(typeof cloudReady!=="function"||!cloudReady()||!state.user||!state.user.orgId){alert("O ponto funciona só na versão em nuvem (logado como administrador).");return;}
+  var m=document.getElementById("pontomodal");if(!m)return;m.style.display="block";pontoMode("cad");
+}
+function closePonto(){_pontoStopKiosk();_pontoStopCam();var m=document.getElementById("pontomodal");if(m)m.style.display="none";}
+function _pontoStopCam(){try{if(_ponto.stream){_ponto.stream.getTracks().forEach(function(t){t.stop();});_ponto.stream=null;}}catch(e){}}
+async function _pontoCam(videoId){
+  _pontoStopCam();
+  try{var s=await navigator.mediaDevices.getUserMedia({video:{facingMode:"user"},audio:false});_ponto.stream=s;var v=document.getElementById(videoId);if(v){v.srcObject=s;try{await v.play();}catch(e){}}return true;}
+  catch(e){_pstatus("Não consegui acessar a câmera: "+(e.message||e)+" — permita a câmera no navegador.");return false;}
+}
+async function pontoMode(mode){
+  _pontoStopKiosk();
+  document.getElementById("ponto_cad").style.display=(mode==="cad")?"":"none";
+  document.getElementById("ponto_kiosk").style.display=(mode==="kiosk")?"":"none";
+  try{await _ensureFace();}catch(e){_pstatus("Erro ao carregar o reconhecimento: "+(e.message||e));return;}
+  if(mode==="cad"){
+    var sel=document.getElementById("ponto_pessoa");if(sel)sel.innerHTML=(state.militares||[]).map(function(x){return '<option value="'+x.id+'">'+esc((x.posto?x.posto+" ":"")+x.nome)+'</option>';}).join("");
+    await _pontoCam("ponto_vid_cad");renderPontoCadList();
+  }else{
+    var ks=document.getElementById("ponto_kstatus");if(ks)ks.textContent="Toque em “Iniciar quiosque”.";
+    var cp=document.getElementById("ponto_comprov");if(cp)cp.innerHTML="";
+    var kb=document.getElementById("ponto_kbtn");if(kb)kb.textContent="▶ Iniciar quiosque";
+  }
+}
+async function renderPontoCadList(){
+  var box=document.getElementById("ponto_cadlist");if(!box)return;
+  try{var r=await db.from("biometria").select("pessoa_id,pessoa_nome").eq("org_id",state.user.orgId);
+    var done={};(r.data||[]).forEach(function(x){done[x.pessoa_id]=1;});
+    var cad=(r.data||[]).length,tot=(state.militares||[]).length;
+    box.innerHTML='<div style="color:#a7b0d0;margin-bottom:4px">Cadastrados: <b style="color:#fff">'+cad+'</b> de '+tot+'.</div>'+(state.militares||[]).map(function(m){return '<div style="padding:2px 0">'+(done[String(m.id)]?'✅':'⬜')+' '+esc((m.posto?m.posto+" ":"")+m.nome)+'</div>';}).join("");
+  }catch(e){box.textContent="";}
+}
+async function pontoCapturar(){
+  var msg=document.getElementById("ponto_cadmsg");function say(t,c){if(msg){msg.textContent=t;msg.style.color=c||"#a7b0d0";}}
+  if(!document.getElementById("ponto_consent").checked){say("Marque o consentimento do funcionário (LGPD).","#fca5a5");return;}
+  var pid=val("ponto_pessoa");var m=byMil(isNaN(+pid)?pid:+pid);if(!m){say("Escolha o funcionário.","#fca5a5");return;}
+  say("Detectando rosto…");
+  try{
+    var det=await faceapi.detectSingleFace(document.getElementById("ponto_vid_cad")).withFaceLandmarks().withFaceDescriptor();
+    if(!det){say("Nenhum rosto nítido. Aproxime o rosto e tente de novo.","#fca5a5");return;}
+    var desc=Array.from(det.descriptor);
+    var r=await db.from("biometria").upsert({org_id:state.user.orgId,pessoa_id:String(m.id),pessoa_nome:m.nome,setor:(typeof setorNome==="function"?setorNome():"")||null,descriptor:desc,consentimento:true,consent_em:new Date().toISOString(),atualizado_em:new Date().toISOString()},{onConflict:"org_id,pessoa_id"});
+    if(r.error){say("Falha ao salvar: "+r.error.message,"#fca5a5");return;}
+    try{log("Cadastro de biometria",m.nome);}catch(e){}
+    say("Rosto de "+(m.nome)+" cadastrado! ✓","#86efac");renderPontoCadList();
+  }catch(e){say("Erro: "+(e.message||e),"#fca5a5");}
+}
+async function _pontoLoadMatcher(){
+  var r=await db.from("biometria").select("pessoa_id,descriptor").eq("org_id",state.user.orgId);
+  var labeled=[];(r.data||[]).forEach(function(x){try{labeled.push(new faceapi.LabeledFaceDescriptors(String(x.pessoa_id),[Float32Array.from(x.descriptor)]));}catch(e){}});
+  if(!labeled.length)return null;
+  return new faceapi.FaceMatcher(labeled,0.5);
+}
+async function pontoKioskToggle(){
+  if(_ponto.kiosk){_pontoStopKiosk();return;}
+  try{await _ensureFace();}catch(e){_pstatus("Erro: "+(e.message||e));return;}
+  _pstatus("Carregando rostos cadastrados…");
+  _ponto.matcher=await _pontoLoadMatcher();
+  var ks=document.getElementById("ponto_kstatus");
+  if(!_ponto.matcher){_pstatus("");if(ks)ks.textContent="Nenhum rosto cadastrado ainda. Use “Cadastrar rostos”.";return;}
+  _pstatus("");
+  var ok=await _pontoCam("ponto_vid_k");if(!ok)return;
+  _ponto.kiosk=true;var kb=document.getElementById("ponto_kbtn");if(kb)kb.textContent="⏸ Parar quiosque";
+  _pontoLoop();
+}
+function _pontoStopKiosk(){_ponto.kiosk=false;if(_ponto.raf){clearTimeout(_ponto.raf);_ponto.raf=null;}var b=document.getElementById("ponto_kbtn");if(b)b.textContent="▶ Iniciar quiosque";}
+async function _pontoLoop(){
+  if(!_ponto.kiosk)return;
+  var v=document.getElementById("ponto_vid_k"),st=document.getElementById("ponto_kstatus");
+  try{
+    var det=await faceapi.detectSingleFace(v).withFaceLandmarks().withFaceDescriptor();
+    if(det){
+      var best=_ponto.matcher.findBestMatch(det.descriptor);
+      if(best&&best.label!=="unknown"){
+        var now=Date.now(),last=_ponto.lastHit[best.label]||0;
+        if(now-last>60000){_ponto.lastHit[best.label]=now;await _pontoRegistrar(best.label);}
+        else{if(st)st.textContent="Já registrado há pouco. Aguarde.";}
+      }else{if(st)st.textContent="Rosto não reconhecido. Aproxime-se.";}
+    }else{if(st&&!/registrada/.test(st.textContent||""))st.textContent="Aponte o rosto para a câmera";}
+  }catch(e){}
+  _ponto.raf=setTimeout(_pontoLoop,900);
+}
+async function _pontoRegistrar(pid){
+  var m=byMil(isNaN(+pid)?pid:+pid)||{nome:pid,id:pid};
+  var st=document.getElementById("ponto_kstatus");if(st)st.textContent="Identificado: "+((m.posto?m.posto+" ":"")+m.nome)+"…";
+  var tipo="entrada";
+  try{var hoje=new Date();hoje.setHours(0,0,0,0);
+    var q=await db.from("pontos").select("tipo").eq("org_id",state.user.orgId).eq("pessoa_id",String(pid)).gte("marcado_em",hoje.toISOString()).order("marcado_em",{ascending:false}).limit(1);
+    if(q.data&&q.data[0]&&q.data[0].tipo==="entrada")tipo="saida";
+  }catch(e){}
+  var setor=(typeof setorNome==="function"?setorNome():"")||null;
+  var r;try{r=await db.rpc("registrar_ponto",{p_pessoa_id:String(pid),p_pessoa_nome:m.nome,p_setor:setor,p_tipo:tipo});}catch(e){if(st)st.textContent="Erro ao registrar: "+(e.message||e);return;}
+  if(r.error||!(r.data&&r.data.ok)){if(st)st.textContent="Falha: "+((r.error&&r.error.message)||(r.data&&r.data.erro)||"erro");return;}
+  _pontoComprov(m,r.data,tipo);try{_beep();}catch(e){}
+}
+function _pontoComprov(m,d,tipo){
+  var dt=new Date(d.marcado_em);var hh=pad(dt.getHours())+":"+pad(dt.getMinutes())+":"+pad(dt.getSeconds());
+  var dia=pad(dt.getDate())+"/"+pad(dt.getMonth()+1)+"/"+dt.getFullYear();
+  var extra="";
+  try{var res=state.schedule&&state.schedule.result;if(res&&state.schedule.month===dt.getMonth()&&state.schedule.year===dt.getFullYear()&&tipo==="entrada"){
+    var serv=_servicoNoDia(res,dt.getDate(),m.id);
+    extra=serv?'<div style="color:#86efac;font-size:13px;margin-top:4px">✓ De serviço hoje na escala</div>':'<div style="color:#fdba74;font-size:13px;margin-top:4px">• Não está de serviço hoje na escala</div>';
+  }}catch(e){}
+  var st=document.getElementById("ponto_kstatus");if(st)st.innerHTML=(tipo==="entrada"?'🟢 Entrada':'🔴 Saída')+" registrada — "+esc((m.posto?m.posto+" ":"")+m.nome);
+  var box=document.getElementById("ponto_comprov");if(box)box.innerHTML='<div style="background:#11162a;border:1px solid #334;border-radius:12px;padding:12px;margin-top:6px;text-align:left"><div style="font-weight:700">Comprovante de ponto</div><div style="font-size:13px;color:#cbd5e1;margin-top:4px">'+esc((m.posto?m.posto+" ":"")+m.nome)+'<br>'+(tipo==="entrada"?"Entrada":"Saída")+' · '+dia+' '+hh+'<br>NSR '+d.nsr+'</div>'+extra+'</div>';
+  setTimeout(function(){try{var b=document.getElementById("ponto_comprov");if(b)b.innerHTML="";var s2=document.getElementById("ponto_kstatus");if(s2&&_ponto.kiosk)s2.textContent="Aponte o rosto para a câmera";}catch(e){}},8000);
+}
 function openRelatorios(){if(!isAdmin())return;var m=document.getElementById("relmodal");if(!m)return;var hist=_relHist();var anos={};Object.keys(hist).forEach(function(ym){anos[ym.slice(0,4)]=1;});if(state.schedule)anos[String(state.schedule.year)]=1;var al=Object.keys(anos).sort().reverse();if(!al.length)al=[String(new Date().getFullYear())];var sel=document.getElementById("rel_ano");if(sel)sel.innerHTML=al.map(function(a){return '<option value="'+a+'">'+a+'</option>';}).join("");var fsel=document.getElementById("rel_func");if(fsel)fsel.innerHTML=(state.militares||[]).map(function(x){return '<option value="'+x.id+'">'+esc((x.posto?x.posto+" ":"")+x.nome)+'</option>';}).join("");var per=document.getElementById("rel_per");if(per)per.value=state.schedule?"mensal":"anual";m.style.display="flex";renderRelatorio();}
 function closeRelatorios(){var m=document.getElementById("relmodal");if(m)m.style.display="none";}
 function _relTable(c){if(!c||!c.rows.length)return '<div class="muted">Sem dados para o período.</div>';var h='<div style="font-weight:700;color:#1e1b4b;margin-bottom:6px">'+esc(c.titulo)+'</div><div class="tblwrap"><table class="stat"><thead><tr>'+c.cols.map(function(x){return '<th>'+esc(x)+'</th>';}).join("")+'</tr></thead><tbody>'+c.rows.map(function(r){return '<tr>'+r.map(function(v,i){return '<td'+(i===0?' style="text-align:left"':'')+'>'+esc(String(v))+'</td>';}).join("")+'</tr>';}).join("")+'</tbody></table></div>';return h;}
