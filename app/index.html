@@ -503,14 +503,14 @@
     </div>
   </section>
 
-  <footer><span class="noprint">Confira a escala antes de publicar.<br>© 2026 <b>Gera Escalas</b> · <span class="lnk" onclick="openAbout()">Sobre &amp; Política de Privacidade</span> · <span style="color:var(--mut2)">v9.8</span></span></footer>
+  <footer><span class="noprint">Confira a escala antes de publicar.<br>© 2026 <b>Gera Escalas</b> · <span class="lnk" onclick="openAbout()">Sobre &amp; Política de Privacidade</span> · <span style="color:var(--mut2)">v9.9</span></span></footer>
 </main>
 
 <div id="aboutmodal" class="modal" style="display:none" onclick="if(event.target===this)closeAbout()">
   <div class="mbox">
     <button class="xbtn" onclick="closeAbout()">Fechar ✕</button>
     <h2>Gera Escalas</h2>
-    <p class="muted">Escalas de plantão, turno e giro · Versão 9.8 · 2026</p>
+    <p class="muted">Escalas de plantão, turno e giro · Versão 9.9 · 2026</p>
 
     <h3>Autoria e direitos autorais</h3>
     <p>© 2026 <b>Gera Escalas</b> — desenvolvido por Luís Cesar. Todos os direitos reservados.</p>
@@ -2167,11 +2167,38 @@ async function gerarAFD(){
   for(var i=0;i<pts.length;i++){var p=pts[i],cpf=cpfDe(p.pessoa_id);if(!cpf)continue;var dt=new Date(p.marcado_em);var pre=nsr9()+"7"+_afdDH(dt)+_padL0(cpf,12)+_afdDH(dt)+"02"+"0";var hash=await _sha256hex(pre+prev);lines.push(pre+hash);prev=hash;cnt7++;}
   lines.push("999999999"+_padL0("1",9)+_padL0("0",9)+_padL0("0",9)+_padL0(String(cnt5),9)+_padL0("0",9)+_padL0(String(cnt7),9)+"9");
   lines.push(_padR("ASSINATURA_DIGITAL_EM_ARQUIVO_P7S",100));
+  var probs=await _afdVerificar(lines);
   var txt=lines.join("\r\n")+"\r\n";
   var bytes=new Uint8Array(_afdBytes(txt));var blob=new Blob([bytes],{type:"text/plain"});var a=document.createElement("a");a.href=URL.createObjectURL(blob);a.download="AFD_"+rep.cnpj+"_"+de+"_a_"+ate+".txt";document.body.appendChild(a);a.click();setTimeout(function(){URL.revokeObjectURL(a.href);a.remove();},500);
   var sc=Object.keys(semCpf);var aviso=sc.length?("\n⚠ "+sc.length+" pessoa(s) com marcação mas SEM CPF ficaram de fora (preencha o CPF na Equipe): "+sc.map(function(k){return semCpf[k];}).join(", ")):"";
-  say("AFD gerado (rascunho): "+cnt5+" empregado(s), "+cnt7+" marcação(ões).\nValide no validador oficial do governo antes de usar legalmente."+aviso,"#86efac");
-  try{log("AFD gerado (rascunho)",de+" a "+ate+" · "+cnt7+" marcações");}catch(e){}
+  var chk=probs.length?("\n⚠ Autoverificação do layout encontrou "+probs.length+" problema(s):\n• "+probs.slice(0,12).join("\n• ")):"\n✓ Autoverificação do layout: tudo certo (tamanhos, CRC-16, hash SHA-256 encadeado, NSR e contagens do trailer).";
+  say("AFD gerado (rascunho): "+cnt5+" empregado(s), "+cnt7+" marcação(ões)."+chk+"\nLembrete: a validação oficial (governo/contador) e a assinatura ICP-Brasil ainda são necessárias."+aviso, probs.length?"#fde68a":"#86efac");
+  try{log("AFD gerado (rascunho)",de+" a "+ate+" · "+cnt7+" marcações · "+(probs.length?(probs.length+" avisos"):"layout ok"));}catch(e){}
+}
+async function _afdVerificar(lines){
+  var probs=[],expLen={"1":302,"2":331,"5":118,"7":137},cntByType={},prevHash="",nsrEsp=0,sigOk=false;
+  for(var i=0;i<lines.length;i++){
+    var ln=lines[i];
+    if(i===lines.length-1&&ln.indexOf("ASSINATURA_DIGITAL_EM_ARQUIVO_P7S")===0){if(ln.length!==100)probs.push("assinatura: tamanho "+ln.length+" (esperado 100)");sigOk=true;continue;}
+    var tipo=(ln.slice(0,9)==="999999999")?"9":ln.charAt(9);
+    cntByType[tipo]=(cntByType[tipo]||0)+1;
+    if(i===0&&tipo!=="1")probs.push("1ª linha não é o cabeçalho (tipo 1)");
+    if(tipo==="9"){if(ln.length!==64)probs.push("trailer: tamanho "+ln.length+" (esperado 64)");continue;}
+    if(expLen[tipo]&&ln.length!==expLen[tipo])probs.push("linha "+(i+1)+" (tipo "+tipo+"): tamanho "+ln.length+" (esperado "+expLen[tipo]+")");
+    var nsr=ln.slice(0,9);
+    if(tipo==="1"){if(nsr!=="000000000")probs.push("cabeçalho: NSR deveria ser 000000000");}
+    else{nsrEsp++;if(parseInt(nsr,10)!==nsrEsp)probs.push("linha "+(i+1)+": NSR "+nsr+" fora de sequência (esperado "+nsrEsp+")");}
+    if(tipo==="1"||tipo==="2"||tipo==="5"){var pre=ln.slice(0,ln.length-4),crc=ln.slice(-4);if(_crc4(pre)!==crc)probs.push("linha "+(i+1)+" (tipo "+tipo+"): CRC-16 não confere");}
+    if(tipo==="7"){var p7=ln.slice(0,73),h7=ln.slice(73,137);var calc=await _sha256hex(p7+prevHash);if(calc!==h7)probs.push("linha "+(i+1)+" (tipo 7): hash SHA-256 não confere");prevHash=h7;}
+  }
+  if(!sigOk)probs.push("falta a linha de assinatura no final");
+  var tr=null;for(var k=0;k<lines.length;k++){if(lines[k].slice(0,9)==="999999999"){tr=lines[k];break;}}
+  if(tr){var c2=parseInt(tr.slice(9,18),10),c5=parseInt(tr.slice(36,45),10),c7=parseInt(tr.slice(54,63),10);
+    if(c2!==(cntByType["2"]||0))probs.push("trailer: contagem de tipo 2 ("+c2+") ≠ real ("+(cntByType["2"]||0)+")");
+    if(c5!==(cntByType["5"]||0))probs.push("trailer: contagem de tipo 5 ("+c5+") ≠ real ("+(cntByType["5"]||0)+")");
+    if(c7!==(cntByType["7"]||0))probs.push("trailer: contagem de tipo 7 ("+c7+") ≠ real ("+(cntByType["7"]||0)+")");
+  }else probs.push("falta o trailer (tipo 9)");
+  return probs;
 }
 function _pontoStopCam(){try{if(_ponto.stream){_ponto.stream.getTracks().forEach(function(t){t.stop();});_ponto.stream=null;}}catch(e){}}
 async function _pontoCam(videoId){
