@@ -503,14 +503,14 @@
     </div>
   </section>
 
-  <footer><span class="noprint">Confira a escala antes de publicar.<br>© 2026 <b>Gera Escalas</b> · <span class="lnk" onclick="openAbout()">Sobre &amp; Política de Privacidade</span> · <span style="color:var(--mut2)">v8.9</span></span></footer>
+  <footer><span class="noprint">Confira a escala antes de publicar.<br>© 2026 <b>Gera Escalas</b> · <span class="lnk" onclick="openAbout()">Sobre &amp; Política de Privacidade</span> · <span style="color:var(--mut2)">v9.0</span></span></footer>
 </main>
 
 <div id="aboutmodal" class="modal" style="display:none" onclick="if(event.target===this)closeAbout()">
   <div class="mbox">
     <button class="xbtn" onclick="closeAbout()">Fechar ✕</button>
     <h2>Gera Escalas</h2>
-    <p class="muted">Escalas de plantão, turno e giro · Versão 8.9 · 2026</p>
+    <p class="muted">Escalas de plantão, turno e giro · Versão 9.0 · 2026</p>
 
     <h3>Autoria e direitos autorais</h3>
     <p>© 2026 <b>Gera Escalas</b> — desenvolvido por Luís Cesar. Todos os direitos reservados.</p>
@@ -799,7 +799,7 @@ function reiniciarApp(){
   try{location.reload();}catch(e){try{location.href=location.pathname;}catch(_){}}
 }
 async function logout(){try{stopNotifRealtime();}catch(e){}try{if(db)await db.auth.signOut();}catch(e){}try{["ciops:militares","ciops:carry","ciops:config","ciops:log","ciops:schedule"].forEach(function(k){localStorage.removeItem(k);});}catch(e){}state.user=null;state.editing=null;state.militares=[];state.schedule=null;state.carry={};document.getElementById("app").style.display="none";document.getElementById("authgate").style.display="flex";renderCloudGate("entrar");}
-function showApp(){document.getElementById("authgate").style.display="none";document.getElementById("app").style.display="";var _cc=document.getElementById("configcard");if(_cc)_cc.style.display="none";renderUserbar();renderSetorSel();renderAddSetor();renderRoster();renderContControls();applyPerms();renderProBanner();var _m=state.config.modo||"auto";var _r=document.querySelector('input[name="modo"][value="'+_m+'"]');if(_r)_r.checked=true;var _sf=document.getElementById("satfolga");if(_sf)_sf.checked=!!state.config.satFolga2c;var _tp=document.getElementById("tipo");if(_tp)_tp.value=(state.schedule&&state.schedule.result&&state.schedule.result.tipo)||state.config.tipo||"giro";var _ts=document.getElementById("turnosel");if(_ts&&state.config.hor&&state.config.hor.turno)_ts.value=state.config.hor.turno.sel||"dia";setTipo();if(state.schedule){var _ms=document.getElementById("mes");if(_ms)_ms.value=state.schedule.month;var _an=document.getElementById("ano");if(_an)_an.value=state.schedule.year;renderSchedule();renderStats();}showTab(state.schedule?"escala":"efetivo");try{state._somOff=localStorage.getItem("ge_som")==="off";}catch(e){}try{refreshNotifCount();}catch(e){}try{startNotifRealtime();}catch(e){}try{document.addEventListener("click",_unlockAudio,{once:true});document.addEventListener("touchstart",_unlockAudio,{once:true});}catch(e){}try{checkNovidades();}catch(e){}}
+function showApp(){document.getElementById("authgate").style.display="none";document.getElementById("app").style.display="";var _cc=document.getElementById("configcard");if(_cc)_cc.style.display="none";renderUserbar();renderSetorSel();renderAddSetor();renderRoster();renderContControls();applyPerms();renderProBanner();var _m=state.config.modo||"auto";var _r=document.querySelector('input[name="modo"][value="'+_m+'"]');if(_r)_r.checked=true;var _sf=document.getElementById("satfolga");if(_sf)_sf.checked=!!state.config.satFolga2c;var _tp=document.getElementById("tipo");if(_tp)_tp.value=(state.schedule&&state.schedule.result&&state.schedule.result.tipo)||state.config.tipo||"giro";var _ts=document.getElementById("turnosel");if(_ts&&state.config.hor&&state.config.hor.turno)_ts.value=state.config.hor.turno.sel||"dia";setTipo();if(state.schedule){var _ms=document.getElementById("mes");if(_ms)_ms.value=state.schedule.month;var _an=document.getElementById("ano");if(_an)_an.value=state.schedule.year;renderSchedule();renderStats();}showTab(state.schedule?"escala":"efetivo");try{state._somOff=localStorage.getItem("ge_som")==="off";}catch(e){}try{refreshNotifCount();}catch(e){}try{startNotifRealtime();}catch(e){}try{if(!state._audioHooked){state._audioHooked=true;document.addEventListener("click",_unlockAudio);document.addEventListener("touchstart",_unlockAudio);document.addEventListener("visibilitychange",function(){if(!document.hidden)_unlockAudio();});}}catch(e){}try{checkNovidades();}catch(e){}}
 function isOwner(){return !!(state.user&&state.user.role==="owner");}
 function isAdmin(){return !!(state.user&&(state.user.role==="admin"||state.user.role==="owner"));}
 var ADMIN_EMAILS=["lcsmbm@gmail.com","geraescalas@gmail.com"];
@@ -2568,10 +2568,10 @@ async function refreshNotifCount(){
 function _unlockAudio(){try{var AC=window.AudioContext||window.webkitAudioContext;if(!AC)return;state._ac=state._ac||new AC();if(state._ac.state==="suspended")state._ac.resume();}catch(e){}}
 function _beep(){
   if(state._somOff)return;
-  try{var AC=window.AudioContext||window.webkitAudioContext;if(!AC)return;state._ac=state._ac||new AC();var ac=state._ac;if(ac.state==="suspended")ac.resume();
-    var t=ac.currentTime;
-    function tone(f,st,du){var o=ac.createOscillator(),g=ac.createGain();o.type="sine";o.frequency.value=f;g.gain.value=0.0001;o.connect(g);g.connect(ac.destination);o.start(t+st);g.gain.exponentialRampToValueAtTime(0.2,t+st+0.02);g.gain.exponentialRampToValueAtTime(0.0001,t+st+du);o.stop(t+st+du+0.03);}
-    tone(880,0,0.3);tone(1175,0.16,0.34);
+  try{if(navigator.vibrate)navigator.vibrate([200,100,200]);}catch(e){}
+  try{var AC=window.AudioContext||window.webkitAudioContext;if(!AC)return;state._ac=state._ac||new AC();var ac=state._ac;
+    function play(){var t=ac.currentTime+0.02;function tone(f,st,du){var o=ac.createOscillator(),g=ac.createGain();o.type="sine";o.frequency.value=f;g.gain.value=0.0001;o.connect(g);g.connect(ac.destination);o.start(t+st);g.gain.exponentialRampToValueAtTime(0.25,t+st+0.02);g.gain.exponentialRampToValueAtTime(0.0001,t+st+du);o.stop(t+st+du+0.03);}tone(880,0,0.3);tone(1175,0.16,0.34);}
+    if(ac.state==="suspended"){ac.resume().then(play).catch(function(){try{play();}catch(e){}});}else{play();}
   }catch(e){}
 }
 function toast(titulo,corpo){

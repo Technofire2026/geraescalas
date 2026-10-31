@@ -5,7 +5,7 @@
    - Chamadas externas (Supabase, CDNs) e requisições não-GET: passam direto, sem cache.
    - Offline: qualquer navegação dentro de /app/ cai no app guardado (./ ou ./index.html).
 */
-var VERSION = "ge-cache-v3";
+var VERSION = "ge-cache-v4";
 var CORE = "./";              /* app shell = start_url do PWA (a pasta /app/) */
 var SHELL = ["./", "./index.html"];
 
@@ -97,6 +97,8 @@ self.addEventListener("push", function (e) {
     body: d.body || "",
     icon: "/logo.png",
     badge: "/logo.png",
+    silent: false,
+    vibrate: [200, 100, 200],
     data: { url: d.url || "/app/" }
   }));
 });
