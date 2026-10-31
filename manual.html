@@ -120,9 +120,10 @@
       <h3>Folga rotativa (5x2, 6x1) <span class="pill">nova lei</span></h3>
       <p>Todos trabalham e o app define <b>quem folga</b> a cada dia. Opções:</p>
       <ul>
-        <li><b>Trabalha × Folga</b> (ex.: 6×1 ou 5×2) — há atalhos <b>6x1</b> e <b>✅ 5x2 (nova lei)</b>.</li>
-        <li><b>Máx/dia</b>: quantas pessoas podem folgar no mesmo dia.</li>
-        <li><b>Máx folgas/semana</b> por pessoa.</li>
+        <li><b>Trabalha × Folga</b> (ex.: 6×1 ou 5×2) — há os atalhos <b>6x1</b> e <b>✅ 5x2 (nova lei)</b>. Um <b>selo</b> ao lado mostra o modelo atual (ex.: 5×2).</li>
+        <li><b>Folgas em bloco ou intercaladas</b> (quando a folga é maior que 1): <b>em bloco</b> = os dias de folga saem juntos (ex.: sábado e domingo); <b>intercaladas</b> = saem separados ao longo da semana.</li>
+        <li><b>Folgam por dia</b> (antes “Máx/dia”): quantas pessoas podem folgar no mesmo dia.</li>
+        <li><b>Folgas/semana (teto)</b> por pessoa (0 = sem limite).</li>
         <li><b>Folga no domingo</b> garantida (descanso semanal).</li>
         <li><b>Folga só em dias específicos</b> e <b>horário</b> do expediente.</li>
       </ul>
@@ -236,13 +237,14 @@
       <p>No caminho “um por um”, entregue o e-mail e a senha ao funcionário; ele pode trocar a senha depois.</p>
 
       <h3>O funcionário pede a permuta</h3>
-      <p>No app do funcionário, no botão <b>🔁 Permutas</b>, ele escolhe:</p>
+      <p>No app do funcionário, no botão <b>🔁 Permutas</b>, o pedido é guiado:</p>
       <ul>
-        <li><b>Substituição:</b> o dia, a coluna (giro/turno) e quem assume o serviço.</li>
-        <li><b>Permuta:</b> dois dias para trocar entre si.</li>
-        <li>Em folga rotativa, troca a folga entre dois dias.</li>
+        <li><b>Meu dia de serviço:</b> a lista já traz <b>apenas os dias em que ele está de serviço</b> no mês (com data e giro/turno) — é só escolher.</li>
+        <li><b>Quem vai assumir:</b> ele <b>digita as primeiras letras do nome</b> do colega e seleciona na lista que aparece.</li>
+        <li><b>Permuta (opcional):</b> marcando “Quero permuta”, surge o <b>dia de serviço do colega</b> — também só com os dias em que o colega está de serviço.</li>
+        <li>Em <b>folga rotativa</b>, o campo “Minha folga” lista só as folgas da pessoa, e “Trocar com” busca o colega por nome e mostra só as folgas dele.</li>
       </ul>
-      <p>Ele acompanha o status (pendente, aprovada ou negada) na mesma tela.</p>
+      <p>Os dias já vêm filtrados automaticamente porque o app reconhece o funcionário pela <b>Pessoa na escala</b> vinculada ao login dele. Ele acompanha o status (pendente, aprovada ou negada) na mesma tela.</p>
 
       <h3>O administrador aprova ou nega</h3>
       <p>No seu acesso, em <b>🔁 Permutas</b>, aparecem os pedidos pendentes. Clique em <b>✓ Aprovar</b> ou <b>✕ Negar</b> (pode escrever um motivo).</p>
