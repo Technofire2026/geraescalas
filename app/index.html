@@ -503,14 +503,14 @@
     </div>
   </section>
 
-  <footer><span class="noprint">Confira a escala antes de publicar.<br>© 2026 <b>Gera Escalas</b> · <span class="lnk" onclick="openAbout()">Sobre &amp; Política de Privacidade</span> · <span style="color:var(--mut2)">v9.0</span></span></footer>
+  <footer><span class="noprint">Confira a escala antes de publicar.<br>© 2026 <b>Gera Escalas</b> · <span class="lnk" onclick="openAbout()">Sobre &amp; Política de Privacidade</span> · <span style="color:var(--mut2)">v9.1</span></span></footer>
 </main>
 
 <div id="aboutmodal" class="modal" style="display:none" onclick="if(event.target===this)closeAbout()">
   <div class="mbox">
     <button class="xbtn" onclick="closeAbout()">Fechar ✕</button>
     <h2>Gera Escalas</h2>
-    <p class="muted">Escalas de plantão, turno e giro · Versão 9.0 · 2026</p>
+    <p class="muted">Escalas de plantão, turno e giro · Versão 9.1 · 2026</p>
 
     <h3>Autoria e direitos autorais</h3>
     <p>© 2026 <b>Gera Escalas</b> — desenvolvido por Luís Cesar. Todos os direitos reservados.</p>
@@ -2596,7 +2596,10 @@ function _urlB64ToU8(base64){var pad="=".repeat((4-base64.length%4)%4);var b64=(
 async function ativarPush(){
   var m=document.getElementById("pushmsg");
   function say(t,c){if(m){m.textContent=t;m.style.color=c||"var(--mut)";}}
-  if(!("serviceWorker" in navigator)||!("PushManager" in window)||!("Notification" in window)){say("Este navegador/aparelho não suporta notificações push.","#b91c1c");return;}
+  var isIOS=/iphone|ipad|ipod/i.test(navigator.userAgent||"");
+  var standalone=(window.navigator.standalone===true)||(window.matchMedia&&window.matchMedia("(display-mode: standalone)").matches);
+  if(isIOS&&!standalone){say("No iPhone/iPad a notificação com o app fechado só funciona com o app INSTALADO na tela inicial. Toque em Compartilhar (⬆) → “Adicionar à Tela de Início”, abra pelo ícone do Gera Escalas e ative aqui de novo.","#b45309");return;}
+  if(!("serviceWorker" in navigator)||!("PushManager" in window)||!("Notification" in window)){say("Este navegador/aparelho não suporta notificações push"+(isIOS?" (no iPhone, instale o app na tela inicial primeiro).":"."),"#b91c1c");return;}
   try{
     var perm=await Notification.requestPermission();
     if(perm!=="granted"){say("Permissão negada. Ative as notificações nas configurações do navegador/app.","#b91c1c");return;}
