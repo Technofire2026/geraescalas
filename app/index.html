@@ -713,6 +713,9 @@
       <div style="margin-top:12px;display:flex;gap:8px;flex-wrap:wrap"><button class="btn primary" onclick="salvarCert()">💾 Salvar certificado</button><button id="cert_rm" class="btn" style="display:none;color:#fff;background:#3a1420;border:1px solid #7f1d1d" onclick="removerCert()">🗑 Remover</button></div>
       <div id="cert_msg" style="font-size:13px;margin-top:10px;white-space:pre-wrap"></div>
       <p style="font-size:12px;color:#7f8bb0;margin-top:10px">A senha não é guardada em texto puro e não aparece de volta nesta tela. Use um certificado <b>A1</b> (arquivo); o <b>A3</b> (token/cartão) não funciona aqui.</p>
+      <hr style="border:none;border-top:1px solid #334;margin:16px 0">
+      <div style="font-size:13px;color:#a7b0d0;margin-bottom:8px">📄 <b>Termo de responsabilidade</b> — gera o documento já preenchido com os dados da Technofire e do empregador (aba 🏢 Empregador) para salvar em PDF. Campos sem cadastro ficam destacados entre colchetes.</div>
+      <button class="btn" style="color:#fff;background:#1e2540;border:1px solid #475569" onclick="gerarTermoPDF()">📄 Gerar termo (PDF)</button>
     </div>
 
     <div id="ponto_kiosk" style="display:none;text-align:center">
@@ -2250,6 +2253,72 @@ async function removerCert(){
   var r;try{r=await db.functions.invoke("cert-salvar",{body:{acao:"remover"}});}catch(e){say("Erro ao remover: "+(e.message||e),"#fca5a5");return;}
   if(r&&r.data&&r.data.ok){say("Certificado removido.","#fde68a");loadCertStatus();try{log("Certificado A1 removido","");}catch(e){}}
   else say("Não removeu: "+((r&&r.data&&r.data.erro)||"erro"),"#fca5a5");
+}
+function gerarTermoPDF(){
+  if(!isAdmin())return;
+  var rep=(state.config&&state.config.rep)||{};
+  var meses=["janeiro","fevereiro","março","abril","maio","junho","julho","agosto","setembro","outubro","novembro","dezembro"];
+  var h=new Date();var dataExt=h.getDate()+" de "+meses[h.getMonth()]+" de "+h.getFullYear();
+  function fld(v,p,cls){return '<span class="fld'+(cls?(" "+cls):"")+'" contenteditable="true" data-ph="'+p+'">'+(v?esc(String(v)):"")+'</span>';}
+  var cidadeUF=fld(rep.cidade,"cidade","w160")+'/'+fld(rep.uf,"UF","w60");
+  var P=[];
+  P.push('<h1>Termo de Autorização e Responsabilidade para Guarda e Uso de Certificado Digital</h1>');
+  P.push('<p>Minuta que autoriza a CONTRATADA a guardar e utilizar o certificado digital A1 (e-CNPJ) do CONTRATANTE, exclusivamente para assinar o Arquivo-Fonte de Dados (AFD) do controle de ponto eletrônico (REP-P), conforme a Portaria MTP nº 671/2021.</p>');
+  P.push('<h2>1. Das partes</h2>');
+  P.push('<p>Pelo presente instrumento particular, de um lado:</p>');
+  P.push('<p><b>CONTRATADA (guardiã da solução):</b> Tecnofire Engenharia de Segurança Contra Incêndio Ltda. ("Technofire" / "Gera Escalas"), CNPJ 33.603.477/0001-10, com sede em '+fld("","endereço completo","w320")+', São Luís/MA, neste ato representada na forma de seus atos constitutivos.</p>');
+  P.push('<p><b>CONTRATANTE (titular do certificado):</b> '+fld(rep.razao,"razão social","w260")+', CNPJ '+fld(rep.cnpj,"CNPJ","w160")+', com sede em '+fld(rep.endereco,"endereço completo","w320")+', neste ato representada por '+fld("","nome do representante legal","w260")+', '+fld("","cargo/qualificação","w200")+', CPF nº '+fld("","CPF","w140")+'.</p>');
+  P.push('<p>As partes acima qualificadas firmam o presente Termo, que se regerá pelas cláusulas a seguir.</p>');
+  P.push('<h2>2. Do objeto e da finalidade</h2>');
+  P.push('<p>2.1. Este Termo autoriza a CONTRATADA a armazenar e utilizar o certificado digital A1 (e-CNPJ) de titularidade do CONTRATANTE, no âmbito do controle de ponto eletrônico do sistema Gera Escalas.</p>');
+  P.push('<p>2.2. O certificado será utilizado exclusivamente para assinar digitalmente o AFD e demais arquivos exigidos pela legislação de registro eletrônico de ponto (REP-P), nos termos da Portaria MTP nº 671/2021.</p>');
+  P.push('<p>2.3. É vedado à CONTRATADA utilizar o certificado para qualquer outra finalidade, incluindo assinatura de contratos, notas fiscais, procurações ou documentos não relacionados ao objeto deste Termo.</p>');
+  P.push('<p>2.4. A assinatura do AFD é automatizada, a pedido do CONTRATANTE ou de usuário por ele autorizado, não cabendo à CONTRATADA juízo sobre o conteúdo dos arquivos assinados.</p>');
+  P.push('<h2>3. Da autorização expressa do titular</h2>');
+  P.push('<p>3.1. O CONTRATANTE, legítimo titular do certificado, autoriza expressamente a CONTRATADA a receber, armazenar de forma cifrada e utilizar o certificado e a respectiva senha, nos estritos limites da Cláusula 2.</p>');
+  P.push('<p>3.2. O CONTRATANTE está ciente de que o e-CNPJ possui validade jurídica e de que sua guarda por terceiro exige relação de confiança, assumindo esta autorização de forma livre, informada e inequívoca.</p>');
+  P.push('<p>3.3. Esta autorização é revogável a qualquer tempo, mediante solicitação à CONTRATADA ou exclusão do certificado no sistema (Cláusula 8).</p>');
+  P.push('<p>3.4. O CONTRATANTE declara que o certificado é válido, está dentro do prazo e foi emitido por Autoridade Certificadora credenciada à ICP-Brasil.</p>');
+  P.push('<h2>4. Das obrigações do CONTRATANTE</h2>');
+  P.push('<p>O CONTRATANTE obriga-se a: fornecer certificado A1 (arquivo) válido e a senha, sendo sua a responsabilidade pela aquisição e renovação; substituir o certificado no sistema antes do vencimento; zelar pela veracidade dos dados e das marcações de ponto; comunicar imediatamente qualquer suspeita de compromisso, extravio ou revogação do certificado; e responsabilizar-se, perante os órgãos fiscalizadores e seus empregados, pela regularidade do controle de jornada e pela guarda legal dos arquivos de ponto pelos prazos exigidos em lei.</p>');
+  P.push('<h2>5. Das obrigações da CONTRATADA e das medidas de segurança</h2>');
+  P.push('<p>A CONTRATADA obriga-se a: armazenar o certificado e a senha de forma cifrada (AES-256), com a chave de cifragem segregada do banco de dados; impedir que qualquer usuário — inclusive da própria CONTRATADA — baixe o certificado ou veja a senha em texto puro pela interface; utilizar o certificado somente para assinar os arquivos de ponto do próprio CONTRATANTE; adotar medidas técnicas e administrativas de segurança razoáveis; excluir definitivamente o certificado e a senha quando solicitado ou ao término da relação; e comunicar sem demora injustificada qualquer incidente de segurança.</p>');
+  P.push('<p>5.1. A CONTRATADA não possui poderes de representação do CONTRATANTE e, com o certificado, não pratica nenhum ato além da assinatura técnica dos arquivos de ponto gerados pelo sistema.</p>');
+  P.push('<h2>6. Da limitação de responsabilidade</h2>');
+  P.push('<p>6.1. A CONTRATADA responde apenas por danos diretos comprovadamente decorrentes de dolo ou culpa grave no descumprimento das obrigações da Cláusula 5.</p>');
+  P.push('<p>6.2. A CONTRATADA não se responsabiliza por: (i) invalidade, vencimento ou revogação do certificado; (ii) incorreção de marcações ou dados inseridos pelo CONTRATANTE ou seus empregados; (iii) penalidades por obrigações trabalhistas próprias do CONTRATANTE; (iv) indisponibilidades causadas por terceiros fora de seu controle razoável.</p>');
+  P.push('<p>6.3. A validade jurídica dos arquivos depende de verificação no validador oficial do Governo e do cumprimento das demais exigências legais pelo CONTRATANTE.</p>');
+  P.push('<p>6.4. A responsabilidade total da CONTRATADA, quando cabível, limita-se ao valor de '+fld("","número","w60")+' meses da contraprestação paga pelo serviço, salvo vedação legal.</p>');
+  P.push('<h2>7. Da proteção de dados pessoais (LGPD)</h2>');
+  P.push('<p>7.1. Quanto aos dados pessoais dos empregados (nome, CPF), o CONTRATANTE atua como controlador e a CONTRATADA como operadora, nos termos da Lei nº 13.709/2018.</p>');
+  P.push('<p>7.2. A CONTRATADA tratará os dados apenas conforme as instruções do CONTRATANTE e para as finalidades deste Termo, com medidas de segurança compatíveis.</p>');
+  P.push('<p>7.3. O CONTRATANTE é responsável por informar seus empregados sobre o tratamento dos dados para controle de jornada e pelas bases legais aplicáveis.</p>');
+  P.push('<p>7.4. Encerrada a relação, a CONTRATADA eliminará os dados pessoais, salvo os de guarda exigida por lei.</p>');
+  P.push('<h2>8. Da revogação, substituição e exclusão do certificado</h2>');
+  P.push('<p>8.1. O CONTRATANTE pode, a qualquer tempo, substituir o certificado ou removê-lo diretamente no sistema.</p>');
+  P.push('<p>8.2. A remoção ou a solicitação de exclusão implica eliminação definitiva do certificado e da senha, cessando a capacidade de assinatura.</p>');
+  P.push('<p>8.3. A exclusão não afeta a validade dos arquivos já assinados.</p>');
+  P.push('<p>8.4. Havendo suspeita de compromisso, o CONTRATANTE deve revogar o certificado junto à Autoridade Certificadora e substituí-lo no sistema.</p>');
+  P.push('<h2>9. Da vigência, rescisão e foro</h2>');
+  P.push('<p>9.1. Este Termo vigora a partir da assinatura e enquanto perdurar o uso do serviço de controle de ponto do sistema Gera Escalas.</p>');
+  P.push('<p>9.2. Qualquer parte pode rescindir mediante comunicação escrita, com '+fld("","número","w60")+' dias de antecedência; a rescisão implica exclusão do certificado (Cláusula 8).</p>');
+  P.push('<p>9.3. A eliminação do certificado também ocorre ao encerramento da conta do CONTRATANTE.</p>');
+  P.push('<p>9.4. Fica eleito o foro da Comarca de '+cidadeUF+' para dirimir questões oriundas deste Termo, com renúncia a qualquer outro.</p>');
+  P.push('<h2>10. Das assinaturas</h2>');
+  P.push('<p>E, por estarem assim justas e contratadas, as partes firmam o presente Termo em duas vias de igual teor.</p>');
+  P.push('<p>'+cidadeUF+', '+fld(dataExt,"data","w200")+'.</p>');
+  P.push('<div class="sig"><div class="line">CONTRATANTE — '+fld(rep.razao,"razão social","w260")+'</div><div class="small">Representante: '+fld("","nome","w220")+' — CPF: '+fld("","CPF","w140")+'</div></div>');
+  P.push('<div class="sig"><div class="line">CONTRATADA — Tecnofire Engenharia de Segurança Contra Incêndio Ltda. (CNPJ 33.603.477/0001-10)</div><div class="small">Representante: '+fld("","nome","w220")+'</div></div>');
+  P.push('<div class="sig"><div class="line">Testemunha 1 — Nome: '+fld("","nome","w220")+' — CPF: '+fld("","CPF","w140")+'</div></div>');
+  P.push('<div class="sig"><div class="line">Testemunha 2 — Nome: '+fld("","nome","w220")+' — CPF: '+fld("","CPF","w140")+'</div></div>');
+  P.push('<p class="muted">Documento-modelo gerado pelo sistema Gera Escalas. Não constitui aconselhamento jurídico e não substitui a revisão por advogado.</p>');
+  var css='@page{size:A4;margin:20mm 16mm}*{box-sizing:border-box}body{font-family:Georgia,"Times New Roman",serif;color:#111;font-size:12pt;line-height:1.5;margin:0;background:#eef1f6}.bar{position:sticky;top:0;z-index:5;background:#0f172a;color:#fff;padding:12px 16px;font-family:Arial,Helvetica,sans-serif;font-size:13px;display:flex;align-items:center;gap:12px;flex-wrap:wrap}.bar button{font:inherit;font-weight:bold;background:#2563eb;color:#fff;border:0;border-radius:8px;padding:9px 16px;cursor:pointer}.doc{max-width:820px;margin:16px auto;background:#fff;padding:30px 36px;box-shadow:0 1px 8px rgba(0,0,0,.15)}h1{font-size:15pt;text-align:center;margin:0 0 14px}h2{font-size:12pt;margin:16px 0 4px}p{text-align:justify;margin:7px 0}.fld{border-bottom:1px solid #2563eb;min-width:90px;display:inline-block;padding:0 3px;outline:none;color:#0b3a8f;font-weight:bold}.fld.w60{min-width:52px}.fld.w140{min-width:140px}.fld.w160{min-width:160px}.fld.w200{min-width:200px}.fld.w220{min-width:220px}.fld.w260{min-width:260px}.fld.w320{min-width:320px}.fld:empty:before{content:attr(data-ph);color:#9aa5b5;font-weight:normal}.sig{margin-top:24px}.line{border-top:1px solid #111;width:72%;margin-top:30px;padding-top:4px;font-weight:bold;font-size:11pt}.small{font-size:10pt;color:#333}.muted{font-size:9pt;color:#555;margin-top:18px}@media print{body{background:#fff}.noprint{display:none!important}.doc{max-width:none;margin:0;padding:0;box-shadow:none}.fld{border-bottom:1px solid #111;color:#111;font-weight:bold}.fld:empty{min-width:170px}.fld:empty:before{content:""}}';
+  var bar='<div class="bar noprint"><span>Preencha os campos sublinhados e clique em</span><button onclick="window.print()">📄 Salvar em PDF</button></div>';
+  var html='<!doctype html><html lang="pt-BR"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>Termo de Responsabilidade - Certificado Digital</title><style>'+css+'</style></head><body>'+bar+'<div class="doc">'+P.join("")+'</div></body></html>';
+  var w=window.open("","_blank");
+  if(!w){alert("Permita janelas/pop-ups para gerar o termo.");return;}
+  w.document.open();w.document.write(html);w.document.close();
+  try{log("Termo de responsabilidade gerado",rep.razao||"");}catch(e){}
 }
 async function _afdVerificar(lines){
   var probs=[],expLen={"1":302,"2":331,"5":118,"7":137},cntByType={},prevHash="",nsrEsp=0,sigOk=false;
