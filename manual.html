@@ -76,6 +76,10 @@
       <li><a href="#celular">14. Usar no celular (instalar como app)</a></li>
       <li><a href="#funcionarios">15. Funcionários e permutas</a></li>
       <li><a href="#avisos">16. Avisos e notificações</a></li>
+      <li><a href="#horaextra">17. Hora extra</a></li>
+      <li><a href="#relatorios">18. Relatórios</a></li>
+      <li><a href="#ponto">19. Controle de ponto (biometria)</a></li>
+      <li><a href="#rep">20. AFD, assinatura e termo</a></li>
       <li><a href="#faq">Dúvidas frequentes</a></li>
     </ol>
   </nav>
@@ -121,7 +125,7 @@
       <p>Todos trabalham e o app define <b>quem folga</b> a cada dia. Opções:</p>
       <ul>
         <li><b>Trabalha × Folga</b> (ex.: 6×1 ou 5×2) — há os atalhos <b>6x1</b> e <b>✅ 5x2 (nova lei)</b>. Um <b>selo</b> ao lado mostra o modelo atual (ex.: 5×2).</li>
-        <li><b>Folgas em bloco ou intercaladas</b> (quando a folga é maior que 1): <b>em bloco</b> = os dias de folga saem juntos (ex.: sábado e domingo); <b>intercaladas</b> = saem separados ao longo da semana.</li>
+        <li><b>Folgas em bloco ou não seguidas</b> (quando a folga é maior que 1): <b>em bloco</b> = os dias de folga saem juntos (ex.: sábado e domingo); <b>não seguidas</b> = a pessoa não folga em dias seguidos — folga hoje, só volta a folgar depois de pelo menos um dia de trabalho (respeitando as demais regras).</li>
         <li><b>Folgam por dia</b> (antes “Máx/dia”): quantas pessoas podem folgar no mesmo dia.</li>
         <li><b>Folgas/semana (teto)</b> por pessoa (0 = sem limite).</li>
         <li><b>Folga no domingo</b> garantida (descanso semanal).</li>
@@ -266,6 +270,45 @@
         <li><b>Permuta aprovada/negada:</b> só os funcionários <b>envolvidos</b> na troca.</li>
         <li><b>Alteração que afeta o setor</b> (ex.: atestado que mexe na escala): use o botão <b>📣 Avisar o setor</b> dentro de 🔔 Avisos — só os funcionários <b>daquele setor</b> são avisados.</li>
       </ul>
+    </section>
+
+    <section id="horaextra">
+      <h2>17. Hora extra</h2>
+      <p>Na <b>grade do mês</b>, clique em um dia do funcionário para lançar <b>hora extra</b>. Você pode registrar por <b>turno inteiro</b> ou <b>digitar as horas</b>, e escrever um motivo. O lançamento aparece na grade e entra automaticamente nos relatórios.</p>
+    </section>
+
+    <section id="relatorios">
+      <h2>18. Relatórios</h2>
+      <p>No botão <b>Relatórios</b> você gera visões <b>semanal, mensal, anual</b> e <b>individual por funcionário</b>, com horários, horas extras e totais. Todos podem ser exportados em <b>CSV</b> (para planilha) e <b>PDF</b> (para imprimir), úteis para a contabilidade e os cálculos trabalhistas.</p>
+      <div class="tip">O relatório individual reúne os dados de um funcionário em um só lugar — prático para entregar ao contador.</div>
+    </section>
+
+    <section id="ponto">
+      <h2>19. Controle de ponto (biometria facial)</h2>
+      <p>O Gera Escalas tem um <b>controle de ponto</b> por reconhecimento facial, pensado para um <b>tablet na entrada</b> da empresa.</p>
+      <h3>Cadastrar os rostos (feito pelo administrador)</h3>
+      <p>No botão <b>🕒 Ponto → 👤 Cadastrar rostos</b>, chame cada funcionário, escolha o nome na lista e capture o rosto pela câmera. O cadastro é feito uma vez por pessoa.</p>
+      <h3>Modo quiosque</h3>
+      <p>Em <b>🕒 Ponto → 📷 Modo quiosque</b>, o tablet fica na tela de reconhecimento: quando o funcionário aparece, o app identifica o rosto e registra <b>entrada</b> ou <b>saída</b> automaticamente, mostrando um <b>comprovante</b> na tela. Há um intervalo entre marcações para evitar duplicidade.</p>
+      <h3>Espelho de ponto</h3>
+      <p>Nos <b>Relatórios</b>, o <b>espelho de ponto</b> mostra, por dia, as entradas, saídas, atrasos e faltas de cada funcionário.</p>
+      <div class="tip">Os registros são gravados em sequência e protegidos por encadeamento (um registro “tranca” o anterior), para garantir que não sejam alterados.</div>
+    </section>
+
+    <section id="rep">
+      <h2>20. AFD, assinatura digital e termo</h2>
+      <p>Para o ponto ter <b>validade legal</b> como registro eletrônico (REP-P, Portaria 671), são necessários três passos, todos no botão <b>🕒 Ponto</b>.</p>
+      <h3>Dados do empregador</h3>
+      <p>Em <b>🏢 Empregador</b>, preencha razão social, CNPJ e endereço da empresa — usados no arquivo e no termo.</p>
+      <h3>Gerar o AFD</h3>
+      <p>Em <b>📄 AFD</b>, escolha o período e gere o <b>Arquivo-Fonte de Dados</b> no layout oficial. O app faz uma <b>autoverificação</b> antes de você entregar ao contador. <b>Confirme sempre</b> o arquivo no validador oficial do Governo.</p>
+      <h3>Certificado digital</h3>
+      <p>Em <b>🔏 Certificado</b>, o administrador anexa o certificado <b>A1 (e-CNPJ)</b> e a senha. Eles ficam guardados de forma <b>cifrada</b> e servem apenas para assinar os arquivos de ponto; a senha não aparece de volta na tela. Use certificado <b>A1 (arquivo)</b> — o A3 (token/cartão) não funciona aqui.</p>
+      <h3>Assinar o AFD</h3>
+      <p>Depois de gerar o AFD, clique em <b>✍ Assinar</b> para criar a assinatura digital <b>.p7s</b>. Entregue sempre o <b>AFD e o .p7s juntos</b>.</p>
+      <h3>Termo de responsabilidade</h3>
+      <p>Ainda em <b>🔏 Certificado</b>, o botão <b>📄 Gerar termo (PDF)</b> cria o Termo de Responsabilidade já preenchido com os dados da empresa. Ele abre com <b>campos editáveis</b> para completar (nome do representante, CPF, testemunhas) e o botão <b>Salvar em PDF</b>.</p>
+      <div class="tip">O termo é um <b>modelo</b> e não substitui a revisão por um advogado, principalmente por envolver a guarda do certificado digital.</div>
     </section>
 
     <section id="faq">
