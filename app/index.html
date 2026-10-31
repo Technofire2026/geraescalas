@@ -503,14 +503,14 @@
     </div>
   </section>
 
-  <footer><span class="noprint">Confira a escala antes de publicar.<br>© 2026 <b>Gera Escalas</b> · <span class="lnk" onclick="openAbout()">Sobre &amp; Política de Privacidade</span> · <span style="color:var(--mut2)">v9.1</span></span></footer>
+  <footer><span class="noprint">Confira a escala antes de publicar.<br>© 2026 <b>Gera Escalas</b> · <span class="lnk" onclick="openAbout()">Sobre &amp; Política de Privacidade</span> · <span style="color:var(--mut2)">v9.2</span></span></footer>
 </main>
 
 <div id="aboutmodal" class="modal" style="display:none" onclick="if(event.target===this)closeAbout()">
   <div class="mbox">
     <button class="xbtn" onclick="closeAbout()">Fechar ✕</button>
     <h2>Gera Escalas</h2>
-    <p class="muted">Escalas de plantão, turno e giro · Versão 9.1 · 2026</p>
+    <p class="muted">Escalas de plantão, turno e giro · Versão 9.2 · 2026</p>
 
     <h3>Autoria e direitos autorais</h3>
     <p>© 2026 <b>Gera Escalas</b> — desenvolvido por Luís Cesar. Todos os direitos reservados.</p>
@@ -631,8 +631,9 @@
     <h2>📄 Relatórios por funcionário</h2>
     <p class="muted" style="margin:0 0 8px">Serviços, folgas, atestados, férias e horas extras de cada funcionário — para enviar à folha de pagamento.</p>
     <div class="row" style="gap:8px;flex-wrap:wrap;align-items:center;margin:6px 0">
-      <label class="fld"><span>Período</span><select id="rel_per" onchange="renderRelatorio()"><option value="mensal">Mensal (mês atual)</option><option value="semanal">Semanal (mês atual)</option><option value="anual">Anual</option></select></label>
+      <label class="fld"><span>Período</span><select id="rel_per" onchange="renderRelatorio()"><option value="mensal">Mensal (mês atual)</option><option value="semanal">Semanal (mês atual)</option><option value="anual">Anual</option><option value="individual">Individual (contábil)</option></select></label>
       <label class="fld" id="rel_anowrap" style="display:none"><span>Ano</span><select id="rel_ano" onchange="renderRelatorio()"></select></label>
+      <label class="fld" id="rel_funcwrap" style="display:none"><span>Funcionário</span><select id="rel_func" onchange="renderRelatorio()"></select></label>
       <div style="flex:1"></div>
       <button class="btn dark" onclick="exportRelCSV()">⬇ CSV</button>
       <button class="btn ghost" onclick="imprimirRel()">🖨 Imprimir / PDF</button>
@@ -2038,10 +2039,54 @@ function arquivarResumo(){if(!state.schedule||!state.schedule.result)return;if(!
 var _relCache=null;
 function _relHist(){try{return JSON.parse(localStorage.getItem("ciops:relhist")||"{}");}catch(e){return {};}}
 function _mesNome(ym){var p=ym.split("-");return MESES[(+p[1]-1)]+"/"+p[0];}
-function openRelatorios(){if(!isAdmin())return;var m=document.getElementById("relmodal");if(!m)return;var hist=_relHist();var anos={};Object.keys(hist).forEach(function(ym){anos[ym.slice(0,4)]=1;});if(state.schedule)anos[String(state.schedule.year)]=1;var al=Object.keys(anos).sort().reverse();if(!al.length)al=[String(new Date().getFullYear())];var sel=document.getElementById("rel_ano");if(sel)sel.innerHTML=al.map(function(a){return '<option value="'+a+'">'+a+'</option>';}).join("");var per=document.getElementById("rel_per");if(per)per.value=state.schedule?"mensal":"anual";m.style.display="flex";renderRelatorio();}
+function openRelatorios(){if(!isAdmin())return;var m=document.getElementById("relmodal");if(!m)return;var hist=_relHist();var anos={};Object.keys(hist).forEach(function(ym){anos[ym.slice(0,4)]=1;});if(state.schedule)anos[String(state.schedule.year)]=1;var al=Object.keys(anos).sort().reverse();if(!al.length)al=[String(new Date().getFullYear())];var sel=document.getElementById("rel_ano");if(sel)sel.innerHTML=al.map(function(a){return '<option value="'+a+'">'+a+'</option>';}).join("");var fsel=document.getElementById("rel_func");if(fsel)fsel.innerHTML=(state.militares||[]).map(function(x){return '<option value="'+x.id+'">'+esc((x.posto?x.posto+" ":"")+x.nome)+'</option>';}).join("");var per=document.getElementById("rel_per");if(per)per.value=state.schedule?"mensal":"anual";m.style.display="flex";renderRelatorio();}
 function closeRelatorios(){var m=document.getElementById("relmodal");if(m)m.style.display="none";}
 function _relTable(c){if(!c||!c.rows.length)return '<div class="muted">Sem dados para o período.</div>';var h='<div style="font-weight:700;color:#1e1b4b;margin-bottom:6px">'+esc(c.titulo)+'</div><div class="tblwrap"><table class="stat"><thead><tr>'+c.cols.map(function(x){return '<th>'+esc(x)+'</th>';}).join("")+'</tr></thead><tbody>'+c.rows.map(function(r){return '<tr>'+r.map(function(v,i){return '<td'+(i===0?' style="text-align:left"':'')+'>'+esc(String(v))+'</td>';}).join("")+'</tr>';}).join("")+'</tbody></table></div>';return h;}
-function renderRelatorio(){var per=(val("rel_per")||"mensal");var aw=document.getElementById("rel_anowrap");if(aw)aw.style.display=(per==="anual")?"":"none";var box=document.getElementById("rel_body");if(!box)return;box.innerHTML=(per==="mensal")?_relMensalHTML():(per==="semanal"?_relSemanalHTML():_relAnualHTML());}
+function renderRelatorio(){var per=(val("rel_per")||"mensal");var aw=document.getElementById("rel_anowrap");if(aw)aw.style.display=(per==="anual")?"":"none";var fw=document.getElementById("rel_funcwrap");if(fw)fw.style.display=(per==="individual")?"":"none";var box=document.getElementById("rel_body");if(!box)return;box.innerHTML=(per==="mensal")?_relMensalHTML():(per==="semanal"?_relSemanalHTML():(per==="individual"?_relIndividualHTML():_relAnualHTML()));}
+function _relIndividualHTML(){
+  if(!state.schedule||!state.schedule.result)return '<div class="muted">Gere a escala do mês para o relatório individual.</div>';
+  var fid=val("rel_func");if(!fid)return '<div class="muted">Escolha o funcionário.</div>';
+  var m=byMil(isNaN(+fid)?fid:+fid);if(!m)return '<div class="muted">Funcionário não encontrado.</div>';
+  var res=state.schedule.result,y=state.schedule.year,mo=state.schedule.month,N=res.N,th=_turnoHoras(res);
+  var serv=0,folg=0,ate=0,fer=0,domS=0,domF=0;
+  for(var d=1;d<=N;d++){var dt=new Date(y,mo,d),dom=dt.getDay()===0;if(onVacation(m,dt)){fer++;continue;}if(onAtestado(m,dt)){ate++;continue;}if(_servicoNoDia(res,d,m.id)){serv++;if(dom)domS++;}else{folg++;if(dom)domF++;}}
+  var ex=(_extrasDe(res)[m.id])||{dias:0,horas:0,list:[]};
+  var horasBase=Math.round(serv*th*10)/10;
+  var rows=[];function add(k,v){rows.push([k,String(v)]);}
+  function nf(n){return (Math.round(n*10)/10).toFixed(1).replace(".",",");}
+  add("Funcionário",(m.posto?m.posto+" ":"")+m.nome);
+  add("Cargo/função",m.posto||"—");
+  add("CPF",m.cpf||"—");
+  add("E-mail",m.email||"—");
+  add("Telefone",m.tel||"—");
+  add("Endereço",m.end||"—");
+  add("Setor",(typeof setorNome==="function"?setorNome():"")||"—");
+  var _hstr=(res.tipo==="folga")?(((res.cfg&&res.cfg.hIni)||"")+" às "+((res.cfg&&res.cfg.hFim)||"")):(_colsOf(res).map(function(c){return c.lab+(c.hhmm?" ("+c.hhmm+")":"");}).join(" · "));
+  add("Horário do turno",_hstr||"—");
+  add("Competência",MESES[mo]+"/"+y);
+  add("Dias de serviço (trabalhados)",serv);
+  add("Dias de folga",folg);
+  add("Domingos trabalhados",domS);
+  add("Domingos de folga",domF);
+  add("Dias de atestado",ate);
+  add("Dias de férias (no mês)",fer);
+  add("Horas base estimadas",nf(horasBase)+"h ("+serv+" dia(s) × "+nf(th)+"h)");
+  add("Horas extras (total)",nf(ex.horas)+"h em "+(ex.list.length)+" lançamento(s)");
+  add("Total de horas no mês (base + extra)",nf(horasBase+ex.horas)+"h");
+  (ex.list||[]).slice().sort(function(a,b){return a.d-b.d;}).forEach(function(e){add("  • Hora extra dia "+e.d,e.horas+"h ("+(e.tipo==="dia"?"turno":"avulsas")+")"+(e.motivo?(" — "+e.motivo):""));});
+  try{var mS=new Date(y,mo,1),mE=new Date(y,mo,N);
+    feriasPeriods(m).forEach(function(p){if(p.start<=mE&&p.end>=mS)add("  • Férias",brDate(p.start)+" a "+brDate(p.end)+(p.ret?(" · retorna "+brDate(p.ret)):""));});
+    atestadoPeriods(m).forEach(function(p){if(p.start<=mE&&p.end>=mS)add("  • Atestado",brDate(p.start)+" a "+brDate(p.end));});
+  }catch(e){}
+  var hist=_relHist(),ano=String(y),meses=Object.keys(hist).filter(function(ym){return ym.slice(0,4)===ano;});
+  if(meses.length){var a={serv:0,folg:0,ate:0,fer:0,heHoras:0,horas:0};meses.forEach(function(ym){(hist[ym]||[]).forEach(function(r){if(String(r.id)===String(m.id)){a.serv+=r.serv||0;a.folg+=r.folg||0;a.ate+=r.ate||0;a.fer+=r.fer||0;a.heHoras+=r.heHoras||0;a.horas+=r.horas||0;}});});
+    add("— Acumulado no ano "+ano+" —",meses.length+" mês(es) arquivado(s)");
+    add("Ano · dias de serviço",a.serv);add("Ano · dias de folga",a.folg);add("Ano · dias de atestado",a.ate);add("Ano · dias de férias",a.fer);add("Ano · horas extras",nf(a.heHoras)+"h");add("Ano · horas base",nf(a.horas)+"h");
+  }
+  add("Observação","Horas base são estimativas (dias × horas do turno). Jornada exata, adicional noturno, horas extras e DSR dependem do controle de ponto e do contador.");
+  _relCache={tipo:"relatorio-individual-"+String(m.nome||"").replace(/\s+/g,"_"),titulo:"Relatório individual (contábil) — "+((m.posto?m.posto+" ":"")+m.nome)+" — "+MESES[mo]+"/"+y,cols:["Campo","Valor"],rows:rows};
+  return _relTable(_relCache);
+}
 function _relMensalHTML(){if(!state.schedule||!state.schedule.result)return '<div class="muted">Gere uma escala para ver o relatório mensal.</div>';var res=state.schedule.result,y=state.schedule.year,mo=state.schedule.month;var rows=_resumoMes(res,state.militares,y,mo);_relCache={tipo:"relatorio-mensal",titulo:"Relatório mensal — "+MESES[mo]+"/"+y,cols:["Funcionário","Serviços","Folgas","Atestado","Férias","H.extra (dias)","H.extra (h)","Horas base"],rows:rows.map(function(r){return [(r.posto?r.posto+" ":"")+r.nome,r.serv,r.folg,r.ate,r.fer,r.heDias,r.heHoras,r.horas];})};return _relTable(_relCache);}
 function _relSemanalHTML(){if(!state.schedule||!state.schedule.result)return '<div class="muted">Gere uma escala para ver o relatório semanal.</div>';var res=state.schedule.result,y=state.schedule.year,mo=state.schedule.month,N=res.N;var w1=new Date(y,mo,1).getDay();function wk(d){return Math.floor((d-1+w1)/7);}var nw=wk(N)+1;var ex=_extrasDe(res);var mils=state.militares||[];
   var rows=mils.map(function(m){var serv=[],heT=0;for(var w=0;w<nw;w++)serv[w]=0;for(var d=1;d<=N;d++){var dt=new Date(y,mo,d);if(onVacation(m,dt)||onAtestado(m,dt))continue;if(_servicoNoDia(res,d,m.id))serv[wk(d)]++;}var el=(ex[m.id]&&ex[m.id].list)||[];el.forEach(function(e){heT+=e.horas;});var r=[(m.posto?m.posto+" ":"")+m.nome];for(var w=0;w<nw;w++)r.push(serv[w]);r.push(Math.round(heT*10)/10);return r;});
@@ -2699,6 +2744,7 @@ function renderPermServico(box,meuId,common){
     +'<div class="row" style="gap:6px;flex-wrap:wrap;align-items:center;margin-top:6px"><span class="tiny" style="font-weight:600">Quem vai assumir:</span> <select id="pm_colsel" onchange="pmOnColega()" style="font:inherit;padding:6px;border:1px solid #cbd5e1;border-radius:6px;min-width:190px">'+_colegaOpts(firstId)+'</select></div>'
     +'<label class="row" style="gap:6px;align-items:center;margin-top:6px;cursor:pointer"><input type="checkbox" id="pm_isperm" onchange="pmTogglePerm()"> <span class="tiny">Quero <b>permuta</b> (troco por um dia de serviço dele)</span></label>'
     +'<div id="pm_theirrow" class="row" style="gap:6px;flex-wrap:wrap;align-items:center;margin-top:6px;display:none"><span class="tiny" style="font-weight:600">Dia de serviço dele:</span> <select id="pm_theirday"><option value="">escolha o colega primeiro</option></select></div>'
+    +'<label class="fld" style="display:block;margin-top:8px"><span class="tiny" style="font-weight:600">Motivo da solicitação (opcional)</span><input id="pm_motivo" placeholder="ex.: consulta médica, compromisso familiar" style="width:100%;font:inherit;padding:6px;border:1px solid #cbd5e1;border-radius:6px"></label>'
     +'<input type="hidden" id="pm_colid" value="">'
     +'<button class="btn primary" style="margin-top:8px" onclick="enviarPermuta()">Enviar solicitação</button>'+common;
 }
@@ -2714,6 +2760,7 @@ function renderPermFolga(box,meuId,common){
     +'<div class="row" style="gap:6px;flex-wrap:wrap;align-items:center;margin-top:6px"><span class="tiny" style="font-weight:600">Minha folga:</span> <select id="pm_myday">'+_folgaOpts(firstId)+'</select></div>'
     +'<div class="row" style="gap:6px;flex-wrap:wrap;align-items:center;margin-top:6px"><span class="tiny" style="font-weight:600">Trocar com:</span> <select id="pm_colsel" onchange="pmOnColegaFolga()" style="font:inherit;padding:6px;border:1px solid #cbd5e1;border-radius:6px;min-width:190px">'+_colegaOpts(firstId)+'</select></div>'
     +'<div class="row" style="gap:6px;flex-wrap:wrap;align-items:center;margin-top:6px"><span class="tiny" style="font-weight:600">Folga dele:</span> <select id="pm_theirday"><option value="">escolha o colega primeiro</option></select></div>'
+    +'<label class="fld" style="display:block;margin-top:8px"><span class="tiny" style="font-weight:600">Motivo da solicitação (opcional)</span><input id="pm_motivo" placeholder="ex.: consulta médica, compromisso familiar" style="width:100%;font:inherit;padding:6px;border:1px solid #cbd5e1;border-radius:6px"></label>'
     +'<input type="hidden" id="pm_colid" value="">'
     +'<button class="btn primary" style="margin-top:8px" onclick="enviarPermuta()">Enviar solicitação</button>'+common;
 }
@@ -2793,6 +2840,7 @@ async function enviarPermuta(){
       payload={op:"perm",d:d,ci:ci,d2:d2,c2:c2,year:state.schedule.year,month:state.schedule.month,tipo:res.tipo};
     }
   }
+  var _mot=(val("pm_motivo")||"").trim();if(_mot)det+=" · Motivo: "+_mot;
   say("Enviando…");
   try{var r=await db.rpc("criar_solicitacao",{p_tipo:tipoReq,p_data:data,p_detalhe:det,p_payload:payload});if(r&&r.error){say("Falha: "+r.error.message,"#b91c1c");return;}}catch(e){say("Erro: "+(e.message||e),"#b91c1c");return;}
   say("Solicitação enviada! O administrador vai analisar.","#15803d");
