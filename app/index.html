@@ -503,14 +503,14 @@
     </div>
   </section>
 
-  <footer><span class="noprint">Confira a escala antes de publicar.<br>© 2026 <b>Gera Escalas</b> · <span class="lnk" onclick="openAbout()">Sobre &amp; Política de Privacidade</span> · <span style="color:var(--mut2)">v9.3</span></span></footer>
+  <footer><span class="noprint">Confira a escala antes de publicar.<br>© 2026 <b>Gera Escalas</b> · <span class="lnk" onclick="openAbout()">Sobre &amp; Política de Privacidade</span> · <span style="color:var(--mut2)">v9.5</span></span></footer>
 </main>
 
 <div id="aboutmodal" class="modal" style="display:none" onclick="if(event.target===this)closeAbout()">
   <div class="mbox">
     <button class="xbtn" onclick="closeAbout()">Fechar ✕</button>
     <h2>Gera Escalas</h2>
-    <p class="muted">Escalas de plantão, turno e giro · Versão 9.3 · 2026</p>
+    <p class="muted">Escalas de plantão, turno e giro · Versão 9.5 · 2026</p>
 
     <h3>Autoria e direitos autorais</h3>
     <p>© 2026 <b>Gera Escalas</b> — desenvolvido por Luís Cesar. Todos os direitos reservados.</p>
@@ -647,9 +647,9 @@
     <div style="display:flex;align-items:center;gap:10px;flex-wrap:wrap;margin-bottom:10px">
       <div style="font-size:20px;font-weight:800">🕒 Controle de ponto</div>
       <div style="flex:1"></div>
-      <button class="btn ghost" style="color:#fff;border-color:#334" onclick="pontoMode('cad')">👤 Cadastrar rostos</button>
+      <button class="btn" style="color:#fff;background:#1e2540;border:1px solid #475569" onclick="pontoMode('cad')">👤 Cadastrar rostos</button>
       <button class="btn primary" onclick="pontoMode('kiosk')">📷 Modo quiosque</button>
-      <button class="btn ghost" style="color:#fff;border-color:#334" onclick="closePonto()">Sair ✕</button>
+      <button class="btn" style="color:#fff;background:#3a1e2a;border:1px solid #6b3a4a" onclick="closePonto()">Sair ✕</button>
     </div>
     <div id="ponto_status" style="font-size:13px;color:#a7b0d0;margin-bottom:10px"></div>
 
@@ -2080,7 +2080,7 @@ function _mesNome(ym){var p=ym.split("-");return MESES[(+p[1]-1)]+"/"+p[0];}
 // ===== Controle de ponto (quiosque facial) — Fase 1 =====
 var FACE_LIB="https://cdn.jsdelivr.net/npm/@vladmandic/face-api@1.7.13/dist/face-api.js";
 var FACE_MODELS="https://cdn.jsdelivr.net/npm/@vladmandic/face-api@1.7.13/model";
-var _ponto={faceLoaded:false,stream:null,kiosk:false,matcher:null,lastHit:{},raf:null};
+var _ponto={faceLoaded:false,stream:null,kiosk:false,matcher:null,lastHit:{},raf:null,busy:false,showing:false};
 function _pstatus(t){var e=document.getElementById("ponto_status");if(e)e.textContent=t||"";}
 function _loadScript(src){return new Promise(function(res,rej){var s=document.createElement("script");s.src=src;s.onload=function(){res();};s.onerror=function(){rej(new Error("falha ao baixar "+src));};document.head.appendChild(s);});}
 async function _ensureFace(){
@@ -2164,19 +2164,22 @@ function _pontoStopKiosk(){_ponto.kiosk=false;if(_ponto.raf){clearTimeout(_ponto
 async function _pontoLoop(){
   if(!_ponto.kiosk)return;
   var v=document.getElementById("ponto_vid_k"),st=document.getElementById("ponto_kstatus");
-  try{
-    var det=await faceapi.detectSingleFace(v).withFaceLandmarks().withFaceDescriptor();
-    if(det){
-      var best=_ponto.matcher.findBestMatch(det.descriptor);
-      if(best&&best.label!=="unknown"){
-        var now=Date.now(),last=_ponto.lastHit[best.label]||0;
-        if(now-last>60000){_ponto.lastHit[best.label]=now;await _pontoRegistrar(best.label);}
-        else{if(st)st.textContent="Já registrado há pouco. Aguarde.";}
-      }else{if(st)st.textContent="Rosto não reconhecido. Aproxime-se.";}
-    }else{if(st&&!/registrada/.test(st.textContent||""))st.textContent="Aponte o rosto para a câmera";}
-  }catch(e){}
+  if(!_ponto.busy&&!_ponto.showing){
+    try{
+      var det=await faceapi.detectSingleFace(v).withFaceLandmarks().withFaceDescriptor();
+      if(det){
+        var best=_ponto.matcher.findBestMatch(det.descriptor);
+        if(best&&best.label!=="unknown"){
+          var now=Date.now(),last=_ponto.lastHit[best.label]||0;
+          if(now-last>45000){_ponto.busy=true;try{await _pontoRegistrar(best.label);}catch(e){}_ponto.busy=false;}
+          // dentro do intervalo: ignora em silêncio (não apaga o comprovante)
+        }else{if(st)st.textContent="Rosto não reconhecido. Aproxime-se.";}
+      }else{if(st)st.textContent="Aponte o rosto para a câmera";}
+    }catch(e){_ponto.busy=false;}
+  }
   _ponto.raf=setTimeout(_pontoLoop,900);
 }
+function _pontoErro(msg){_ponto.showing=true;var st=document.getElementById("ponto_kstatus");if(st)st.innerHTML='<span style="color:#fca5a5">⚠ '+esc(msg)+'</span>';setTimeout(function(){_ponto.showing=false;},6000);}
 async function _pontoRegistrar(pid){
   var m=byMil(isNaN(+pid)?pid:+pid)||{nome:pid,id:pid};
   var st=document.getElementById("ponto_kstatus");if(st)st.textContent="Identificado: "+((m.posto?m.posto+" ":"")+m.nome)+"…";
@@ -2186,21 +2189,23 @@ async function _pontoRegistrar(pid){
     if(q.data&&q.data[0]&&q.data[0].tipo==="entrada")tipo="saida";
   }catch(e){}
   var setor=(typeof setorNome==="function"?setorNome():"")||null;
-  var r;try{r=await db.rpc("registrar_ponto",{p_pessoa_id:String(pid),p_pessoa_nome:m.nome,p_setor:setor,p_tipo:tipo});}catch(e){if(st)st.textContent="Erro ao registrar: "+(e.message||e);return;}
-  if(r.error||!(r.data&&r.data.ok)){if(st)st.textContent="Falha: "+((r.error&&r.error.message)||(r.data&&r.data.erro)||"erro");return;}
+  var r;try{r=await db.rpc("registrar_ponto",{p_pessoa_id:String(pid),p_pessoa_nome:m.nome,p_setor:setor,p_tipo:tipo});}catch(e){_pontoErro("Erro ao registrar: "+(e.message||e));return;}
+  if(r.error||!(r.data&&r.data.ok)){_pontoErro("Não registrou: "+((r.error&&r.error.message)||(r.data&&r.data.erro)||"erro")+" — rodou o SQL geraescalas_ponto.sql no Supabase?");return;}
+  _ponto.lastHit[String(pid)]=Date.now(); // só marca o intervalo quando REALMENTE registrou
   _pontoComprov(m,r.data,tipo);try{_beep();}catch(e){}
 }
 function _pontoComprov(m,d,tipo){
+  _ponto.showing=true;
   var dt=new Date(d.marcado_em);var hh=pad(dt.getHours())+":"+pad(dt.getMinutes())+":"+pad(dt.getSeconds());
   var dia=pad(dt.getDate())+"/"+pad(dt.getMonth()+1)+"/"+dt.getFullYear();
   var extra="";
   try{var res=state.schedule&&state.schedule.result;if(res&&state.schedule.month===dt.getMonth()&&state.schedule.year===dt.getFullYear()&&tipo==="entrada"){
     var serv=_servicoNoDia(res,dt.getDate(),m.id);
-    extra=serv?'<div style="color:#86efac;font-size:13px;margin-top:4px">✓ De serviço hoje na escala</div>':'<div style="color:#fdba74;font-size:13px;margin-top:4px">• Não está de serviço hoje na escala</div>';
+    extra=serv?'<div style="color:#86efac;font-size:14px;margin-top:6px">✓ De serviço hoje na escala</div>':'<div style="color:#fdba74;font-size:14px;margin-top:6px">• Não está de serviço hoje na escala</div>';
   }}catch(e){}
-  var st=document.getElementById("ponto_kstatus");if(st)st.innerHTML=(tipo==="entrada"?'🟢 Entrada':'🔴 Saída')+" registrada — "+esc((m.posto?m.posto+" ":"")+m.nome);
-  var box=document.getElementById("ponto_comprov");if(box)box.innerHTML='<div style="background:#11162a;border:1px solid #334;border-radius:12px;padding:12px;margin-top:6px;text-align:left"><div style="font-weight:700">Comprovante de ponto</div><div style="font-size:13px;color:#cbd5e1;margin-top:4px">'+esc((m.posto?m.posto+" ":"")+m.nome)+'<br>'+(tipo==="entrada"?"Entrada":"Saída")+' · '+dia+' '+hh+'<br>NSR '+d.nsr+'</div>'+extra+'</div>';
-  setTimeout(function(){try{var b=document.getElementById("ponto_comprov");if(b)b.innerHTML="";var s2=document.getElementById("ponto_kstatus");if(s2&&_ponto.kiosk)s2.textContent="Aponte o rosto para a câmera";}catch(e){}},8000);
+  var st=document.getElementById("ponto_kstatus");if(st)st.innerHTML='<span style="color:'+(tipo==="entrada"?"#86efac":"#fda4af")+'">'+(tipo==="entrada"?'🟢 ENTRADA':'🔴 SAÍDA')+" registrada</span><br><span style=\"font-size:16px\">"+esc((m.posto?m.posto+" ":"")+m.nome)+"</span>";
+  var box=document.getElementById("ponto_comprov");if(box)box.innerHTML='<div style="background:#11162a;border:2px solid '+(tipo==="entrada"?"#16a34a":"#e11d48")+';border-radius:14px;padding:14px;margin-top:8px;text-align:left"><div style="font-weight:800;font-size:15px">🧾 Comprovante de ponto</div><div style="font-size:14px;color:#e2e8f0;margin-top:6px;line-height:1.6">'+esc((m.posto?m.posto+" ":"")+m.nome)+'<br><b>'+(tipo==="entrada"?"Entrada":"Saída")+'</b> · '+dia+' · '+hh+'<br>NSR '+d.nsr+'</div>'+extra+'</div>';
+  setTimeout(function(){try{var b=document.getElementById("ponto_comprov");if(b)b.innerHTML="";_ponto.showing=false;var s2=document.getElementById("ponto_kstatus");if(s2&&_ponto.kiosk)s2.textContent="Aponte o rosto para a câmera";}catch(e){}},9000);
 }
 function openRelatorios(){if(!isAdmin())return;var m=document.getElementById("relmodal");if(!m)return;var hist=_relHist();var anos={};Object.keys(hist).forEach(function(ym){anos[ym.slice(0,4)]=1;});if(state.schedule)anos[String(state.schedule.year)]=1;var al=Object.keys(anos).sort().reverse();if(!al.length)al=[String(new Date().getFullYear())];var sel=document.getElementById("rel_ano");if(sel)sel.innerHTML=al.map(function(a){return '<option value="'+a+'">'+a+'</option>';}).join("");var fsel=document.getElementById("rel_func");if(fsel)fsel.innerHTML=(state.militares||[]).map(function(x){return '<option value="'+x.id+'">'+esc((x.posto?x.posto+" ":"")+x.nome)+'</option>';}).join("");var per=document.getElementById("rel_per");if(per)per.value=state.schedule?"mensal":"anual";m.style.display="flex";renderRelatorio();}
 function closeRelatorios(){var m=document.getElementById("relmodal");if(m)m.style.display="none";}
