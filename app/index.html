@@ -303,6 +303,8 @@
           <button class="btn primary" id="btngerar" onclick="gerar()" style="flex:1 1 160px;justify-content:center">↻ Gerar escala</button>
           <button class="btn ghost" id="btncob" onclick="aplicarCobertura()" disabled title="Recalcula a escala a partir do dia do afastamento: o sucessor assume (sobreaviso) e a folga do efetivo é reduzida no período" style="flex:1 1 160px;justify-content:center">🩺 Aplicar afastamento</button>
           <button class="btn ghost" id="btntroca" onclick="openTroca()" disabled title="Substituir alguém num dia ou permutar (trocar) entre dois dias" style="flex:1 1 160px;justify-content:center">🔁 Trocar / Substituir</button>
+          <button class="btn ghost" id="btnhe" onclick="openHoraExtra()" disabled title="Lançar hora extra para um funcionário num dia" style="flex:1 1 150px;justify-content:center">➕ Hora extra</button>
+          <button class="btn ghost" id="btnrel" onclick="openRelatorios()" title="Relatórios por funcionário (semanal, mensal e anual) para a folha de pagamento" style="flex:1 1 150px;justify-content:center">📄 Relatórios</button>
           <button class="btn dark" id="btncsv" onclick="exportCSV()" disabled style="flex:1 1 110px;justify-content:center">⬇ CSV</button>
           <button class="btn ghost" id="btnprint" onclick="imprimir()" disabled style="flex:1 1 110px;justify-content:center">🖨 Imprimir</button>
         </div>
@@ -502,14 +504,14 @@
     </div>
   </section>
 
-  <footer><span class="noprint">Confira a escala antes de publicar.<br>© 2026 <b>Gera Escalas</b> · <span class="lnk" onclick="openAbout()">Sobre &amp; Política de Privacidade</span> · <span style="color:var(--mut2)">v8.2</span></span></footer>
+  <footer><span class="noprint">Confira a escala antes de publicar.<br>© 2026 <b>Gera Escalas</b> · <span class="lnk" onclick="openAbout()">Sobre &amp; Política de Privacidade</span> · <span style="color:var(--mut2)">v8.3</span></span></footer>
 </main>
 
 <div id="aboutmodal" class="modal" style="display:none" onclick="if(event.target===this)closeAbout()">
   <div class="mbox">
     <button class="xbtn" onclick="closeAbout()">Fechar ✕</button>
     <h2>Gera Escalas</h2>
-    <p class="muted">Escalas de plantão, turno e giro · Versão 8.2 · 2026</p>
+    <p class="muted">Escalas de plantão, turno e giro · Versão 8.3 · 2026</p>
 
     <h3>Autoria e direitos autorais</h3>
     <p>© 2026 <b>Gera Escalas</b> — desenvolvido por Luís Cesar. Todos os direitos reservados.</p>
@@ -616,7 +618,29 @@
   </div>
 </div>
 
+<div id="hemodal" class="modal" style="display:none" onclick="if(event.target===this)closeHoraExtra()">
+  <div class="mbox" style="max-width:520px">
+    <button class="xbtn" onclick="closeHoraExtra()">Fechar ✕</button>
+    <h2>➕ Hora extra</h2>
+    <div id="he_body"></div>
+  </div>
+</div>
 
+<div id="relmodal" class="modal" style="display:none" onclick="if(event.target===this)closeRelatorios()">
+  <div class="mbox" style="max-width:900px">
+    <button class="xbtn" onclick="closeRelatorios()">Fechar ✕</button>
+    <h2>📄 Relatórios por funcionário</h2>
+    <p class="muted" style="margin:0 0 8px">Serviços, folgas, atestados, férias e horas extras de cada funcionário — para enviar à folha de pagamento.</p>
+    <div class="row" style="gap:8px;flex-wrap:wrap;align-items:center;margin:6px 0">
+      <label class="fld"><span>Período</span><select id="rel_per" onchange="renderRelatorio()"><option value="mensal">Mensal (mês atual)</option><option value="semanal">Semanal (mês atual)</option><option value="anual">Anual</option></select></label>
+      <label class="fld" id="rel_anowrap" style="display:none"><span>Ano</span><select id="rel_ano" onchange="renderRelatorio()"></select></label>
+      <div style="flex:1"></div>
+      <button class="btn dark" onclick="exportRelCSV()">⬇ CSV</button>
+      <button class="btn ghost" onclick="imprimirRel()">🖨 Imprimir / PDF</button>
+    </div>
+    <div id="rel_body" style="overflow:auto"></div>
+  </div>
+</div>
 
 <script>
 const LOGO_VIGILES="data:image/svg+xml;base64,PHN2ZyB2aWV3Qm94PSIwIDAgMTIwIDEyMCIgeG1sbnM9Imh0dHA6Ly93d3cudzMub3JnLzIwMDAvc3ZnIj4KPHJlY3QgeD0iNiIgeT0iNiIgd2lkdGg9IjEwOCIgaGVpZ2h0PSIxMDgiIHJ4PSIyOCIgZmlsbD0iIzRmNDZlNSIvPgo8Y2lyY2xlIGN4PSI2MCIgY3k9IjYwIiByPSIzMSIgZmlsbD0ibm9uZSIgc3Ryb2tlPSIjMzczMGEzIiBzdHJva2Utd2lkdGg9IjEwIi8+CjxwYXRoIGQ9Ik02MCAyOSBhMzEgMzEgMCAwIDEgMjcgMTYiIGZpbGw9Im5vbmUiIHN0cm9rZT0iI2Y1OWUwYiIgc3Ryb2tlLXdpZHRoPSIxMCIgc3Ryb2tlLWxpbmVjYXA9InJvdW5kIi8+CjxwYXRoIGQ9Ik04NyA0NSBhMzEgMzEgMCAwIDEgLTEzIDQxIiBmaWxsPSJub25lIiBzdHJva2U9IiMxNGI4YTYiIHN0cm9rZS13aWR0aD0iMTAiIHN0cm9rZS1saW5lY2FwPSJyb3VuZCIvPgo8cGF0aCBkPSJNNzQgODYgYTMxIDMxIDAgMCAxIC00MSAtOSIgZmlsbD0ibm9uZSIgc3Ryb2tlPSIjYTViNGZjIiBzdHJva2Utd2lkdGg9IjEwIiBzdHJva2UtbGluZWNhcD0icm91bmQiLz4KPHBhdGggZD0iTTQ5IDYwIGw4IDggbDE1IC0xOCIgZmlsbD0ibm9uZSIgc3Ryb2tlPSIjZmZmIiBzdHJva2Utd2lkdGg9IjcuNSIgc3Ryb2tlLWxpbmVjYXA9InJvdW5kIiBzdHJva2UtbGluZWpvaW49InJvdW5kIi8+Cjwvc3ZnPg==";
@@ -676,9 +700,9 @@ function serializeSchedule(){
   var g1={},g2={},g3={};if(r.g1){for(var d=1;d<=r.N;d++){g1[d]=idOf(r.g1[d]);g2[d]=idOf(r.g2&&r.g2[d]);g3[d]=idOf(r.g3?r.g3[d]:null);}}
   var cover={};for(var k in (r.cover||{})){var c=r.cover[k];cover[k]={};for(var gi in c){cover[k][gi]={was:idOf(c[gi].was),sub:idOf(c[gi].sub)};}}
   var stats=(r.stats||[]).map(function(s){return {id:s.ref.id,order:s.order,servicos:s.servicos,g1:s.g1,g2:s.g2,sab:s.sab,dom:s.dom,wknd:s.wknd,cob:s.cob,horas:s.horas,folgao:s.folgao,lastDay:s.lastDay,feriasNoMes:s.feriasNoMes,atestadoNoMes:s.atestadoNoMes};});
-  return {year:state.schedule.year,month:state.schedule.month,N:r.N,tipo:r.tipo||"giro",seed:r.seed||null,g1:g1,g2:g2,g3:g3,cols:r.cols||null,durs:r.durs||null,cover:cover,changed:r.changed||{},vacant:r.vacant||[],stats:stats,contInfo:state.contInfo||null,turmas:r.turmas||null,turmasMembros:r.turmasMembros||null,folga:(r.folga?_serFolga(r.folga):null),cfg:r.cfg||null,semDomingo:r.semDomingo||null,excedeuMax:r.excedeuMax||false,estourou:r.estourou||false};
+  return {year:state.schedule.year,month:state.schedule.month,N:r.N,tipo:r.tipo||"giro",seed:r.seed||null,g1:g1,g2:g2,g3:g3,cols:r.cols||null,durs:r.durs||null,cover:cover,changed:r.changed||{},vacant:r.vacant||[],stats:stats,contInfo:state.contInfo||null,turmas:r.turmas||null,turmasMembros:r.turmasMembros||null,folga:(r.folga?_serFolga(r.folga):null),cfg:r.cfg||null,semDomingo:r.semDomingo||null,excedeuMax:r.excedeuMax||false,estourou:r.estourou||false,extras:r.extras||{}};
 }
-function saveSchedule(){try{var o=serializeSchedule();if(o)localStorage.setItem("ciops:schedule",JSON.stringify(o));else localStorage.removeItem("ciops:schedule");}catch(e){}cloudPush("schedule");}
+function saveSchedule(){try{var o=serializeSchedule();if(o)localStorage.setItem("ciops:schedule",JSON.stringify(o));else localStorage.removeItem("ciops:schedule");}catch(e){}cloudPush("schedule");try{arquivarResumo();}catch(e){}}
 function restoreSchedule(){
   try{
     var raw=localStorage.getItem("ciops:schedule");if(!raw){state.schedule=null;return;}var o=JSON.parse(raw);if(!o||!o.N){state.schedule=null;return;}
@@ -689,7 +713,7 @@ function restoreSchedule(){
     var stats=(o.stats||[]).map(function(s){var m=byId[s.id];if(!m)return null;var ss=Object.assign({},s);ss.ref=m;return ss;}).filter(Boolean);
     var enter={};enter[0]=g2[1]?{ref:g2[1]}:null;for(var d2=1;d2<=o.N;d2++)enter[d2]=g1[d2]?{ref:g1[d2]}:null;
 var _fol=null;if(o.folga){_fol={};for(var fd in o.folga){_fol[fd]=(o.folga[fd]||[]).map(ref).filter(Boolean);}}
-    var result={N:o.N,tipo:o.tipo||"giro",seed:o.seed||null,g1:g1,g2:g2,g3:g3,cols:o.cols||null,durs:o.durs||null,cover:cover,changed:o.changed||{},vacant:o.vacant||[],stats:stats,enter:enter,sel:[],folga:_fol,cfg:o.cfg||null,semDomingo:o.semDomingo||null,excedeuMax:o.excedeuMax||false,estourou:o.estourou||false,turmas:o.turmas||null,turmasMembros:o.turmasMembros||null};
+    var result={N:o.N,tipo:o.tipo||"giro",seed:o.seed||null,g1:g1,g2:g2,g3:g3,cols:o.cols||null,durs:o.durs||null,cover:cover,changed:o.changed||{},vacant:o.vacant||[],stats:stats,enter:enter,sel:[],folga:_fol,cfg:o.cfg||null,semDomingo:o.semDomingo||null,excedeuMax:o.excedeuMax||false,estourou:o.estourou||false,turmas:o.turmas||null,turmasMembros:o.turmasMembros||null,extras:o.extras||{}};
     state.schedule={result:result,year:o.year,month:o.month};
     if(result.tipo==="folga"&&result.folga)computeStatsFolga(result,state.militares,o.year,o.month);
     state.contInfo=o.contInfo||null;
@@ -760,7 +784,7 @@ function limparEscalas(){
   var av=document.getElementById("avisos");if(av)av.innerHTML="";
   var ph=document.getElementById("printhdr");if(ph)ph.innerHTML="";
   var sc=document.getElementById("statcard");if(sc)sc.style.display="none";
-  ["btncsv","btnprint","btncob"].forEach(function(id){var b=document.getElementById(id);if(b)b.disabled=true;});
+  ["btncsv","btnprint","btncob","btnhe"].forEach(function(id){var b=document.getElementById(id);if(b)b.disabled=true;});
   renderContControls();
   log("Escalas limpas (efetivo/operadores mantidos)","");
   try{alert("Escalas e continuidade zeradas. Efetivo, operadores e configurações mantidos.");}catch(e){}
@@ -781,7 +805,7 @@ function isOwner(){return !!(state.user&&state.user.role==="owner");}
 function isAdmin(){return !!(state.user&&(state.user.role==="admin"||state.user.role==="owner"));}
 var ADMIN_EMAILS=["lcsmbm@gmail.com","geraescalas@gmail.com"];
 function isPlatformAdmin(){return !!(state.user&&ADMIN_EMAILS.indexOf(((state.user.login)||"").toLowerCase())>=0);}
-function applyPerms(){var admin=isAdmin();var cc=document.getElementById("configcard");if(cc&&!admin)cc.style.display="none";var g=document.getElementById("btngerar");if(g)g.style.display=admin?"":"none";var c=document.getElementById("btncob");if(c)c.style.display=admin?"":"none";var cont=document.querySelector(".card .cont");if(cont)cont.style.display=admin?"":"none";var af=document.querySelector("#efetivo .addform");if(af)af.style.display=admin?"":"none";}
+function applyPerms(){var admin=isAdmin();var cc=document.getElementById("configcard");if(cc&&!admin)cc.style.display="none";var g=document.getElementById("btngerar");if(g)g.style.display=admin?"":"none";var c=document.getElementById("btncob");if(c)c.style.display=admin?"":"none";["btnhe","btnrel","btntroca"].forEach(function(id){var b=document.getElementById(id);if(b)b.style.display=admin?"":"none";});var cont=document.querySelector(".card .cont");if(cont)cont.style.display=admin?"":"none";var af=document.querySelector("#efetivo .addform");if(af)af.style.display=admin?"":"none";}
 function renderUserbar(){var u=state.user;if(!u)return;var admin=(u.role==="admin"||u.role==="owner");var tag=(u.role==="owner")?' <span class="rotag" style="background:rgba(231,199,102,.25);color:#ffe9a8">Proprietário</span>':(admin?'':(u.role==="membro"?' <span class="rotag">Funcionário</span>':' <span class="rotag">somente leitura</span>'));document.getElementById("userbar").innerHTML='<span class="who">'+esc((u.posto?u.posto+" ":"")+u.nome)+tag+'</span>'+'<button class="ubtn" title="Manual de uso" aria-label="Manual" onclick="openHelp()">📖 Manual</button>'+'<button class="ubtn" title="Avisos" onclick="openNotif()">🔔'+(state.notifCount?(' <b style="color:#b91c1c">'+state.notifCount+'</b>'):'')+'</button>'+'<button class="ubtn" title="Permutas de serviço" onclick="openPermuta()">🔁 Permutas</button>'+(isPlatformAdmin()?'<button class="ubtn" title="Painel do dono (métricas)" onclick="openPainel()">📊 Painel</button>':'')+(isPlatformAdmin()?'<button class="ubtn" title="Painel de clientes (dono)" onclick="openClientes()">👥 Clientes</button>':'')+(isPlatformAdmin()?'<button class="ubtn" title="Curso de treinamento (dono)" onclick="window.open(\'/curso.html\',\'_blank\',\'noopener\')">🎓 Curso</button>':'')+(admin?'<button class="ubtn ico-only" title="Configurações" aria-label="Configurações" onclick="openConfig()">⚙</button>':'')+'<button class="ubtn ico-only" title="Sair" aria-label="Sair" onclick="logout()">⎋</button>';}
 
 /* ===== REGISTRO / AUDITORIA ===== */
@@ -1830,7 +1854,7 @@ function renderSchedule(){
   if(state.schedule.result&&state.schedule.result.tipo==="folga"){return renderFolga();}
   const res=state.schedule.result,year=state.schedule.year,month=state.schedule.month;
   document.getElementById("tituloEsc").textContent="Escala — "+MESES[month]+" de "+year;
-  document.getElementById("btncsv").disabled=false;document.getElementById("btnprint").disabled=false;document.getElementById("btncob").disabled=false;var _bt0=document.getElementById("btntroca");if(_bt0)_bt0.disabled=false;
+  document.getElementById("btncsv").disabled=false;document.getElementById("btnprint").disabled=false;document.getElementById("btncob").disabled=false;var _bt0=document.getElementById("btntroca");if(_bt0)_bt0.disabled=false;var _bhe=document.getElementById("btnhe");if(_bhe)_bhe.disabled=false;
   const ci=state.contInfo;let chip="";
   if(ci){chip=ci.applied?'<span class="chip sky">🔗 Continuidade de '+esc(ci.source)+'</span>':'<span class="chip gray">🔗 '+(ci.enabled?'Iniciada do zero (sem mês anterior)':'Continuidade desativada')+'</span>';}
   document.getElementById("contChip").innerHTML=chip;
@@ -1875,7 +1899,7 @@ function setFolgaView(v){state._folgaView=v;renderFolga();}
 function renderFolga(){
   var res=state.schedule.result,year=state.schedule.year,month=state.schedule.month;
   document.getElementById("tituloEsc").textContent="Escala — "+MESES[month]+" de "+year;
-  ["btncsv","btnprint","btntroca"].forEach(function(id){var b=document.getElementById(id);if(b)b.disabled=false;});
+  ["btncsv","btnprint","btntroca","btnhe"].forEach(function(id){var b=document.getElementById(id);if(b)b.disabled=false;});
   var cbb=document.getElementById("btncob");if(cbb)cbb.disabled=true;
   var ci=state.contInfo;var chip=ci?(ci.applied?'<span class="chip sky">🔗 Continuidade de '+esc(ci.source)+'</span>':'<span class="chip gray">🔗 '+(ci.enabled?"Iniciada do zero":"Continuidade desativada")+'</span>'):"";
   document.getElementById("contChip").innerHTML=chip;
@@ -1905,11 +1929,16 @@ function renderFolga(){
         var _fol=(res.folga[gd2]||[]).some(function(x){return x.id===m.id;});
         var cell=_fer?'<span title="Férias" style="font-size:13px">🏖️</span>':(_ate?'<span title="Atestado/afastado" style="font-size:13px">🩹</span>':(_fol?'<b title="Folga" style="color:#2563eb">F</b>':'<b title="Em serviço" style="color:#16a34a">S</b>'));
         var _wd2=new Date(year,month,gd2).getDay();
-        gh+='<td style="text-align:center;padding:3px 5px'+((_wd2===0||_wd2===6)?';background:#fffbeb':'')+'">'+cell+'</td>';
+        var _exc=((res.extras&&res.extras[gd2])||[]).filter(function(e){return String(e.id)===String(m.id);});
+        var _exh=_exc.reduce(function(a,e){return a+(+e.horas||0);},0);
+        var _mk=_exh>0?'<br><span title="Hora extra: '+_exh+'h" style="font-size:8px;color:#ea580c;font-weight:700">+'+_exh+'h</span>':'';
+        var _bg=((_wd2===0||_wd2===6)?';background:#fffbeb':'');
+        if(isAdmin())gh+='<td onclick="openHoraExtra(\''+m.id+'\','+gd2+')" title="Clique para lançar hora extra" style="cursor:pointer;text-align:center;padding:3px 5px'+_bg+'">'+cell+_mk+'</td>';
+        else gh+='<td style="text-align:center;padding:3px 5px'+_bg+'">'+cell+_mk+'</td>';
       }
       gh+='</tr>';
     });
-    gh+='</tbody></table></div><div class="tiny" style="margin-top:6px;color:var(--mut)"><b style="color:#16a34a">S</b> serviço · <b style="color:#2563eb">F</b> folga · 🏖️ férias · 🩹 atestado</div>';
+    gh+='</tbody></table></div><div class="tiny" style="margin-top:6px;color:var(--mut)"><b style="color:#16a34a">S</b> serviço · <b style="color:#2563eb">F</b> folga · 🏖️ férias · 🩹 atestado · <b style="color:#ea580c">+Xh</b> hora extra'+(isAdmin()?' · <span class="noprint">clique numa célula para lançar hora extra</span>':'')+'</div>';
     document.getElementById("escala").innerHTML=head+av+toggle+gh+signatureBlockHTML();
     var tlg=document.getElementById("turmasLegend");if(tlg)tlg.style.display="none";
     return;
@@ -1924,6 +1953,62 @@ function renderFolga(){
   document.getElementById("escala").innerHTML=head+av+h+hc+resumo+signatureBlockHTML();
   var tl=document.getElementById("turmasLegend");if(tl)tl.style.display="none";
 }
+// ===== Hora extra =====
+function _turnoHoras(res){if(!res)return 12;if(res.tipo==="folga"){var c=res.cfg||{};return durH(c.hIni||"07:00",c.hFim||"19:00");}if(res.durs&&res.durs.length)return res.durs[0]||12;return 12;}
+function _extrasDe(res){var map={};var ex=(res&&res.extras)||{};for(var d in ex){(ex[d]||[]).forEach(function(e){var o=map[e.id]||(map[e.id]={dias:0,horas:0,list:[]});if(e.tipo==="dia")o.dias++;o.horas+=(+e.horas||0);o.list.push({d:+d,horas:+e.horas||0,tipo:e.tipo,motivo:e.motivo||""});});}return map;}
+function _servicoNoDia(res,d,id){if(!res)return false;if(res.tipo==="folga"){return !((res.folga&&res.folga[d]||[]).some(function(x){return String(x.id)===String(id);}));}var cols=_colsOf(res);for(var ci=0;ci<cols.length;ci++){var p=_celAtual(d,ci);if(p&&String(p.id)===String(id))return true;}return false;}
+function openHoraExtra(preId,preDia){if(!isAdmin())return;if(!state.schedule||!state.schedule.result){alert("Gere a escala primeiro.");return;}var m=document.getElementById("hemodal");if(!m)return;_heBuild(preId,preDia);m.style.display="flex";}
+function closeHoraExtra(){var m=document.getElementById("hemodal");if(m)m.style.display="none";}
+function _heBuild(preId,preDia){var res=state.schedule.result;var pes=(state.militares||[]).map(function(x){return '<option value="'+x.id+'"'+(String(x.id)===String(preId)?' selected':'')+'>'+esc((x.posto?x.posto+" ":"")+x.nome)+'</option>';}).join("");var dOpts=_diaOpts();var th=_turnoHoras(res);
+  var html='<p class="muted" style="margin:0 0 8px">Registre uma hora extra para um funcionário num dia (ex.: chamou alguém que ia folgar, ou horas a mais num dia que já trabalha).</p>'
+   +'<div class="row" style="gap:8px;flex-wrap:wrap;align-items:center"><label class="fld"><span>Funcionário</span><select id="he_pessoa">'+pes+'</select></label><label class="fld"><span>Dia</span><select id="he_dia">'+dOpts+'</select></label></div>'
+   +'<div class="row" style="gap:12px;flex-wrap:wrap;margin-top:8px"><label><input type="radio" name="he_tipo" value="dia" checked onchange="heToggleTipo()"> Dia/turno inteiro</label><label><input type="radio" name="he_tipo" value="horas" onchange="heToggleTipo()"> Horas avulsas</label></div>'
+   +'<div class="row" style="gap:8px;flex-wrap:wrap;align-items:center;margin-top:6px"><label class="fld"><span>Horas</span><input type="number" id="he_horas" min="0.5" step="0.5" value="'+th+'" style="width:90px"></label><label class="fld" style="flex:1;min-width:160px"><span>Motivo (opcional)</span><input id="he_motivo" placeholder="ex.: cobertura de falta"></label></div>'
+   +'<button class="btn primary" style="margin-top:10px" onclick="salvarHoraExtra()">Adicionar hora extra</button>'
+   +'<div id="he_msg" class="tiny" style="margin-top:6px"></div>'
+   +'<div id="he_list" style="margin-top:12px"></div>';
+  document.getElementById("he_body").innerHTML=html;
+  if(preDia){var dd=document.getElementById("he_dia");if(dd)dd.value=String(preDia);}
+  heToggleTipo();renderHeList();}
+function heToggleTipo(){var t=(document.querySelector('input[name="he_tipo"]:checked')||{}).value||"dia";var h=document.getElementById("he_horas");if(!h)return;if(t==="dia"){h.value=_turnoHoras(state.schedule.result);h.setAttribute("disabled","disabled");}else{h.removeAttribute("disabled");}}
+function salvarHoraExtra(){if(!isAdmin())return;var res=state.schedule&&state.schedule.result;if(!res)return;var msg=document.getElementById("he_msg");function say(t,c){if(msg){msg.textContent=t;msg.style.color=c||"var(--mut)";}}
+  var id=val("he_pessoa");var d=+val("he_dia");var tipo=(document.querySelector('input[name="he_tipo"]:checked')||{}).value||"dia";var horas=tipo==="dia"?_turnoHoras(res):(+val("he_horas")||0);var motivo=(val("he_motivo")||"").trim();
+  if(!id||!d){say("Escolha o funcionário e o dia.","#b91c1c");return;}
+  if(horas<=0){say("Informe as horas.","#b91c1c");return;}
+  var pid=isNaN(+id)?id:+id;var m=byMil(pid)||{};
+  res.extras=res.extras||{};res.extras[d]=res.extras[d]||[];res.extras[d].push({id:pid,horas:horas,tipo:tipo,motivo:motivo});
+  log("Hora extra",(m.nome||pid)+" · dia "+d+" · "+horas+"h"+(motivo?(" · "+motivo):""));
+  saveSchedule();renderSchedule();say("Hora extra adicionada.","#15803d");renderHeList();
+  try{if(m.nome&&db)db.rpc("notificar_pessoa",{p_pessoa_nome:m.nome,p_titulo:"Hora extra registrada",p_corpo:"Você tem hora extra no dia "+d+" ("+horas+"h)"+(motivo?(" — "+motivo):"")+"."});}catch(e){}
+}
+function removerHoraExtra(d,idx){if(!isAdmin())return;var res=state.schedule&&state.schedule.result;if(!res||!res.extras||!res.extras[d])return;res.extras[d].splice(idx,1);if(!res.extras[d].length)delete res.extras[d];saveSchedule();renderSchedule();renderHeList();}
+function renderHeList(){var box=document.getElementById("he_list");if(!box)return;var res=state.schedule&&state.schedule.result;var ex=(res&&res.extras)||{};var days=Object.keys(ex).map(Number).sort(function(a,b){return a-b;});if(!days.length){box.innerHTML='<div class="tiny" style="color:var(--mut)">Nenhuma hora extra registrada neste mês.</div>';return;}
+  var h='<div class="tiny" style="font-weight:700;margin-bottom:4px">Horas extras do mês</div>';
+  days.forEach(function(d){(ex[d]||[]).forEach(function(e,idx){var m=byMil(e.id)||{nome:e.id};h+='<div style="display:flex;justify-content:space-between;align-items:center;border:1px solid #e7e9f7;border-radius:8px;padding:5px 8px;margin:3px 0"><span class="tiny">Dia <b>'+d+'</b> · '+esc((m.posto?m.posto+" ":"")+(m.nome||""))+' · <b>'+e.horas+'h</b>'+(e.tipo==="dia"?" (turno)":" (avulsas)")+(e.motivo?(' · '+esc(e.motivo)):'')+'</span><button class="mini" title="Remover" onclick="removerHoraExtra('+d+','+idx+')">🗑</button></div>';});});
+  box.innerHTML=h;}
+// ===== Resumo mensal (histórico p/ relatório anual) =====
+function _resumoMes(res,mils,year,month){var N=res.N,ex=_extrasDe(res),th=_turnoHoras(res);return (mils||[]).map(function(m){var serv=0,folg=0,ate=0,fer=0;for(var d=1;d<=N;d++){var dt=new Date(year,month,d);if(onVacation(m,dt)){fer++;continue;}if(onAtestado(m,dt)){ate++;continue;}if(_servicoNoDia(res,d,m.id))serv++;else folg++;}var e=ex[m.id]||{dias:0,horas:0};return {id:m.id,nome:m.nome,posto:m.posto||"",serv:serv,folg:folg,ate:ate,fer:fer,heDias:e.dias||0,heHoras:Math.round((e.horas||0)*10)/10,horas:Math.round(serv*th*10)/10};});}
+function arquivarResumo(){if(!state.schedule||!state.schedule.result)return;if(!isAdmin())return;var y=state.schedule.year,mo=state.schedule.month,ym=y+"-"+pad(mo+1);var hist={};try{hist=JSON.parse(localStorage.getItem("ciops:relhist")||"{}");}catch(e){hist={};}hist[ym]=_resumoMes(state.schedule.result,state.militares,y,mo);try{localStorage.setItem("ciops:relhist",JSON.stringify(hist));}catch(e){}cloudPush("relhist");}
+// ===== Relatórios =====
+var _relCache=null;
+function _relHist(){try{return JSON.parse(localStorage.getItem("ciops:relhist")||"{}");}catch(e){return {};}}
+function _mesNome(ym){var p=ym.split("-");return MESES[(+p[1]-1)]+"/"+p[0];}
+function openRelatorios(){if(!isAdmin())return;var m=document.getElementById("relmodal");if(!m)return;var hist=_relHist();var anos={};Object.keys(hist).forEach(function(ym){anos[ym.slice(0,4)]=1;});if(state.schedule)anos[String(state.schedule.year)]=1;var al=Object.keys(anos).sort().reverse();if(!al.length)al=[String(new Date().getFullYear())];var sel=document.getElementById("rel_ano");if(sel)sel.innerHTML=al.map(function(a){return '<option value="'+a+'">'+a+'</option>';}).join("");var per=document.getElementById("rel_per");if(per)per.value=state.schedule?"mensal":"anual";m.style.display="flex";renderRelatorio();}
+function closeRelatorios(){var m=document.getElementById("relmodal");if(m)m.style.display="none";}
+function _relTable(c){if(!c||!c.rows.length)return '<div class="muted">Sem dados para o período.</div>';var h='<div style="font-weight:700;color:#1e1b4b;margin-bottom:6px">'+esc(c.titulo)+'</div><div class="tblwrap"><table class="stat"><thead><tr>'+c.cols.map(function(x){return '<th>'+esc(x)+'</th>';}).join("")+'</tr></thead><tbody>'+c.rows.map(function(r){return '<tr>'+r.map(function(v,i){return '<td'+(i===0?' style="text-align:left"':'')+'>'+esc(String(v))+'</td>';}).join("")+'</tr>';}).join("")+'</tbody></table></div>';return h;}
+function renderRelatorio(){var per=(val("rel_per")||"mensal");var aw=document.getElementById("rel_anowrap");if(aw)aw.style.display=(per==="anual")?"":"none";var box=document.getElementById("rel_body");if(!box)return;box.innerHTML=(per==="mensal")?_relMensalHTML():(per==="semanal"?_relSemanalHTML():_relAnualHTML());}
+function _relMensalHTML(){if(!state.schedule||!state.schedule.result)return '<div class="muted">Gere uma escala para ver o relatório mensal.</div>';var res=state.schedule.result,y=state.schedule.year,mo=state.schedule.month;var rows=_resumoMes(res,state.militares,y,mo);_relCache={tipo:"relatorio-mensal",titulo:"Relatório mensal — "+MESES[mo]+"/"+y,cols:["Funcionário","Serviços","Folgas","Atestado","Férias","H.extra (dias)","H.extra (h)","Horas base"],rows:rows.map(function(r){return [(r.posto?r.posto+" ":"")+r.nome,r.serv,r.folg,r.ate,r.fer,r.heDias,r.heHoras,r.horas];})};return _relTable(_relCache);}
+function _relSemanalHTML(){if(!state.schedule||!state.schedule.result)return '<div class="muted">Gere uma escala para ver o relatório semanal.</div>';var res=state.schedule.result,y=state.schedule.year,mo=state.schedule.month,N=res.N;var w1=new Date(y,mo,1).getDay();function wk(d){return Math.floor((d-1+w1)/7);}var nw=wk(N)+1;var ex=_extrasDe(res);var mils=state.militares||[];
+  var rows=mils.map(function(m){var serv=[],heT=0;for(var w=0;w<nw;w++)serv[w]=0;for(var d=1;d<=N;d++){var dt=new Date(y,mo,d);if(onVacation(m,dt)||onAtestado(m,dt))continue;if(_servicoNoDia(res,d,m.id))serv[wk(d)]++;}var el=(ex[m.id]&&ex[m.id].list)||[];el.forEach(function(e){heT+=e.horas;});var r=[(m.posto?m.posto+" ":"")+m.nome];for(var w=0;w<nw;w++)r.push(serv[w]);r.push(Math.round(heT*10)/10);return r;});
+  var cols=["Funcionário"];for(var w=0;w<nw;w++)cols.push("Sem "+(w+1));cols.push("H.extra (h)");
+  _relCache={tipo:"relatorio-semanal",titulo:"Relatório semanal — "+MESES[mo]+"/"+y+" (serviços por semana)",cols:cols,rows:rows};return _relTable(_relCache);}
+function _relAnualHTML(){var ano=val("rel_ano")||String((state.schedule&&state.schedule.year)||new Date().getFullYear());var hist=_relHist();var meses=Object.keys(hist).filter(function(ym){return ym.slice(0,4)===ano;}).sort();
+  if(!meses.length)return '<div class="muted">Ainda não há meses arquivados em '+esc(ano)+'. O histórico passa a ser guardado a cada escala gerada a partir de agora.</div>';
+  var agg={},ordem=[];meses.forEach(function(ym){(hist[ym]||[]).forEach(function(r){var o=agg[r.id];if(!o){o=agg[r.id]={nome:r.nome,posto:r.posto||"",serv:0,folg:0,ate:0,fer:0,heDias:0,heHoras:0,horas:0};ordem.push(r.id);}o.serv+=r.serv||0;o.folg+=r.folg||0;o.ate+=r.ate||0;o.fer+=r.fer||0;o.heDias+=r.heDias||0;o.heHoras+=r.heHoras||0;o.horas+=r.horas||0;});});
+  var rows=ordem.map(function(id){var r=agg[id];return [(r.posto?r.posto+" ":"")+r.nome,r.serv,r.folg,r.ate,r.fer,r.heDias,Math.round(r.heHoras*10)/10,Math.round(r.horas*10)/10];});
+  _relCache={tipo:"relatorio-anual-"+ano,titulo:"Relatório anual — "+ano+" ("+meses.length+" mês(es): "+meses.map(_mesNome).join(", ")+")",cols:["Funcionário","Serviços","Folgas","Atestado","Férias","H.extra (dias)","H.extra (h)","Horas base"],rows:rows};return _relTable(_relCache);}
+function exportRelCSV(){var c=_relCache;if(!c||!c.rows.length){alert("Nada para exportar.");return;}function q(v){v=String(v==null?"":v);return /[;"\n\r]/.test(v)?'"'+v.replace(/"/g,'""')+'"':v;}var csv=c.cols.map(q).join(";")+"\r\n"+c.rows.map(function(r){return r.map(q).join(";");}).join("\r\n");var blob=new Blob(["﻿"+csv],{type:"text/csv;charset=utf-8"});var a=document.createElement("a");a.href=URL.createObjectURL(blob);a.download=(c.tipo||"relatorio")+".csv";document.body.appendChild(a);a.click();setTimeout(function(){URL.revokeObjectURL(a.href);a.remove();},400);}
+function imprimirRel(){var c=_relCache;if(!c||!c.rows.length){alert("Nada para imprimir.");return;}var org=(state.user&&state.user.orgNome)||"";var when=new Date().toLocaleDateString("pt-BR");var html='<!doctype html><html lang="pt-BR"><head><meta charset="utf-8"><title>'+esc(c.titulo)+'</title><style>body{font-family:-apple-system,Arial,sans-serif;color:#0f172a;padding:20px}h1{font-size:18px;margin:0 0 2px}.sub{color:#64748b;font-size:12px;margin-bottom:12px}table{border-collapse:collapse;width:100%;font-size:12px}th,td{border:1px solid #cbd5e1;padding:5px 7px;text-align:center}th{background:#eef2ff}td:first-child,th:first-child{text-align:left}@media print{button{display:none}}</style></head><body><h1>'+esc(c.titulo)+'</h1><div class="sub">'+esc(org)+' · gerado em '+when+'</div><table><thead><tr>'+c.cols.map(function(x){return '<th>'+esc(x)+'</th>';}).join("")+'</tr></thead><tbody>'+c.rows.map(function(r){return '<tr>'+r.map(function(v){return '<td>'+esc(String(v))+'</td>';}).join("")+'</tr>';}).join("")+'</tbody></table><button onclick="window.print()" style="margin-top:14px;padding:8px 14px">Imprimir / salvar PDF</button></body></html>';var w=window.open("","_blank");if(!w){alert("Permita pop-ups para imprimir/gerar PDF.");return;}w.document.write(html);w.document.close();setTimeout(function(){try{w.focus();w.print();}catch(e){}},350);}
 function renderAvisos(){
   const res=state.schedule.result,year=state.schedule.year,month=state.schedule.month;const out=[];
   const ativos=state.militares.filter(m=>{for(let d=1;d<=res.N;d++)if(!isUnavailable(m,new Date(year,month,d)))return true;return false;}).length;
@@ -2481,6 +2566,7 @@ async function ativarPush(){
   }catch(e){say("Erro: "+(e.message||e),"#b91c1c");}
 }
 var NOVIDADES=[
+  {ver:"8.3",titulo:"Hora extra e relatórios para a folha",itens:["Lance hora extra (dia inteiro ou horas avulsas) direto na grade mensal","Relatórios por funcionário — semanal, mensal e anual — em CSV e PDF"]},
   {ver:"8.2",titulo:"“Folgam por dia” agora é respeitado",itens:["A folga rotativa nunca libera mais pessoas que o configurado em “folgam por dia”","Exceção: só no domingo, para garantir o descanso semanal de todos"]},
   {ver:"8.1",titulo:"Permuta mais fácil",itens:["O funcionário escolhe entre os dias em que ele está de serviço","Digite as primeiras letras do colega para encontrá-lo na troca"]},
   {ver:"8.0",titulo:"Folgas não seguidas e tela mais clara",itens:["Na folga rotativa, escolha folgas em bloco (juntas) ou não seguidas (dias separados)","Selo mostra o modelo atual (ex.: 5×2) e cada campo ganhou explicação"]},
@@ -2818,7 +2904,7 @@ async function cloudBoot(){
   if(s){await cloudEnter();}else{renderCloudGate("entrar");}
 }
 /* ---- Adaptador de dados: sincroniza os blocos do app com a nuvem ---- */
-var SEC_KEYS={militares:1,config:1,carry:1,schedule:1};
+var SEC_KEYS={militares:1,config:1,carry:1,schedule:1,relhist:1};
 function setorAtual(){return state.setorAtivo||"principal";}
 async function cloudPush(base){
   if(!db||!state.user||!state.user.orgId)return;
@@ -2842,7 +2928,7 @@ async function cloudPullAll(){
   if(!setores.some(function(x){return x.id===sa;}))sa=setores[0].id;
   state.setorAtivo=sa;try{localStorage.setItem("ciops:setorAtivo",sa);}catch(e){}
   /* dados do setor ativo */
-  var bases=["militares","config","carry","schedule"];
+  var bases=["militares","config","carry","schedule","relhist"];
   for(var i=0;i<bases.length;i++){
     var b=bases[i],ls="ciops:"+b,v=map[b+"@"+sa];
     if((v===undefined||v===null)&&sa==="principal")v=map[b]; /* migração: dados antigos (sem setor) = principal */
