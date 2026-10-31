@@ -503,14 +503,14 @@
     </div>
   </section>
 
-  <footer><span class="noprint">Confira a escala antes de publicar.<br>© 2026 <b>Gera Escalas</b> · <span class="lnk" onclick="openAbout()">Sobre &amp; Política de Privacidade</span> · <span style="color:var(--mut2)">v9.7</span></span></footer>
+  <footer><span class="noprint">Confira a escala antes de publicar.<br>© 2026 <b>Gera Escalas</b> · <span class="lnk" onclick="openAbout()">Sobre &amp; Política de Privacidade</span> · <span style="color:var(--mut2)">v9.8</span></span></footer>
 </main>
 
 <div id="aboutmodal" class="modal" style="display:none" onclick="if(event.target===this)closeAbout()">
   <div class="mbox">
     <button class="xbtn" onclick="closeAbout()">Fechar ✕</button>
     <h2>Gera Escalas</h2>
-    <p class="muted">Escalas de plantão, turno e giro · Versão 9.7 · 2026</p>
+    <p class="muted">Escalas de plantão, turno e giro · Versão 9.8 · 2026</p>
 
     <h3>Autoria e direitos autorais</h3>
     <p>© 2026 <b>Gera Escalas</b> — desenvolvido por Luís Cesar. Todos os direitos reservados.</p>
@@ -649,6 +649,7 @@
       <div style="flex:1"></div>
       <button class="btn" style="color:#fff;background:#1e2540;border:1px solid #475569" onclick="pontoMode('cad')">👤 Cadastrar rostos</button>
       <button class="btn" style="color:#fff;background:#1e2540;border:1px solid #475569" onclick="pontoMode('emp')">🏢 Empregador</button>
+      <button class="btn" style="color:#fff;background:#1e2540;border:1px solid #475569" onclick="pontoMode('afd')">📄 AFD</button>
       <button class="btn primary" onclick="pontoMode('kiosk')">📷 Modo quiosque</button>
       <button class="btn" style="color:#fff;background:#3a1e2a;border:1px solid #6b3a4a" onclick="closePonto()">Sair ✕</button>
     </div>
@@ -687,6 +688,17 @@
       </div>
       <div style="margin-top:12px"><button class="btn primary" onclick="savePontoEmp()">Salvar dados do empregador</button> <span id="emp_msg" style="font-size:13px;margin-left:8px"></span></div>
       <p style="font-size:12px;color:#8089a8;margin-top:10px">Dica: confira também o <b>CPF</b> de cada funcionário na aba Equipe — ele é obrigatório nos arquivos do ponto.</p>
+    </div>
+
+    <div id="ponto_afd" style="display:none;max-width:620px">
+      <div style="background:#3a2a11;border:1px solid #a16207;border-radius:10px;padding:10px 12px;color:#fde68a;font-size:13px;margin-bottom:12px">⚠ <b>RASCUNHO para validação.</b> Este AFD segue o layout oficial (Portaria 671, versão 004), mas <b>precisa ser validado</b> no validador do governo e com seu contador, e <b>assinado digitalmente (ICP-Brasil)</b> antes de ter validade legal.</div>
+      <p style="font-size:13px;color:#a7b0d0;margin:0 0 10px">Gera o Arquivo-Fonte de Dados (AFD) com as marcações do período. Requer os <b>🏢 dados do empregador</b> preenchidos e o <b>CPF</b> de cada funcionário.</p>
+      <div style="display:flex;gap:10px;flex-wrap:wrap">
+        <div style="flex:1 1 150px"><label style="display:block;font-size:13px;margin-bottom:2px">De</label><input id="afd_de" type="date" style="width:100%;font:inherit;padding:8px;border-radius:8px;border:1px solid #334;background:#11162a;color:#fff"></div>
+        <div style="flex:1 1 150px"><label style="display:block;font-size:13px;margin-bottom:2px">Até</label><input id="afd_ate" type="date" style="width:100%;font:inherit;padding:8px;border-radius:8px;border:1px solid #334;background:#11162a;color:#fff"></div>
+      </div>
+      <div style="margin-top:12px"><button class="btn primary" onclick="gerarAFD()">📄 Gerar AFD (rascunho)</button></div>
+      <div id="afd_msg" style="font-size:13px;margin-top:10px;white-space:pre-wrap"></div>
     </div>
 
     <div id="ponto_kiosk" style="display:none;text-align:center">
@@ -2120,6 +2132,47 @@ async function openPonto(){
 function closePonto(){_pontoStopKiosk();_pontoStopCam();var m=document.getElementById("pontomodal");if(m)m.style.display="none";}
 function loadPontoEmp(){var r=(state.config&&state.config.rep)||{};function set(id,v){var e=document.getElementById(id);if(e)e.value=v||"";}set("emp_razao",r.razao||(state.user&&state.user.orgNome)||"");set("emp_cnpj",r.cnpj||(state.user&&state.user.orgCnpj)||"");set("emp_caepf",r.caepf);set("emp_end",r.endereco);set("emp_cidade",r.cidade);set("emp_uf",r.uf);var e=document.getElementById("emp_msg");if(e)e.textContent="";}
 function savePontoEmp(){if(!isAdmin())return;state.config.rep={razao:(val("emp_razao")||"").trim(),cnpj:(val("emp_cnpj")||"").replace(/\D/g,""),caepf:(val("emp_caepf")||"").trim(),endereco:(val("emp_end")||"").trim(),cidade:(val("emp_cidade")||"").trim(),uf:(val("emp_uf")||"").trim().toUpperCase()};saveConfig();var e=document.getElementById("emp_msg");if(e){e.textContent="Dados salvos ✓";e.style.color="#86efac";}try{log("Dados do empregador (REP) salvos","");}catch(ex){}}
+// ----- AFD (Arquivo-Fonte de Dados) — Portaria 671, layout 004 — RASCUNHO -----
+function _afdInit(){var now=new Date();var y=(state.schedule&&state.schedule.year)||now.getFullYear();var mo=(state.schedule&&state.schedule.month);if(mo==null)mo=now.getMonth();var N=new Date(y,mo+1,0).getDate();function iso(d){return y+"-"+pad(mo+1)+"-"+pad(d);}var de=document.getElementById("afd_de"),ate=document.getElementById("afd_ate");if(de&&!de.value)de.value=iso(1);if(ate&&!ate.value)ate.value=iso(N);var mm=document.getElementById("afd_msg");if(mm)mm.textContent="";}
+function _padR(s,n){s=String(s==null?"":s);if(s.length>n)return s.slice(0,n);while(s.length<n)s+=" ";return s;}
+function _padL0(s,n){s=String(s==null?"":s).replace(/\D/g,"");if(s.length>n)return s.slice(-n);while(s.length<n)s="0"+s;return s;}
+function _afdBytes(s){var a=[];for(var i=0;i<s.length;i++)a.push(s.charCodeAt(i)&0xFF);return a;}
+function _crc4(prefix){var b=_afdBytes(prefix),crc=0;for(var i=0;i<b.length;i++){crc^=b[i];for(var j=0;j<8;j++){if(crc&1)crc=(crc>>>1)^0x8408;else crc>>>=1;}}var h=(crc&0xFFFF).toString(16).toUpperCase();while(h.length<4)h="0"+h;return h;}
+function _afdD(dt){return dt.getFullYear()+"-"+pad(dt.getMonth()+1)+"-"+pad(dt.getDate());}
+function _afdDH(dt){var g=dt.getTimezoneOffset(),sign=g>0?"-":"+",am=Math.abs(g);return dt.getFullYear()+"-"+pad(dt.getMonth()+1)+"-"+pad(dt.getDate())+"T"+pad(dt.getHours())+":"+pad(dt.getMinutes())+":00"+sign+pad(Math.floor(am/60))+pad(am%60);}
+async function _sha256hex(str){var buf=await crypto.subtle.digest("SHA-256",new TextEncoder().encode(str));return Array.from(new Uint8Array(buf)).map(function(b){return b.toString(16).padStart(2,"0");}).join("");}
+async function gerarAFD(){
+  if(!isAdmin())return;var mm=document.getElementById("afd_msg");function say(t,c){if(mm){mm.textContent=t;mm.style.color=c||"#a7b0d0";}}
+  var rep=(state.config&&state.config.rep)||{};
+  if(!rep.cnpj||rep.cnpj.length<11){say("Preencha os dados do empregador (🏢 Empregador) com o CNPJ.","#fca5a5");return;}
+  var de=val("afd_de"),ate=val("afd_ate");if(!de||!ate){say("Informe o período (de/até).","#fca5a5");return;}
+  var dIni=new Date(de+"T00:00:00"),dFim=new Date(ate+"T23:59:59");
+  say("Lendo marcações…");
+  var r;try{r=await db.from("pontos").select("pessoa_id,pessoa_nome,tipo,marcado_em").eq("org_id",state.user.orgId).gte("marcado_em",dIni.toISOString()).lte("marcado_em",dFim.toISOString()).order("marcado_em",{ascending:true});}catch(e){say("Erro ao ler marcações: "+(e.message||e),"#fca5a5");return;}
+  if(r&&r.error){say("Erro: "+r.error.message,"#fca5a5");return;}
+  var pts=r.data||[];
+  function cpfDe(pid){var m=byMil(isNaN(+pid)?pid:+pid);return (m&&m.cpf)?String(m.cpf).replace(/\D/g,""):"";}
+  var semCpf={};pts.forEach(function(p){if(!cpfDe(p.pessoa_id))semCpf[p.pessoa_id]=p.pessoa_nome||p.pessoa_id;});
+  var funcsComCpf=(state.militares||[]).filter(function(m){return m.cpf&&String(m.cpf).replace(/\D/g,"").length>=11;});
+  if(!funcsComCpf.length){say("Nenhum funcionário tem CPF cadastrado. Preencha os CPFs na aba Equipe.","#fca5a5");return;}
+  var devCnpj="33603477000110",now=new Date(),lines=[],nsr=0;function nsr9(){nsr++;return _padL0(String(nsr),9);}
+  var idTipo=(rep.cnpj.length>11)?"1":"2";
+  var h="000000000"+"1"+idTipo+_padL0(rep.cnpj,14)+_padL0(rep.caepf||"",14)+_padR((rep.razao||"").toUpperCase(),150)+_padL0("",17)+_afdD(dIni)+_afdD(dFim)+_afdDH(now)+"004"+"1"+_padL0(devCnpj,14)+_padR("",30);
+  lines.push(h+_crc4(h));
+  var local=((rep.endereco||"")+" "+(rep.cidade||"")+(rep.uf?("/"+rep.uf):"")).trim();
+  nsr=1;var r2="000000001"+"2"+_afdDH(now)+_padL0("",14)+idTipo+_padL0(rep.cnpj,14)+_padL0(rep.caepf||"",14)+_padR((rep.razao||"").toUpperCase(),150)+_padR(local.toUpperCase(),100);
+  lines.push(r2+_crc4(r2));
+  var cnt5=0;funcsComCpf.forEach(function(m){var r5=nsr9()+"5"+_afdDH(now)+"I"+_padL0(String(m.cpf).replace(/\D/g,""),12)+_padR((m.nome||"").toUpperCase(),52)+_padR("",4)+_padL0("",11);lines.push(r5+_crc4(r5));cnt5++;});
+  var cnt7=0,prev="";
+  for(var i=0;i<pts.length;i++){var p=pts[i],cpf=cpfDe(p.pessoa_id);if(!cpf)continue;var dt=new Date(p.marcado_em);var pre=nsr9()+"7"+_afdDH(dt)+_padL0(cpf,12)+_afdDH(dt)+"02"+"0";var hash=await _sha256hex(pre+prev);lines.push(pre+hash);prev=hash;cnt7++;}
+  lines.push("999999999"+_padL0("1",9)+_padL0("0",9)+_padL0("0",9)+_padL0(String(cnt5),9)+_padL0("0",9)+_padL0(String(cnt7),9)+"9");
+  lines.push(_padR("ASSINATURA_DIGITAL_EM_ARQUIVO_P7S",100));
+  var txt=lines.join("\r\n")+"\r\n";
+  var bytes=new Uint8Array(_afdBytes(txt));var blob=new Blob([bytes],{type:"text/plain"});var a=document.createElement("a");a.href=URL.createObjectURL(blob);a.download="AFD_"+rep.cnpj+"_"+de+"_a_"+ate+".txt";document.body.appendChild(a);a.click();setTimeout(function(){URL.revokeObjectURL(a.href);a.remove();},500);
+  var sc=Object.keys(semCpf);var aviso=sc.length?("\n⚠ "+sc.length+" pessoa(s) com marcação mas SEM CPF ficaram de fora (preencha o CPF na Equipe): "+sc.map(function(k){return semCpf[k];}).join(", ")):"";
+  say("AFD gerado (rascunho): "+cnt5+" empregado(s), "+cnt7+" marcação(ões).\nValide no validador oficial do governo antes de usar legalmente."+aviso,"#86efac");
+  try{log("AFD gerado (rascunho)",de+" a "+ate+" · "+cnt7+" marcações");}catch(e){}
+}
 function _pontoStopCam(){try{if(_ponto.stream){_ponto.stream.getTracks().forEach(function(t){t.stop();});_ponto.stream=null;}}catch(e){}}
 async function _pontoCam(videoId){
   _pontoStopCam();
@@ -2131,7 +2184,9 @@ async function pontoMode(mode){
   document.getElementById("ponto_cad").style.display=(mode==="cad")?"":"none";
   document.getElementById("ponto_kiosk").style.display=(mode==="kiosk")?"":"none";
   var pe=document.getElementById("ponto_emp");if(pe)pe.style.display=(mode==="emp")?"":"none";
+  var pa=document.getElementById("ponto_afd");if(pa)pa.style.display=(mode==="afd")?"":"none";
   if(mode==="emp"){_pontoStopCam();_pstatus("");loadPontoEmp();return;}
+  if(mode==="afd"){_pontoStopCam();_pstatus("");_afdInit();return;}
   try{await _ensureFace();}catch(e){_pstatus("Erro ao carregar o reconhecimento: "+(e.message||e));return;}
   if(mode==="cad"){
     var sel=document.getElementById("ponto_pessoa");if(sel)sel.innerHTML=(state.militares||[]).map(function(x){return '<option value="'+x.id+'">'+esc((x.posto?x.posto+" ":"")+x.nome)+'</option>';}).join("");
