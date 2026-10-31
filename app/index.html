@@ -503,14 +503,14 @@
     </div>
   </section>
 
-  <footer><span class="noprint">Confira a escala antes de publicar.<br>© 2026 <b>Gera Escalas</b> · <span class="lnk" onclick="openAbout()">Sobre &amp; Política de Privacidade</span> · <span style="color:var(--mut2)">v9.6</span></span></footer>
+  <footer><span class="noprint">Confira a escala antes de publicar.<br>© 2026 <b>Gera Escalas</b> · <span class="lnk" onclick="openAbout()">Sobre &amp; Política de Privacidade</span> · <span style="color:var(--mut2)">v9.7</span></span></footer>
 </main>
 
 <div id="aboutmodal" class="modal" style="display:none" onclick="if(event.target===this)closeAbout()">
   <div class="mbox">
     <button class="xbtn" onclick="closeAbout()">Fechar ✕</button>
     <h2>Gera Escalas</h2>
-    <p class="muted">Escalas de plantão, turno e giro · Versão 9.6 · 2026</p>
+    <p class="muted">Escalas de plantão, turno e giro · Versão 9.7 · 2026</p>
 
     <h3>Autoria e direitos autorais</h3>
     <p>© 2026 <b>Gera Escalas</b> — desenvolvido por Luís Cesar. Todos os direitos reservados.</p>
@@ -648,6 +648,7 @@
       <div style="font-size:20px;font-weight:800">🕒 Controle de ponto</div>
       <div style="flex:1"></div>
       <button class="btn" style="color:#fff;background:#1e2540;border:1px solid #475569" onclick="pontoMode('cad')">👤 Cadastrar rostos</button>
+      <button class="btn" style="color:#fff;background:#1e2540;border:1px solid #475569" onclick="pontoMode('emp')">🏢 Empregador</button>
       <button class="btn primary" onclick="pontoMode('kiosk')">📷 Modo quiosque</button>
       <button class="btn" style="color:#fff;background:#3a1e2a;border:1px solid #6b3a4a" onclick="closePonto()">Sair ✕</button>
     </div>
@@ -668,6 +669,24 @@
           <div id="ponto_cadlist" style="margin-top:12px;font-size:13px"></div>
         </div>
       </div>
+    </div>
+
+    <div id="ponto_emp" style="display:none;max-width:580px">
+      <p style="font-size:13px;color:#a7b0d0;margin:0 0 12px">Dados do empregador usados no <b>cabeçalho dos arquivos legais</b> do ponto (AFD/AEJ). Preencha com os dados da empresa.</p>
+      <label style="display:block;font-size:13px;margin:6px 0 2px">Razão social</label>
+      <input id="emp_razao" style="width:100%;font:inherit;padding:9px;border-radius:8px;border:1px solid #334;background:#11162a;color:#fff">
+      <div style="display:flex;gap:10px;flex-wrap:wrap;margin-top:8px">
+        <div style="flex:1 1 180px"><label style="display:block;font-size:13px;margin-bottom:2px">CNPJ</label><input id="emp_cnpj" inputmode="numeric" style="width:100%;font:inherit;padding:9px;border-radius:8px;border:1px solid #334;background:#11162a;color:#fff"></div>
+        <div style="flex:1 1 180px"><label style="display:block;font-size:13px;margin-bottom:2px">CAEPF / CEI (opcional)</label><input id="emp_caepf" style="width:100%;font:inherit;padding:9px;border-radius:8px;border:1px solid #334;background:#11162a;color:#fff"></div>
+      </div>
+      <label style="display:block;font-size:13px;margin:8px 0 2px">Endereço</label>
+      <input id="emp_end" style="width:100%;font:inherit;padding:9px;border-radius:8px;border:1px solid #334;background:#11162a;color:#fff">
+      <div style="display:flex;gap:10px;margin-top:8px">
+        <div style="flex:1 1 200px"><label style="display:block;font-size:13px;margin-bottom:2px">Cidade</label><input id="emp_cidade" style="width:100%;font:inherit;padding:9px;border-radius:8px;border:1px solid #334;background:#11162a;color:#fff"></div>
+        <div style="flex:0 0 70px"><label style="display:block;font-size:13px;margin-bottom:2px">UF</label><input id="emp_uf" maxlength="2" style="width:100%;font:inherit;padding:9px;border-radius:8px;border:1px solid #334;background:#11162a;color:#fff;text-transform:uppercase"></div>
+      </div>
+      <div style="margin-top:12px"><button class="btn primary" onclick="savePontoEmp()">Salvar dados do empregador</button> <span id="emp_msg" style="font-size:13px;margin-left:8px"></span></div>
+      <p style="font-size:12px;color:#8089a8;margin-top:10px">Dica: confira também o <b>CPF</b> de cada funcionário na aba Equipe — ele é obrigatório nos arquivos do ponto.</p>
     </div>
 
     <div id="ponto_kiosk" style="display:none;text-align:center">
@@ -2099,6 +2118,8 @@ async function openPonto(){
   var m=document.getElementById("pontomodal");if(!m)return;m.style.display="block";pontoMode("cad");
 }
 function closePonto(){_pontoStopKiosk();_pontoStopCam();var m=document.getElementById("pontomodal");if(m)m.style.display="none";}
+function loadPontoEmp(){var r=(state.config&&state.config.rep)||{};function set(id,v){var e=document.getElementById(id);if(e)e.value=v||"";}set("emp_razao",r.razao||(state.user&&state.user.orgNome)||"");set("emp_cnpj",r.cnpj||(state.user&&state.user.orgCnpj)||"");set("emp_caepf",r.caepf);set("emp_end",r.endereco);set("emp_cidade",r.cidade);set("emp_uf",r.uf);var e=document.getElementById("emp_msg");if(e)e.textContent="";}
+function savePontoEmp(){if(!isAdmin())return;state.config.rep={razao:(val("emp_razao")||"").trim(),cnpj:(val("emp_cnpj")||"").replace(/\D/g,""),caepf:(val("emp_caepf")||"").trim(),endereco:(val("emp_end")||"").trim(),cidade:(val("emp_cidade")||"").trim(),uf:(val("emp_uf")||"").trim().toUpperCase()};saveConfig();var e=document.getElementById("emp_msg");if(e){e.textContent="Dados salvos ✓";e.style.color="#86efac";}try{log("Dados do empregador (REP) salvos","");}catch(ex){}}
 function _pontoStopCam(){try{if(_ponto.stream){_ponto.stream.getTracks().forEach(function(t){t.stop();});_ponto.stream=null;}}catch(e){}}
 async function _pontoCam(videoId){
   _pontoStopCam();
@@ -2109,6 +2130,8 @@ async function pontoMode(mode){
   _pontoStopKiosk();
   document.getElementById("ponto_cad").style.display=(mode==="cad")?"":"none";
   document.getElementById("ponto_kiosk").style.display=(mode==="kiosk")?"":"none";
+  var pe=document.getElementById("ponto_emp");if(pe)pe.style.display=(mode==="emp")?"":"none";
+  if(mode==="emp"){_pontoStopCam();_pstatus("");loadPontoEmp();return;}
   try{await _ensureFace();}catch(e){_pstatus("Erro ao carregar o reconhecimento: "+(e.message||e));return;}
   if(mode==="cad"){
     var sel=document.getElementById("ponto_pessoa");if(sel)sel.innerHTML=(state.militares||[]).map(function(x){return '<option value="'+x.id+'">'+esc((x.posto?x.posto+" ":"")+x.nome)+'</option>';}).join("");
