@@ -503,14 +503,14 @@
     </div>
   </section>
 
-  <footer><span class="noprint">Confira a escala antes de publicar.<br>© 2026 <b>Gera Escalas</b> · <span class="lnk" onclick="openAbout()">Sobre &amp; Política de Privacidade</span> · <span style="color:var(--mut2)">v8.5</span></span></footer>
+  <footer><span class="noprint">Confira a escala antes de publicar.<br>© 2026 <b>Gera Escalas</b> · <span class="lnk" onclick="openAbout()">Sobre &amp; Política de Privacidade</span> · <span style="color:var(--mut2)">v8.6</span></span></footer>
 </main>
 
 <div id="aboutmodal" class="modal" style="display:none" onclick="if(event.target===this)closeAbout()">
   <div class="mbox">
     <button class="xbtn" onclick="closeAbout()">Fechar ✕</button>
     <h2>Gera Escalas</h2>
-    <p class="muted">Escalas de plantão, turno e giro · Versão 8.5 · 2026</p>
+    <p class="muted">Escalas de plantão, turno e giro · Versão 8.6 · 2026</p>
 
     <h3>Autoria e direitos autorais</h3>
     <p>© 2026 <b>Gera Escalas</b> — desenvolvido por Luís Cesar. Todos os direitos reservados.</p>
@@ -983,7 +983,8 @@ async function enviarAcessoFunc(id){
   if(cr&&cr.error){funcErro=cr.error.message||String(cr.error);}
   else if(cr&&cr.data){
     if(cr.data.ok&&cr.data.resultados&&cr.data.resultados[0]){var stt=cr.data.resultados[0];
-      if(stt.status==="criado"||stt.status==="parcial")criado=true;
+      if(stt.status==="criado")criado=true;
+      else if(stt.status==="parcial")funcErro="o login foi criado, mas n\u00e3o consegui vincular \u00e0 organiza\u00e7\u00e3o: "+(stt.msg||"")+".\nSe a mensagem falar em \"role\"/\"check\", rode no Supabase o SQL geraescalas_fix_role_membro.sql.";
       else if(stt.status==="erro"&&/(already|ex\u0438\u0441\u0442|existe|regist|cadastr|duplic)/i.test(stt.msg||""))jaExiste=true;
       else funcErro=stt.msg||"n\u00e3o foi poss\u00edvel criar o login";}
     else if(!cr.data.ok)funcErro=cr.data.error||"falha na fun\u00e7\u00e3o criar-funcionarios";
