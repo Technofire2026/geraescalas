@@ -502,14 +502,14 @@
     </div>
   </section>
 
-  <footer><span class="noprint">Confira a escala antes de publicar.<br>© 2026 <b>Gera Escalas</b> · <span class="lnk" onclick="openAbout()">Sobre &amp; Política de Privacidade</span> · <span style="color:var(--mut2)">v8.0</span></span></footer>
+  <footer><span class="noprint">Confira a escala antes de publicar.<br>© 2026 <b>Gera Escalas</b> · <span class="lnk" onclick="openAbout()">Sobre &amp; Política de Privacidade</span> · <span style="color:var(--mut2)">v8.1</span></span></footer>
 </main>
 
 <div id="aboutmodal" class="modal" style="display:none" onclick="if(event.target===this)closeAbout()">
   <div class="mbox">
     <button class="xbtn" onclick="closeAbout()">Fechar ✕</button>
     <h2>Gera Escalas</h2>
-    <p class="muted">Escalas de plantão, turno e giro · Versão 8.0 · 2026</p>
+    <p class="muted">Escalas de plantão, turno e giro · Versão 8.1 · 2026</p>
 
     <h3>Autoria e direitos autorais</h3>
     <p>© 2026 <b>Gera Escalas</b> — desenvolvido por Luís Cesar. Todos os direitos reservados.</p>
@@ -1665,6 +1665,16 @@ function _celAtual(d,ci){var res=state.schedule.result;var cov=res.cover&&res.co
 function _entPorId(id){var res=state.schedule.result;if(res.tipo==="ciclo")return (res.turmas||state.config.turmas||[]).find(function(t){return String(t.id)===String(id);});return byMil(isNaN(+id)?id:+id);}
 function fecharTroca(){var m=document.getElementById("trocaModal");if(m)m.style.display="none";}
 function _diaOpts(){var res=state.schedule.result,mo=state.schedule.month,yr=state.schedule.year,AB=["Dom","Seg","Ter","Qua","Qui","Sex","Sáb"],o="";for(var d=1;d<=res.N;d++){o+='<option value="'+d+'">'+pad(d)+"/"+pad(mo+1)+" ("+AB[new Date(yr,mo,d).getDay()]+")</option>";}return o;}
+// ——— Permuta guiada por funcionário ———
+function _minhaPessoaId(){var nome=((state.user&&state.user.pessoa)||"").trim().toLowerCase();if(!nome)return null;var m=(state.militares||[]).find(function(x){return (x.nome||"").trim().toLowerCase()===nome;});return m?m.id:null;}
+function _diaCiLabel(d,ci){var res=state.schedule.result,mo=state.schedule.month,yr=state.schedule.year,AB=["Dom","Seg","Ter","Qua","Qui","Sex","Sáb"];var cols=_colsOf(res);var cl=(cols.length>1&&cols[ci])?(" · "+cols[ci].lab):"";return pad(d)+"/"+pad(mo+1)+" ("+AB[new Date(yr,mo,d).getDay()]+")"+cl;}
+function _diasServicoDe(pid){var res=state.schedule&&state.schedule.result;if(!res||pid==null)return [];var out=[],cols=_colsOf(res),yr=state.schedule.year,mo=state.schedule.month;if(res.tipo==="folga"){var ref=byMil(pid)||{};for(var d=1;d<=res.N;d++){var folg=(res.folga[d]||[]).some(function(m){return String(m.id)===String(pid);});if(!folg&&!isUnavailable(ref,new Date(yr,mo,d)))out.push({d:d,ci:0});}return out;}for(var d2=1;d2<=res.N;d2++){for(var ci=0;ci<cols.length;ci++){var p=_celAtual(d2,ci);if(p&&String(p.id)===String(pid))out.push({d:d2,ci:ci});}}return out;}
+function _diasFolgaDe(pid){var res=state.schedule&&state.schedule.result;if(!res||pid==null)return [];var out=[];for(var d=1;d<=res.N;d++){if((res.folga[d]||[]).some(function(m){return String(m.id)===String(pid);}))out.push({d:d,ci:0});}return out;}
+function _servOpts(pid){var l=_diasServicoDe(pid);if(!l.length)return '<option value="">(nenhum dia de serviço)</option>';return l.map(function(o){return '<option value="'+o.d+'|'+o.ci+'">'+esc(_diaCiLabel(o.d,o.ci))+'</option>';}).join("");}
+function _folgaOpts(pid){var l=_diasFolgaDe(pid);if(!l.length)return '<option value="">(nenhuma folga)</option>';return l.map(function(o){return '<option value="'+o.d+'">'+esc(_diaCiLabel(o.d,0))+'</option>';}).join("");}
+function _pesOpts(exceptId){return (state.militares||[]).map(function(m){return '<option value="'+m.id+'"'+(String(m.id)===String(exceptId)?' selected':'')+'>'+esc((m.posto?m.posto+" ":"")+m.nome)+'</option>';}).join("");}
+function _colegasDatalist(exceptId){var ents=(state.militares||[]).filter(function(m){return String(m.id)!==String(exceptId);}).map(function(m){return '<option value="'+esc((m.posto?m.posto+" ":"")+m.nome)+'">';}).join("");return '<datalist id="pm_dl">'+ents+'</datalist>';}
+function _idPorNomeColega(txt){txt=(txt||"").trim().toLowerCase();if(!txt)return null;var list=(state.militares||[]);var full=function(x){return ((x.posto?x.posto+" ":"")+x.nome).trim().toLowerCase();};var m=list.find(function(x){return full(x)===txt;});if(!m)m=list.find(function(x){return (x.nome||"").trim().toLowerCase()===txt;});if(!m)m=list.find(function(x){return (x.nome||"").trim().toLowerCase().indexOf(txt)===0||full(x).indexOf(txt)>=0;});return m?m.id:null;}
 function openTroca(){
   if(!state.schedule||!isAdmin())return;
   if(!_proAtivo().ativo){alert("Trocar/Substituir é um recurso Pro. Assine para usar.");return;}
@@ -2466,6 +2476,7 @@ async function ativarPush(){
   }catch(e){say("Erro: "+(e.message||e),"#b91c1c");}
 }
 var NOVIDADES=[
+  {ver:"8.1",titulo:"Permuta mais fácil",itens:["O funcionário escolhe entre os dias em que ele está de serviço","Digite as primeiras letras do colega para encontrá-lo na troca"]},
   {ver:"8.0",titulo:"Folga intercalada e tela mais clara",itens:["Na folga rotativa, escolha folgas em bloco (juntas) ou intercaladas (separadas)","Selo mostra o modelo atual (ex.: 5×2) e cada campo ganhou explicação"]},
   {ver:"7.9",titulo:"Login da equipe em 1 passo",itens:["Importe o efetivo por CSV e crie os logins na mesma hora","Cada funcionário recebe e-mail para definir a própria senha"]},
   {ver:"7.4",titulo:"Avisos direcionados",itens:["Permuta avisa só os dois envolvidos","Alteração de escala avisa só o setor afetado"]},
@@ -2532,24 +2543,42 @@ function renderPermutaForm(){
     box.innerHTML='<div class="row" style="gap:8px;flex-wrap:wrap"><label class="fld"><span>Tipo</span><select id="pm_tipo" style="font:inherit;padding:6px;border:1px solid #cbd5e1;border-radius:6px"><option value="permuta">Permuta</option><option value="substituicao">Substituição</option><option value="outro">Outro</option></select></label><label class="fld"><span>Data</span><input id="pm_data" placeholder="ex.: 15/11"></label></div><label class="fld" style="margin-top:6px;display:block"><span>Detalhe (com quem / motivo)</span><input id="pm_detalhe" placeholder="ex.: trocar meu plantão do dia 15 com o João" style="width:100%"></label><button class="btn primary" style="margin-top:8px" onclick="enviarPermuta()">Enviar solicitação</button>'+common;
     return;
   }
-  var dOpts=_diaOpts();
-  if(res.tipo==="folga"){
-    var pes=(state.militares||[]).map(function(x){return '<option value="'+x.id+'">'+esc((x.posto?x.posto+" ":"")+x.nome)+'</option>';}).join("");
-    box.innerHTML='<div style="font-weight:700;color:#1e1b4b;margin-bottom:6px">Permutar folga</div><div class="row" style="gap:6px;flex-wrap:wrap;align-items:center">Minha folga: dia <select id="pm_fdA">'+dOpts+'</select> <select id="pm_fpA">'+pes+'</select></div><div class="row" style="gap:6px;flex-wrap:wrap;align-items:center;margin-top:6px">trocar com: dia <select id="pm_fdB">'+dOpts+'</select> <select id="pm_fpB">'+pes+'</select></div><button class="btn primary" style="margin-top:8px" onclick="enviarPermuta()">Enviar solicitação</button>'+common;
-    return;
-  }
-  var cols=_colsOf(res);var colOpts=cols.map(function(c,i){return '<option value="'+i+'">'+esc(c.lab)+'</option>';}).join("");
-  var ents=_trocaEnts().map(function(e){return '<option value="'+e.id+'">'+esc(e.nome)+'</option>';}).join("");
-  var colSel=cols.length>1?('Coluna <select id="pm_c">'+colOpts+'</select>'):('<input type="hidden" id="pm_c" value="0">');
-  var colSel2=cols.length>1?('Coluna <select id="pm_c2">'+colOpts+'</select>'):('<input type="hidden" id="pm_c2" value="0">');
+  var meuId=_minhaPessoaId();
+  if(res.tipo==="folga"){renderPermFolga(box,meuId,common);return;}
+  renderPermServico(box,meuId,common);
+}
+function renderPermServico(box,meuId,common){
+  var hasMe=meuId!=null;var firstId=hasMe?meuId:((state.militares[0]||{}).id);
+  var mePicker=hasMe?('<input type="hidden" id="pm_me" value="'+esc(String(meuId))+'">')
+    :('<div class="row" style="gap:6px;flex-wrap:wrap;align-items:center;margin-top:4px"><span class="tiny" style="font-weight:600">Você:</span> <select id="pm_me" onchange="pmRebuildMyDays()">'+_pesOpts(firstId)+'</select></div>');
   box.innerHTML='<div style="font-weight:700;color:#1e1b4b;margin-bottom:6px">Pedir permuta / substituição</div>'
-    +'<div class="row" style="gap:12px;flex-wrap:wrap"><label><input type="radio" name="pm_acao" value="sub" checked onchange="renderPermutaFormAcao()"> Substituição</label><label><input type="radio" name="pm_acao" value="perm" onchange="renderPermutaFormAcao()"> Permuta entre 2 dias</label></div>'
-    +'<div class="row" style="gap:6px;flex-wrap:wrap;align-items:center;margin-top:6px">Dia <select id="pm_d">'+dOpts+'</select> '+colSel+'</div>'
-    +'<div id="pm_subrow" class="row" style="gap:6px;flex-wrap:wrap;align-items:center;margin-top:6px">Quem assume: <select id="pm_alvo">'+ents+'</select></div>'
-    +'<div id="pm_permrow" class="row" style="gap:6px;flex-wrap:wrap;align-items:center;margin-top:6px;display:none">trocar com dia <select id="pm_d2">'+dOpts+'</select> '+colSel2+'</div>'
+    +mePicker
+    +'<div class="row" style="gap:6px;flex-wrap:wrap;align-items:center;margin-top:6px"><span class="tiny" style="font-weight:600">Meu dia de serviço:</span> <select id="pm_myday">'+_servOpts(firstId)+'</select></div>'
+    +'<div class="row" style="gap:6px;flex-wrap:wrap;align-items:center;margin-top:6px"><span class="tiny" style="font-weight:600">Quem vai assumir:</span> <input id="pm_sub_name" list="pm_dl" placeholder="digite as primeiras letras do nome…" oninput="pmOnColega()" autocomplete="off" style="font:inherit;padding:6px;border:1px solid #cbd5e1;border-radius:6px;min-width:190px"></div>'
+    +_colegasDatalist(firstId)
+    +'<label class="row" style="gap:6px;align-items:center;margin-top:6px;cursor:pointer"><input type="checkbox" id="pm_isperm" onchange="pmTogglePerm()"> <span class="tiny">Quero <b>permuta</b> (troco por um dia de serviço dele)</span></label>'
+    +'<div id="pm_theirrow" class="row" style="gap:6px;flex-wrap:wrap;align-items:center;margin-top:6px;display:none"><span class="tiny" style="font-weight:600">Dia de serviço dele:</span> <select id="pm_theirday"><option value="">escolha o colega primeiro</option></select></div>'
+    +'<input type="hidden" id="pm_colid" value="">'
     +'<button class="btn primary" style="margin-top:8px" onclick="enviarPermuta()">Enviar solicitação</button>'+common;
 }
-function renderPermutaFormAcao(){var a=(document.querySelector('input[name="pm_acao"]:checked')||{}).value;var s=document.getElementById("pm_subrow"),p=document.getElementById("pm_permrow");if(s)s.style.display=a==="perm"?"none":"";if(p)p.style.display=a==="perm"?"":"none";}
+function pmRebuildMyDays(){var id=val("pm_me");var s=document.getElementById("pm_myday");if(s)s.innerHTML=_servOpts(id);var dl=document.getElementById("pm_dl");if(dl)dl.outerHTML=_colegasDatalist(id);var n=document.getElementById("pm_sub_name");if(n)n.value="";var h=document.getElementById("pm_colid");if(h)h.value="";var tr=document.getElementById("pm_theirday");if(tr)tr.innerHTML='<option value="">escolha o colega primeiro</option>';}
+function pmTogglePerm(){var on=!!(document.getElementById("pm_isperm")||{}).checked;var r=document.getElementById("pm_theirrow");if(r)r.style.display=on?"":"none";pmOnColega();}
+function pmOnColega(){var id=_idPorNomeColega(val("pm_sub_name"));var h=document.getElementById("pm_colid");if(h)h.value=(id!=null)?id:"";var on=!!(document.getElementById("pm_isperm")||{}).checked;if(on){var s=document.getElementById("pm_theirday");if(s)s.innerHTML=(id!=null)?_servOpts(id):'<option value="">colega não encontrado</option>';}}
+function renderPermFolga(box,meuId,common){
+  var hasMe=meuId!=null;var firstId=hasMe?meuId:((state.militares[0]||{}).id);
+  var mePicker=hasMe?('<input type="hidden" id="pm_me" value="'+esc(String(meuId))+'">')
+    :('<div class="row" style="gap:6px;flex-wrap:wrap;align-items:center;margin-top:4px"><span class="tiny" style="font-weight:600">Você:</span> <select id="pm_me" onchange="pmRebuildFolga()">'+_pesOpts(firstId)+'</select></div>');
+  box.innerHTML='<div style="font-weight:700;color:#1e1b4b;margin-bottom:6px">Permutar folga</div>'
+    +mePicker
+    +'<div class="row" style="gap:6px;flex-wrap:wrap;align-items:center;margin-top:6px"><span class="tiny" style="font-weight:600">Minha folga:</span> <select id="pm_myday">'+_folgaOpts(firstId)+'</select></div>'
+    +'<div class="row" style="gap:6px;flex-wrap:wrap;align-items:center;margin-top:6px"><span class="tiny" style="font-weight:600">Trocar com:</span> <input id="pm_sub_name" list="pm_dl" placeholder="digite as primeiras letras do nome…" oninput="pmOnColegaFolga()" autocomplete="off" style="font:inherit;padding:6px;border:1px solid #cbd5e1;border-radius:6px;min-width:190px"></div>'
+    +_colegasDatalist(firstId)
+    +'<div class="row" style="gap:6px;flex-wrap:wrap;align-items:center;margin-top:6px"><span class="tiny" style="font-weight:600">Folga dele:</span> <select id="pm_theirday"><option value="">escolha o colega primeiro</option></select></div>'
+    +'<input type="hidden" id="pm_colid" value="">'
+    +'<button class="btn primary" style="margin-top:8px" onclick="enviarPermuta()">Enviar solicitação</button>'+common;
+}
+function pmRebuildFolga(){var id=val("pm_me");var s=document.getElementById("pm_myday");if(s)s.innerHTML=_folgaOpts(id);var dl=document.getElementById("pm_dl");if(dl)dl.outerHTML=_colegasDatalist(id);var n=document.getElementById("pm_sub_name");if(n)n.value="";var h=document.getElementById("pm_colid");if(h)h.value="";var tr=document.getElementById("pm_theirday");if(tr)tr.innerHTML='<option value="">escolha o colega primeiro</option>';}
+function pmOnColegaFolga(){var id=_idPorNomeColega(val("pm_sub_name"));var h=document.getElementById("pm_colid");if(h)h.value=(id!=null)?id:"";var s=document.getElementById("pm_theirday");if(s)s.innerHTML=(id!=null)?_folgaOpts(id):'<option value="">colega não encontrado</option>';}
 function _aplicarPermutaPayload(p){
   if(!p||!p.op)return {ok:false,msg:"pedido sem dados estruturados (foi em texto livre)"};
   if(!state.schedule||!state.schedule.result)return {ok:false,msg:"abra a escala para aplicar"};
@@ -2600,19 +2629,27 @@ async function enviarPermuta(){
     data=(val("pm_data")||"").trim();det=(val("pm_detalhe")||"").trim();
     if(!det){say("Descreva o pedido (com quem e por quê).","#b91c1c");return;}
   }else if(res.tipo==="folga"){
-    var dA=+val("pm_fdA"),pA=+val("pm_fpA"),dB=+val("pm_fdB"),pB=+val("pm_fpB");
-    tipoReq="permuta";data="dia "+dA+" ↔ "+dB;det="Permutar folga do dia "+dA+" com o dia "+dB;
+    var meId=val("pm_me");var dA=+val("pm_myday");var colId=val("pm_colid");var dB=+val("pm_theirday");
+    if(!dA){say("Escolha a sua folga.","#b91c1c");return;}
+    if(!colId){say("Digite o nome de um colega válido para a troca.","#b91c1c");return;}
+    if(!dB){say("Escolha a folga do colega.","#b91c1c");return;}
+    var pA=isNaN(+meId)?meId:+meId,pB=isNaN(+colId)?colId:+colId;
+    var nmB=((byMil(pB)||{}).nome)||"o colega";
+    tipoReq="permuta";data="dia "+dA+" ↔ "+dB;det="Permutar minha folga do dia "+dA+" com a folga de "+nmB+" no dia "+dB;
     payload={op:"folgaPerm",dA:dA,pA:pA,dB:dB,pB:pB,year:state.schedule.year,month:state.schedule.month,tipo:"folga"};
   }else{
-    var acao=(document.querySelector('input[name="pm_acao"]:checked')||{}).value||"sub";
-    var d=+val("pm_d"),ci=+val("pm_c");var cols=_colsOf(res);var colLab=(cols[ci]&&cols[ci].lab)||("coluna "+(ci+1));
-    if(acao==="sub"){
-      var alvo=val("pm_alvo");var alvoE=_entPorId(alvo);var alvoNome=alvoE?((alvoE.posto?alvoE.posto+" ":"")+(alvoE.nome||"")):String(alvo);
-      tipoReq="substituicao";data="dia "+d;det="Substituir no dia "+d+" ("+colLab+") por "+alvoNome;
+    var myv=val("pm_myday");if(!myv){say("Escolha o seu dia de serviço.","#b91c1c");return;}
+    var mp=String(myv).split("|");var d=+mp[0],ci=+(mp[1]||0);var cols=_colsOf(res);var colLab=(cols[ci]&&cols[ci].lab)||("coluna "+(ci+1));
+    var colId2=val("pm_colid");if(!colId2){say("Digite o nome de um colega válido.","#b91c1c");return;}
+    var alvo=isNaN(+colId2)?colId2:+colId2;var alvoE=byMil(alvo)||{};var alvoNome=((alvoE.posto?alvoE.posto+" ":"")+(alvoE.nome||""))||String(alvo);
+    var isperm=!!(document.getElementById("pm_isperm")||{}).checked;
+    if(!isperm){
+      tipoReq="substituicao";data="dia "+d;det="Substituir no meu serviço do dia "+d+" ("+colLab+") por "+alvoNome;
       payload={op:"sub",d:d,ci:ci,alvoId:alvo,year:state.schedule.year,month:state.schedule.month,tipo:res.tipo};
     }else{
-      var d2=+val("pm_d2"),c2=+val("pm_c2");
-      tipoReq="permuta";data="dia "+d+" ↔ "+d2;det="Permutar dia "+d+" ("+colLab+") com o dia "+d2;
+      var tv=val("pm_theirday");if(!tv){say("Escolha o dia de serviço do colega.","#b91c1c");return;}
+      var tp=String(tv).split("|");var d2=+tp[0],c2=+(tp[1]||0);
+      tipoReq="permuta";data="dia "+d+" ↔ "+d2;det="Permutar meu serviço do dia "+d+" ("+colLab+") com o dia "+d2+" de "+alvoNome;
       payload={op:"perm",d:d,ci:ci,d2:d2,c2:c2,year:state.schedule.year,month:state.schedule.month,tipo:res.tipo};
     }
   }
@@ -2735,7 +2772,7 @@ async function cloudCreateOrg(){
 }
 async function cloudEnter(){
   var u=(await db.auth.getUser()).data.user;
-  var q=await db.from("members").select("role, org_id, nome, posto, email, organizations(nome,cnpj,status,trial_ends_at,assinatura_expira_em)").eq("user_id",u.id);
+  var q=await db.from("members").select("role, org_id, nome, posto, email, pessoa_nome, setor, organizations(nome,cnpj,status,trial_ends_at,assinatura_expira_em)").eq("user_id",u.id);
   if(q.error){cgmsg("Erro ao ler seus dados: "+q.error.message,"#b91c1c");return;}
   if(!q.data||!q.data.length){
     var box=document.getElementById("authbox");
@@ -2743,7 +2780,7 @@ async function cloudEnter(){
     return;
   }
   var m=q.data[0];
-  var _o=m.organizations||{};state.user={login:u.email,uid:u.id,nome:m.nome||u.email,posto:m.posto||"",role:m.role||"view",orgId:m.org_id,orgNome:_o.nome||"",orgCnpj:_o.cnpj||"",orgStatus:_o.status||"trial",trialEnds:_o.trial_ends_at||null,assinaturaExpira:_o.assinatura_expira_em||null};
+  var _o=m.organizations||{};state.user={login:u.email,uid:u.id,nome:m.nome||u.email,posto:m.posto||"",role:m.role||"view",pessoa:m.pessoa_nome||"",setor:m.setor||"",orgId:m.org_id,orgNome:_o.nome||"",orgCnpj:_o.cnpj||"",orgStatus:_o.status||"trial",trialEnds:_o.trial_ends_at||null,assinaturaExpira:_o.assinatura_expira_em||null};
   try{if(!m.email){await db.from("members").update({email:u.email}).eq("org_id",m.org_id).eq("user_id",u.id);}}catch(e){}
   await cloudPullAll();
   loadConfig();loadLog();load();if(typeof restoreSchedule==="function")restoreSchedule();
