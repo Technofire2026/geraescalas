@@ -337,13 +337,12 @@
             <label class="fld" style="min-width:0">1º período de férias (opcional)<input type="date" id="fer" style="width:100%;max-width:100%;box-sizing:border-box"></label>
           </div>
           <label class="fld" id="add_time_wrap" style="display:none;margin-top:2px"><span>Time (escala por ciclo)</span><select id="add_time" style="width:100%;font:inherit;padding:8px;border:1px solid var(--line2);border-radius:8px"></select></label>
-          <div style="margin-top:2px"><span class="lnk tiny" onclick="var e=document.getElementById('maisdados');e.style.display=(e.style.display==='none'||!e.style.display)?'block':'none';">+ mais dados (opcional)</span></div>
-          <div id="maisdados" style="display:none;margin-top:4px">
-            <div class="two"><input id="cpf" placeholder="CPF (opcional)" inputmode="numeric"><input id="tel" placeholder="Telefone (opcional)" inputmode="tel"></div>
-            <div class="two"><input id="email" placeholder="E-mail (opcional)" type="email"><input id="endereco" placeholder="Endereço (opcional)"></div>
-          </div>
-          <button class="btn dark" style="width:100%;justify-content:center;margin-top:4px" onclick="addMilitar()">➕ Adicionar pessoa</button>
-          <button class="btn ghost" style="width:100%;justify-content:center;margin-top:6px" onclick="openImport()">⬆ Importar por CSV</button>
+          <div class="two"><input id="email" placeholder="E-mail (para dar acesso ao app)" type="email" onkeydown="if(event.key==='Enter')addMilitar()"><input id="tel" placeholder="Telefone (opcional)" inputmode="tel"></div>
+          <div class="two"><input id="cpf" placeholder="CPF (opcional)" inputmode="numeric"><input id="endereco" placeholder="Endereço (opcional)"></div>
+          <button class="btn dark" style="width:100%;justify-content:center;margin-top:6px" onclick="addMilitar()">➕ Adicionar pessoa</button>
+          <button class="btn primary" style="width:100%;justify-content:center;margin-top:6px" onclick="addMilitarComAcesso()">✉️ Adicionar e enviar acesso</button>
+          <div class="tiny" style="color:var(--mut);margin-top:4px">O botão <b>✉️ Adicionar e enviar acesso</b> cadastra a pessoa e já envia o e-mail de login (acesso de <b>Funcionário</b>: vê a escala, pede e recebe permuta). Precisa do e-mail preenchido.</div>
+          <button class="btn ghost" style="width:100%;justify-content:center;margin-top:8px" onclick="openImport()">⬆ Importar por CSV</button>
         </div>
         <div id="lista"></div>
         <p class="tiny" style="margin-top:12px">ℹ Setas = ordem inicial da rotação. Férias e atestado: informe as datas por pessoa (nº de dias ajustável). Atestado = nº de dias informado. Afastamento no meio de um mês já gerado: registre o atestado e clique em <b>Aplicar afastamento</b> — o sucessor assume e a folga do efetivo é reduzida no período (dias já cumpridos ficam intactos).</p>
@@ -504,14 +503,14 @@
     </div>
   </section>
 
-  <footer><span class="noprint">Confira a escala antes de publicar.<br>© 2026 <b>Gera Escalas</b> · <span class="lnk" onclick="openAbout()">Sobre &amp; Política de Privacidade</span> · <span style="color:var(--mut2)">v8.4</span></span></footer>
+  <footer><span class="noprint">Confira a escala antes de publicar.<br>© 2026 <b>Gera Escalas</b> · <span class="lnk" onclick="openAbout()">Sobre &amp; Política de Privacidade</span> · <span style="color:var(--mut2)">v8.5</span></span></footer>
 </main>
 
 <div id="aboutmodal" class="modal" style="display:none" onclick="if(event.target===this)closeAbout()">
   <div class="mbox">
     <button class="xbtn" onclick="closeAbout()">Fechar ✕</button>
     <h2>Gera Escalas</h2>
-    <p class="muted">Escalas de plantão, turno e giro · Versão 8.4 · 2026</p>
+    <p class="muted">Escalas de plantão, turno e giro · Versão 8.5 · 2026</p>
 
     <h3>Autoria e direitos autorais</h3>
     <p>© 2026 <b>Gera Escalas</b> — desenvolvido por Luís Cesar. Todos os direitos reservados.</p>
@@ -1615,16 +1614,27 @@ function recalcularAfastamento(res0,militares,year,month,modo,tipo){
   return{res:res,startDay:startDay};
 }
 
-function addMilitar(){if(!isAdmin())return;if(bloqueadoPro())return;
+function addMilitar(){if(!isAdmin())return null;if(bloqueadoPro())return null;
   const nome=val("nome").trim();
-  if(!nome){showErro("Informe o nome da pessoa.");return;}
+  if(!nome){showErro("Informe o nome da pessoa.");return null;}
   showMsg("");
   const posto=val("posto").trim();const fer=val("fer");
   const cpf=(val("cpf")||"").trim(),email=(val("email")||"").trim(),tel=(val("tel")||"").trim(),endereco=(val("endereco")||"").trim();
   const _tid=((document.getElementById("add_time")||{}).value)||null;
-  state.militares.push({id:uid(),nome:nome,posto:posto,cpf:cpf,email:email,tel:tel,end:endereco,turmaId:_tid,ferias:fer?[{id:uid(),start:fer}]:[],atestados:[]});
+  var nid=uid();
+  state.militares.push({id:nid,nome:nome,posto:posto,cpf:cpf,email:email,tel:tel,end:endereco,turmaId:_tid,ferias:fer?[{id:uid(),start:fer}]:[],atestados:[]});
   ["nome","posto","fer","cpf","email","tel","endereco"].forEach(function(id){var e=document.getElementById(id);if(e)e.value="";});var _md=document.getElementById("maisdados");if(_md)_md.style.display="none";
   saveMil();renderRoster();log("Cadastro de pessoa",(posto?posto+" ":"")+nome+(fer?" (férias em "+fer+")":""));document.getElementById("nome").focus();
+  return nid;
+}
+async function addMilitarComAcesso(){
+  if(!isAdmin())return;
+  var email=(val("email")||"").trim();
+  if(!email||email.indexOf("@")<1){showErro("Para enviar o acesso, preencha o e-mail da pessoa.");var e=document.getElementById("email");if(e&&e.focus)e.focus();return;}
+  if(typeof cloudReady!=="function"||!cloudReady()||!state.user||!state.user.orgId){showErro("Enviar acesso só funciona na versão em nuvem (logado).");return;}
+  var nid=addMilitar();
+  if(nid==null)return;
+  await enviarAcessoFunc(nid);
 }
 function removeMilitar(id){
   const m=byMil(id);
@@ -2586,6 +2596,7 @@ async function ativarPush(){
   }catch(e){say("Erro: "+(e.message||e),"#b91c1c");}
 }
 var NOVIDADES=[
+  {ver:"8.5",titulo:"Cadastrar e dar acesso num passo",itens:["E-mail, CPF, telefone e endereço agora aparecem direto no cadastro da Equipe","Botão ✉️ Adicionar e enviar acesso: cadastra a pessoa e já envia o login"]},
   {ver:"8.4",titulo:"Acesso rápido na Equipe",itens:["Botão ✉ acesso na pessoa da Equipe: cria o login de funcionário e envia o e-mail de login"]},
   {ver:"8.3",titulo:"Hora extra e relatórios para a folha",itens:["Lance hora extra (dia inteiro ou horas avulsas) direto na grade mensal","Relatórios por funcionário — semanal, mensal e anual — em CSV e PDF"]},
   {ver:"8.2",titulo:"“Folgam por dia” agora é respeitado",itens:["A folga rotativa nunca libera mais pessoas que o configurado em “folgam por dia”","Exceção: só no domingo, para garantir o descanso semanal de todos"]},
