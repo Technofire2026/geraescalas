@@ -970,24 +970,24 @@ function baixarCredenciais(){
   var csv="email;senha;status\r\n"+rows.map(function(x){function q(v){v=String(v==null?"":v);return /[;"\n\r]/.test(v)?'"'+v.replace(/"/g,'""')+'"':v;}return q(x.email)+";"+q(x.senha||"")+";"+q(x.status);}).join("\r\n");
   var blob=new Blob(["\ufeff"+csv],{type:"text/csv;charset=utf-8;"});var a=document.createElement("a");a.href=URL.createObjectURL(blob);a.download="credenciais-funcionarios.csv";document.body.appendChild(a);a.click();setTimeout(function(){URL.revokeObjectURL(a.href);a.remove();},300);
 }
-async function enviarAcessoView(id){
+async function enviarAcessoFunc(id){
   if(!isAdmin())return;
   if(typeof cloudReady!=="function"||!cloudReady()||!state.user||!state.user.orgId){alert("Dispon\u00edvel apenas na vers\u00e3o em nuvem (logado).");return;}
   var m=byMil(id);if(!m)return;
   var email=((m.email||"").trim());
   if(!email||email.indexOf("@")<1){alert("Cadastre o e-mail da pessoa primeiro (bot\u00e3o \u270e Editar).");return;}
-  var ok=true;try{ok=confirm("Dar acesso de VISUALIZA\u00c7\u00c3O e enviar o e-mail de login para "+(m.nome||email)+"?");}catch(e){}
+  var ok=true;try{ok=confirm("Dar acesso de FUNCION\u00c1RIO (v\u00ea a escala, pede e recebe permuta) e enviar o e-mail de login para "+(m.nome||email)+"?");}catch(e){}
   if(!ok)return;
   var setor=(typeof setorNome==="function"?setorNome():"")||"";
   try{
-    await db.functions.invoke("criar-funcionarios",{body:{funcionarios:[{nome:m.nome,email:email,pessoa:m.nome,setor:setor,role:"view"}]}});
+    await db.functions.invoke("criar-funcionarios",{body:{funcionarios:[{nome:m.nome,email:email,pessoa:m.nome,setor:setor,role:"membro"}]}});
   }catch(e){/* pode j\u00e1 existir \u2014 segue para garantir papel e enviar convite */}
-  try{await db.from("members").update({role:"view",pessoa_nome:m.nome,setor:setor||null}).eq("org_id",state.user.orgId).eq("email",email.toLowerCase());}catch(e){}
+  try{await db.from("members").update({role:"membro",pessoa_nome:m.nome,setor:setor||null}).eq("org_id",state.user.orgId).eq("email",email.toLowerCase());}catch(e){}
   var env=false;try{var rr=await db.auth.resetPasswordForEmail(email,{redirectTo:window.location.origin+window.location.pathname});env=!(rr&&rr.error);}catch(e){env=false;}
-  try{log("Acesso de visualiza\u00e7\u00e3o",(m.nome||email));}catch(e){}
+  try{log("Acesso de funcion\u00e1rio",(m.nome||email));}catch(e){}
   try{renderOperadoresCloud();}catch(e){}
-  if(env)alert("Acesso de visualiza\u00e7\u00e3o criado e e-mail de login enviado para "+email+".\nPe\u00e7a para a pessoa olhar a caixa de entrada (e o spam).");
-  else alert("Acesso de visualiza\u00e7\u00e3o criado para "+email+", mas o e-mail de login pode n\u00e3o ter sa\u00eddo (limite de envios). Tente de novo em alguns minutos.");
+  if(env)alert("Acesso de funcion\u00e1rio criado e e-mail de login enviado para "+email+".\nPe\u00e7a para a pessoa olhar a caixa de entrada (e o spam).");
+  else alert("Acesso de funcion\u00e1rio criado para "+email+", mas o e-mail de login pode n\u00e3o ter sa\u00eddo (limite de envios). Tente de novo em alguns minutos.");
 }
 async function removeOperadorCloud(userId){
   if(!isOwner())return;
@@ -1840,7 +1840,7 @@ function renderRoster(){
       var _tn=m.turmaId?((state.config.turmas||[]).find(function(t){return t.id===m.turmaId;})||{}).nome:"";
       var _ex=[_tn?("Time: "+esc(_tn)):"",m.cpf?("CPF: "+esc(m.cpf)):"",m.tel?("Tel: "+esc(m.tel)):"",m.email?("E-mail: "+esc(m.email)):"",m.end?("End.: "+esc(m.end)):""].filter(Boolean);
       var _podeAcesso=(m.email&&typeof cloudReady==="function"&&cloudReady());
-      h+='<div class="mname">'+(m.posto?'<span class="pg">'+esc(m.posto)+' </span>':'')+esc(m.nome)+' <button class="mini" title="Editar" onclick="editMilitar('+m.id+')">✎</button>'+(_ex.length?' <button class="mini" title="Ver dados" onclick="toggleMil('+m.id+')">ⓘ</button>':'')+(_podeAcesso?' <button class="mini" title="Dar acesso de visualização e enviar e-mail de login" onclick="enviarAcessoView('+m.id+')" style="color:#4f46e5">✉ acesso</button>':'')+'</div>';
+      h+='<div class="mname">'+(m.posto?'<span class="pg">'+esc(m.posto)+' </span>':'')+esc(m.nome)+' <button class="mini" title="Editar" onclick="editMilitar('+m.id+')">✎</button>'+(_ex.length?' <button class="mini" title="Ver dados" onclick="toggleMil('+m.id+')">ⓘ</button>':'')+(_podeAcesso?' <button class="mini" title="Dar acesso de funcionário (pede e recebe permuta) e enviar e-mail de login" onclick="enviarAcessoFunc('+m.id+')" style="color:#4f46e5">✉ acesso</button>':'')+'</div>';
       if(_ex.length)h+='<div class="tiny" id="mil_dados_'+m.id+'" style="display:none;color:var(--mut);margin:2px 0 4px">'+_ex.join(" · ")+'</div>';
     }
     h+='<div class="fer"><div class="lbl">✈ Férias (dias editáveis · padrão '+FERIAS_DIAS+')</div>';
@@ -2586,7 +2586,7 @@ async function ativarPush(){
   }catch(e){say("Erro: "+(e.message||e),"#b91c1c");}
 }
 var NOVIDADES=[
-  {ver:"8.4",titulo:"Acesso rápido na Equipe",itens:["Botão ✉ acesso na pessoa da Equipe: cria o login de visualização e envia o e-mail de login"]},
+  {ver:"8.4",titulo:"Acesso rápido na Equipe",itens:["Botão ✉ acesso na pessoa da Equipe: cria o login de funcionário e envia o e-mail de login"]},
   {ver:"8.3",titulo:"Hora extra e relatórios para a folha",itens:["Lance hora extra (dia inteiro ou horas avulsas) direto na grade mensal","Relatórios por funcionário — semanal, mensal e anual — em CSV e PDF"]},
   {ver:"8.2",titulo:"“Folgam por dia” agora é respeitado",itens:["A folga rotativa nunca libera mais pessoas que o configurado em “folgam por dia”","Exceção: só no domingo, para garantir o descanso semanal de todos"]},
   {ver:"8.1",titulo:"Permuta mais fácil",itens:["O funcionário escolhe entre os dias em que ele está de serviço","Digite as primeiras letras do colega para encontrá-lo na troca"]},
