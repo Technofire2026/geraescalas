@@ -650,6 +650,7 @@
       <button class="btn" style="color:#fff;background:#1e2540;border:1px solid #475569" onclick="pontoMode('cad')">👤 Cadastrar rostos</button>
       <button class="btn" style="color:#fff;background:#1e2540;border:1px solid #475569" onclick="pontoMode('emp')">🏢 Empregador</button>
       <button class="btn" style="color:#fff;background:#1e2540;border:1px solid #475569" onclick="pontoMode('afd')">📄 AFD</button>
+      <button class="btn" style="color:#fff;background:#1e2540;border:1px solid #475569" onclick="pontoMode('cert')">🔏 Certificado</button>
       <button class="btn primary" onclick="pontoMode('kiosk')">📷 Modo quiosque</button>
       <button class="btn" style="color:#fff;background:#3a1e2a;border:1px solid #6b3a4a" onclick="closePonto()">Sair ✕</button>
     </div>
@@ -700,6 +701,18 @@
       <div style="margin-top:12px;display:flex;gap:8px;flex-wrap:wrap"><button class="btn primary" onclick="gerarAFD()">📄 Gerar AFD (rascunho)</button><button id="afd_assinar" class="btn" style="display:none;color:#fff;background:#1e2540;border:1px solid #475569" onclick="assinarAFD()">✍ Assinar (ICP-Brasil / .p7s)</button></div>
       <div id="afd_msg" style="font-size:13px;margin-top:10px;white-space:pre-wrap"></div>
       <div id="afd_sigmsg" style="font-size:13px;margin-top:8px;white-space:pre-wrap"></div>
+    </div>
+
+    <div id="ponto_cert" style="display:none;max-width:620px">
+      <div style="background:#13213a;border:1px solid #334e7a;border-radius:10px;padding:10px 12px;color:#bcd0f5;font-size:13px;margin-bottom:12px">🔏 <b>Certificado digital A1 (ICP-Brasil / e-CNPJ).</b> Necessário para <b>assinar o AFD</b> e dar validade legal (REP-P). O certificado é guardado <b>cifrado</b> e usado só para assinar o AFD desta empresa.</div>
+      <div id="cert_status" style="font-size:13px;color:#a7b0d0;margin-bottom:12px">Verificando…</div>
+      <div style="display:flex;flex-direction:column;gap:10px">
+        <div><label style="display:block;font-size:13px;margin-bottom:2px">Arquivo do certificado (.pfx ou .p12)</label><input id="cert_file" type="file" accept=".pfx,.p12" style="width:100%;font:inherit;padding:8px;border-radius:8px;border:1px solid #334;background:#11162a;color:#fff"></div>
+        <div><label style="display:block;font-size:13px;margin-bottom:2px">Senha do certificado</label><input id="cert_senha" type="password" autocomplete="off" style="width:100%;font:inherit;padding:8px;border-radius:8px;border:1px solid #334;background:#11162a;color:#fff"></div>
+      </div>
+      <div style="margin-top:12px;display:flex;gap:8px;flex-wrap:wrap"><button class="btn primary" onclick="salvarCert()">💾 Salvar certificado</button><button id="cert_rm" class="btn" style="display:none;color:#fff;background:#3a1420;border:1px solid #7f1d1d" onclick="removerCert()">🗑 Remover</button></div>
+      <div id="cert_msg" style="font-size:13px;margin-top:10px;white-space:pre-wrap"></div>
+      <p style="font-size:12px;color:#7f8bb0;margin-top:10px">A senha não é guardada em texto puro e não aparece de volta nesta tela. Use um certificado <b>A1</b> (arquivo); o <b>A3</b> (token/cartão) não funciona aqui.</p>
     </div>
 
     <div id="ponto_kiosk" style="display:none;text-align:center">
@@ -2189,8 +2202,8 @@ async function assinarAFD(){
   catch(e){say("Erro ao chamar a assinatura: "+(e.message||e),"#fca5a5");return;}
   var d=r&&r.data,err=(r&&r.error&&(r.error.message||r.error))||(d&&!d.ok&&d.erro)||"";
   if(!d||!d.ok){
-    if(/configurad|secret|certificad/i.test(String(err)))
-      say("Certificado ainda não configurado.\nPara assinar, adquira um certificado ICP-Brasil A1 (e-CNPJ) e cadastre no Supabase os segredos CERT_PFX_BASE64 (o .pfx em base64) e CERT_PFX_SENHA (a senha).\nNunca envie o certificado/senha por aqui — só nos Secrets do Supabase.","#fde68a");
+    if(/configurad|cadastr|certificad/i.test(String(err)))
+      say("Certificado ainda não cadastrado.\nAbra a aba 🔏 Certificado, anexe o seu .pfx (A1 / e-CNPJ) e a senha, e salve. Depois volte aqui e assine.","#fde68a");
     else say("Não assinou: "+(err||"erro desconhecido"),"#fca5a5");
     return;
   }
@@ -2198,6 +2211,45 @@ async function assinarAFD(){
   var blob=new Blob([u],{type:"application/pkcs7-signature"});var a=document.createElement("a");a.href=URL.createObjectURL(blob);a.download=(_ponto.afdNome||"AFD.txt")+".p7s";document.body.appendChild(a);a.click();setTimeout(function(){URL.revokeObjectURL(a.href);a.remove();},500);
   say("✓ Assinatura gerada (.p7s)"+(d.titular?(" — titular: "+d.titular):"")+".\nEntregue sempre o AFD e o .p7s juntos. Confirme a validade no validador oficial do governo.","#86efac");
   try{log("AFD assinado (.p7s)",(d.titular||"")+" · "+(_ponto.afdNome||""));}catch(e){}
+}
+async function loadCertStatus(){
+  var st=document.getElementById("cert_status"),rm=document.getElementById("cert_rm"),mm=document.getElementById("cert_msg");if(mm)mm.textContent="";
+  if(!cloudReady()||!window.db){if(st)st.textContent="Sem conexão com a nuvem.";return;}
+  if(st)st.textContent="Verificando…";
+  var r;try{r=await db.functions.invoke("cert-salvar",{body:{acao:"status"}});}catch(e){if(st){st.textContent="Erro ao consultar: "+(e.message||e);st.style.color="#fca5a5";}return;}
+  var d=r&&r.data;
+  if(d&&d.ok&&d.tem){
+    var val=d.validade?new Date(d.validade):null;var venc=val&&val<new Date();
+    if(st){st.innerHTML="✓ Certificado cadastrado"+(d.titular?(" — <b>"+esc(d.titular)+"</b>"):"")+(val?("<br>Validade: "+val.toLocaleDateString("pt-BR")+(venc?" <span style='color:#fca5a5'>(VENCIDO)</span>":"")):"");st.style.color=venc?"#fca5a5":"#86efac";}
+    if(rm)rm.style.display="";
+  }else{
+    if(st){st.textContent=(d&&!d.ok&&/CERT_ENC_KEY/.test(d.erro||""))?"Configuração pendente no servidor (CERT_ENC_KEY).":"Nenhum certificado cadastrado ainda.";st.style.color="#fde68a";}
+    if(rm)rm.style.display="none";
+  }
+}
+async function salvarCert(){
+  if(!isAdmin())return;var mm=document.getElementById("cert_msg");function say(t,c){if(mm){mm.textContent=t;mm.style.color=c||"#a7b0d0";}}
+  if(!cloudReady()||!window.db){say("Sem conexão com a nuvem.","#fca5a5");return;}
+  var f=document.getElementById("cert_file"),senha=val("cert_senha");
+  var file=f&&f.files&&f.files[0];
+  if(!file){say("Anexe o arquivo .pfx/.p12 do certificado.","#fca5a5");return;}
+  if(!senha){say("Digite a senha do certificado.","#fca5a5");return;}
+  say("Lendo e validando o certificado…");
+  var pfxB64;try{pfxB64=await new Promise(function(res,rej){var rd=new FileReader();rd.onload=function(){var s=rd.result;res(s.indexOf(",")>=0?s.split(",")[1]:s);};rd.onerror=rej;rd.readAsDataURL(file);});}catch(e){say("Não consegui ler o arquivo: "+(e.message||e),"#fca5a5");return;}
+  var r;try{r=await db.functions.invoke("cert-salvar",{body:{acao:"salvar",pfx:pfxB64,senha:senha}});}catch(e){say("Erro ao salvar: "+(e.message||e),"#fca5a5");return;}
+  var d=r&&r.data,err=(r&&r.error&&(r.error.message||r.error))||(d&&!d.ok&&d.erro)||"";
+  if(!d||!d.ok){say("Não salvou: "+(err||"erro desconhecido"),"#fca5a5");return;}
+  try{f.value="";}catch(e){}var cs=document.getElementById("cert_senha");if(cs)cs.value="";
+  say("✓ Certificado salvo"+(d.titular?(" — titular: "+d.titular):"")+". Já pode assinar o AFD.","#86efac");
+  loadCertStatus();
+  try{log("Certificado A1 cadastrado",d.titular||"");}catch(e){}
+}
+async function removerCert(){
+  if(!isAdmin())return;if(!confirm("Remover o certificado cadastrado? A assinatura do AFD deixará de funcionar até cadastrar outro."))return;
+  var mm=document.getElementById("cert_msg");function say(t,c){if(mm){mm.textContent=t;mm.style.color=c||"#a7b0d0";}}
+  var r;try{r=await db.functions.invoke("cert-salvar",{body:{acao:"remover"}});}catch(e){say("Erro ao remover: "+(e.message||e),"#fca5a5");return;}
+  if(r&&r.data&&r.data.ok){say("Certificado removido.","#fde68a");loadCertStatus();try{log("Certificado A1 removido","");}catch(e){}}
+  else say("Não removeu: "+((r&&r.data&&r.data.erro)||"erro"),"#fca5a5");
 }
 async function _afdVerificar(lines){
   var probs=[],expLen={"1":302,"2":331,"5":118,"7":137},cntByType={},prevHash="",nsrEsp=0,sigOk=false;
@@ -2236,8 +2288,10 @@ async function pontoMode(mode){
   document.getElementById("ponto_kiosk").style.display=(mode==="kiosk")?"":"none";
   var pe=document.getElementById("ponto_emp");if(pe)pe.style.display=(mode==="emp")?"":"none";
   var pa=document.getElementById("ponto_afd");if(pa)pa.style.display=(mode==="afd")?"":"none";
+  var pc=document.getElementById("ponto_cert");if(pc)pc.style.display=(mode==="cert")?"":"none";
   if(mode==="emp"){_pontoStopCam();_pstatus("");loadPontoEmp();return;}
   if(mode==="afd"){_pontoStopCam();_pstatus("");_afdInit();return;}
+  if(mode==="cert"){_pontoStopCam();_pstatus("");loadCertStatus();return;}
   try{await _ensureFace();}catch(e){_pstatus("Erro ao carregar o reconhecimento: "+(e.message||e));return;}
   if(mode==="cad"){
     var sel=document.getElementById("ponto_pessoa");if(sel)sel.innerHTML=(state.militares||[]).map(function(x){return '<option value="'+x.id+'">'+esc((x.posto?x.posto+" ":"")+x.nome)+'</option>';}).join("");
