@@ -503,14 +503,14 @@
     </div>
   </section>
 
-  <footer><span class="noprint">Confira a escala antes de publicar.<br>© 2026 <b>Gera Escalas</b> · <span class="lnk" onclick="openAbout()">Sobre &amp; Política de Privacidade</span> · <span style="color:var(--mut2)">v8.8</span></span></footer>
+  <footer><span class="noprint">Confira a escala antes de publicar.<br>© 2026 <b>Gera Escalas</b> · <span class="lnk" onclick="openAbout()">Sobre &amp; Política de Privacidade</span> · <span style="color:var(--mut2)">v8.9</span></span></footer>
 </main>
 
 <div id="aboutmodal" class="modal" style="display:none" onclick="if(event.target===this)closeAbout()">
   <div class="mbox">
     <button class="xbtn" onclick="closeAbout()">Fechar ✕</button>
     <h2>Gera Escalas</h2>
-    <p class="muted">Escalas de plantão, turno e giro · Versão 8.8 · 2026</p>
+    <p class="muted">Escalas de plantão, turno e giro · Versão 8.9 · 2026</p>
 
     <h3>Autoria e direitos autorais</h3>
     <p>© 2026 <b>Gera Escalas</b> — desenvolvido por Luís Cesar. Todos os direitos reservados.</p>
@@ -1744,6 +1744,7 @@ function _servOpts(pid){var l=_diasServicoDe(pid);if(!l.length)return '<option v
 function _folgaOpts(pid){var l=_diasFolgaDe(pid);if(!l.length)return '<option value="">(nenhuma folga)</option>';return l.map(function(o){return '<option value="'+o.d+'">'+esc(_diaCiLabel(o.d,0))+'</option>';}).join("");}
 function _pesOpts(exceptId){return (state.militares||[]).map(function(m){return '<option value="'+m.id+'"'+(String(m.id)===String(exceptId)?' selected':'')+'>'+esc((m.posto?m.posto+" ":"")+m.nome)+'</option>';}).join("");}
 function _colegasDatalist(exceptId){var ents=(state.militares||[]).filter(function(m){return String(m.id)!==String(exceptId);}).map(function(m){return '<option value="'+esc((m.posto?m.posto+" ":"")+m.nome)+'">';}).join("");return '<datalist id="pm_dl">'+ents+'</datalist>';}
+function _colegaOpts(exceptId){return '<option value="">— escolha o colega —</option>'+(state.militares||[]).filter(function(m){return String(m.id)!==String(exceptId);}).map(function(m){return '<option value="'+m.id+'">'+esc((m.posto?m.posto+" ":"")+m.nome)+'</option>';}).join("");}
 function _idPorNomeColega(txt){txt=(txt||"").trim().toLowerCase();if(!txt)return null;var list=(state.militares||[]);var full=function(x){return ((x.posto?x.posto+" ":"")+x.nome).trim().toLowerCase();};var m=list.find(function(x){return full(x)===txt;});if(!m)m=list.find(function(x){return (x.nome||"").trim().toLowerCase()===txt;});if(!m)m=list.find(function(x){return (x.nome||"").trim().toLowerCase().indexOf(txt)===0||full(x).indexOf(txt)>=0;});return m?m.id:null;}
 function openTroca(){
   if(!state.schedule||!isAdmin())return;
@@ -2692,16 +2693,15 @@ function renderPermServico(box,meuId,common){
   box.innerHTML='<div style="font-weight:700;color:#1e1b4b;margin-bottom:6px">Pedir permuta / substituição</div>'
     +mePicker
     +'<div class="row" style="gap:6px;flex-wrap:wrap;align-items:center;margin-top:6px"><span class="tiny" style="font-weight:600">Meu dia de serviço:</span> <select id="pm_myday">'+_servOpts(firstId)+'</select></div>'
-    +'<div class="row" style="gap:6px;flex-wrap:wrap;align-items:center;margin-top:6px"><span class="tiny" style="font-weight:600">Quem vai assumir:</span> <input id="pm_sub_name" list="pm_dl" placeholder="digite as primeiras letras do nome…" oninput="pmOnColega()" autocomplete="off" style="font:inherit;padding:6px;border:1px solid #cbd5e1;border-radius:6px;min-width:190px"></div>'
-    +_colegasDatalist(firstId)
+    +'<div class="row" style="gap:6px;flex-wrap:wrap;align-items:center;margin-top:6px"><span class="tiny" style="font-weight:600">Quem vai assumir:</span> <select id="pm_colsel" onchange="pmOnColega()" style="font:inherit;padding:6px;border:1px solid #cbd5e1;border-radius:6px;min-width:190px">'+_colegaOpts(firstId)+'</select></div>'
     +'<label class="row" style="gap:6px;align-items:center;margin-top:6px;cursor:pointer"><input type="checkbox" id="pm_isperm" onchange="pmTogglePerm()"> <span class="tiny">Quero <b>permuta</b> (troco por um dia de serviço dele)</span></label>'
     +'<div id="pm_theirrow" class="row" style="gap:6px;flex-wrap:wrap;align-items:center;margin-top:6px;display:none"><span class="tiny" style="font-weight:600">Dia de serviço dele:</span> <select id="pm_theirday"><option value="">escolha o colega primeiro</option></select></div>'
     +'<input type="hidden" id="pm_colid" value="">'
     +'<button class="btn primary" style="margin-top:8px" onclick="enviarPermuta()">Enviar solicitação</button>'+common;
 }
-function pmRebuildMyDays(){var id=val("pm_me");var s=document.getElementById("pm_myday");if(s)s.innerHTML=_servOpts(id);var dl=document.getElementById("pm_dl");if(dl)dl.outerHTML=_colegasDatalist(id);var n=document.getElementById("pm_sub_name");if(n)n.value="";var h=document.getElementById("pm_colid");if(h)h.value="";var tr=document.getElementById("pm_theirday");if(tr)tr.innerHTML='<option value="">escolha o colega primeiro</option>';}
+function pmRebuildMyDays(){var id=val("pm_me");var s=document.getElementById("pm_myday");if(s)s.innerHTML=_servOpts(id);var cs=document.getElementById("pm_colsel");if(cs)cs.innerHTML=_colegaOpts(id);var h=document.getElementById("pm_colid");if(h)h.value="";var tr=document.getElementById("pm_theirday");if(tr)tr.innerHTML='<option value="">escolha o colega primeiro</option>';}
 function pmTogglePerm(){var on=!!(document.getElementById("pm_isperm")||{}).checked;var r=document.getElementById("pm_theirrow");if(r)r.style.display=on?"":"none";pmOnColega();}
-function pmOnColega(){var id=_idPorNomeColega(val("pm_sub_name"));var h=document.getElementById("pm_colid");if(h)h.value=(id!=null)?id:"";var on=!!(document.getElementById("pm_isperm")||{}).checked;if(on){var s=document.getElementById("pm_theirday");if(s)s.innerHTML=(id!=null)?_servOpts(id):'<option value="">colega não encontrado</option>';}}
+function pmOnColega(){var id=val("pm_colsel");var h=document.getElementById("pm_colid");if(h)h.value=id||"";var on=!!(document.getElementById("pm_isperm")||{}).checked;if(on){var s=document.getElementById("pm_theirday");if(s)s.innerHTML=id?_servOpts(id):'<option value="">escolha o colega primeiro</option>';}}
 function renderPermFolga(box,meuId,common){
   var hasMe=meuId!=null;var firstId=hasMe?meuId:((state.militares[0]||{}).id);
   var mePicker=hasMe?('<input type="hidden" id="pm_me" value="'+esc(String(meuId))+'">')
@@ -2709,14 +2709,13 @@ function renderPermFolga(box,meuId,common){
   box.innerHTML='<div style="font-weight:700;color:#1e1b4b;margin-bottom:6px">Permutar folga</div>'
     +mePicker
     +'<div class="row" style="gap:6px;flex-wrap:wrap;align-items:center;margin-top:6px"><span class="tiny" style="font-weight:600">Minha folga:</span> <select id="pm_myday">'+_folgaOpts(firstId)+'</select></div>'
-    +'<div class="row" style="gap:6px;flex-wrap:wrap;align-items:center;margin-top:6px"><span class="tiny" style="font-weight:600">Trocar com:</span> <input id="pm_sub_name" list="pm_dl" placeholder="digite as primeiras letras do nome…" oninput="pmOnColegaFolga()" autocomplete="off" style="font:inherit;padding:6px;border:1px solid #cbd5e1;border-radius:6px;min-width:190px"></div>'
-    +_colegasDatalist(firstId)
+    +'<div class="row" style="gap:6px;flex-wrap:wrap;align-items:center;margin-top:6px"><span class="tiny" style="font-weight:600">Trocar com:</span> <select id="pm_colsel" onchange="pmOnColegaFolga()" style="font:inherit;padding:6px;border:1px solid #cbd5e1;border-radius:6px;min-width:190px">'+_colegaOpts(firstId)+'</select></div>'
     +'<div class="row" style="gap:6px;flex-wrap:wrap;align-items:center;margin-top:6px"><span class="tiny" style="font-weight:600">Folga dele:</span> <select id="pm_theirday"><option value="">escolha o colega primeiro</option></select></div>'
     +'<input type="hidden" id="pm_colid" value="">'
     +'<button class="btn primary" style="margin-top:8px" onclick="enviarPermuta()">Enviar solicitação</button>'+common;
 }
-function pmRebuildFolga(){var id=val("pm_me");var s=document.getElementById("pm_myday");if(s)s.innerHTML=_folgaOpts(id);var dl=document.getElementById("pm_dl");if(dl)dl.outerHTML=_colegasDatalist(id);var n=document.getElementById("pm_sub_name");if(n)n.value="";var h=document.getElementById("pm_colid");if(h)h.value="";var tr=document.getElementById("pm_theirday");if(tr)tr.innerHTML='<option value="">escolha o colega primeiro</option>';}
-function pmOnColegaFolga(){var id=_idPorNomeColega(val("pm_sub_name"));var h=document.getElementById("pm_colid");if(h)h.value=(id!=null)?id:"";var s=document.getElementById("pm_theirday");if(s)s.innerHTML=(id!=null)?_folgaOpts(id):'<option value="">colega não encontrado</option>';}
+function pmRebuildFolga(){var id=val("pm_me");var s=document.getElementById("pm_myday");if(s)s.innerHTML=_folgaOpts(id);var cs=document.getElementById("pm_colsel");if(cs)cs.innerHTML=_colegaOpts(id);var h=document.getElementById("pm_colid");if(h)h.value="";var tr=document.getElementById("pm_theirday");if(tr)tr.innerHTML='<option value="">escolha o colega primeiro</option>';}
+function pmOnColegaFolga(){var id=val("pm_colsel");var h=document.getElementById("pm_colid");if(h)h.value=id||"";var s=document.getElementById("pm_theirday");if(s)s.innerHTML=id?_folgaOpts(id):'<option value="">escolha o colega primeiro</option>';}
 function _aplicarPermutaPayload(p){
   if(!p||!p.op)return {ok:false,msg:"pedido sem dados estruturados (foi em texto livre)"};
   if(!state.schedule||!state.schedule.result)return {ok:false,msg:"abra a escala para aplicar"};
@@ -2769,7 +2768,7 @@ async function enviarPermuta(){
   }else if(res.tipo==="folga"){
     var meId=val("pm_me");var dA=+val("pm_myday");var colId=val("pm_colid");var dB=+val("pm_theirday");
     if(!dA){say("Escolha a sua folga.","#b91c1c");return;}
-    if(!colId){say("Digite o nome de um colega válido para a troca.","#b91c1c");return;}
+    if(!colId){say("Escolha o colega para a troca.","#b91c1c");return;}
     if(!dB){say("Escolha a folga do colega.","#b91c1c");return;}
     var pA=isNaN(+meId)?meId:+meId,pB=isNaN(+colId)?colId:+colId;
     var nmB=((byMil(pB)||{}).nome)||"o colega";
@@ -2778,7 +2777,7 @@ async function enviarPermuta(){
   }else{
     var myv=val("pm_myday");if(!myv){say("Escolha o seu dia de serviço.","#b91c1c");return;}
     var mp=String(myv).split("|");var d=+mp[0],ci=+(mp[1]||0);var cols=_colsOf(res);var colLab=(cols[ci]&&cols[ci].lab)||("coluna "+(ci+1));
-    var colId2=val("pm_colid");if(!colId2){say("Digite o nome de um colega válido.","#b91c1c");return;}
+    var colId2=val("pm_colid");if(!colId2){say("Escolha o colega que vai assumir.","#b91c1c");return;}
     var alvo=isNaN(+colId2)?colId2:+colId2;var alvoE=byMil(alvo)||{};var alvoNome=((alvoE.posto?alvoE.posto+" ":"")+(alvoE.nome||""))||String(alvo);
     var isperm=!!(document.getElementById("pm_isperm")||{}).checked;
     if(!isperm){
