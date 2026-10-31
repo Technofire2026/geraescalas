@@ -503,14 +503,14 @@
     </div>
   </section>
 
-  <footer><span class="noprint">Confira a escala antes de publicar.<br>© 2026 <b>Gera Escalas</b> · <span class="lnk" onclick="openAbout()">Sobre &amp; Política de Privacidade</span> · <span style="color:var(--mut2)">v9.5</span></span></footer>
+  <footer><span class="noprint">Confira a escala antes de publicar.<br>© 2026 <b>Gera Escalas</b> · <span class="lnk" onclick="openAbout()">Sobre &amp; Política de Privacidade</span> · <span style="color:var(--mut2)">v9.6</span></span></footer>
 </main>
 
 <div id="aboutmodal" class="modal" style="display:none" onclick="if(event.target===this)closeAbout()">
   <div class="mbox">
     <button class="xbtn" onclick="closeAbout()">Fechar ✕</button>
     <h2>Gera Escalas</h2>
-    <p class="muted">Escalas de plantão, turno e giro · Versão 9.5 · 2026</p>
+    <p class="muted">Escalas de plantão, turno e giro · Versão 9.6 · 2026</p>
 
     <h3>Autoria e direitos autorais</h3>
     <p>© 2026 <b>Gera Escalas</b> — desenvolvido por Luís Cesar. Todos os direitos reservados.</p>
@@ -631,7 +631,7 @@
     <h2>📄 Relatórios por funcionário</h2>
     <p class="muted" style="margin:0 0 8px">Serviços, folgas, atestados, férias e horas extras de cada funcionário — para enviar à folha de pagamento.</p>
     <div class="row" style="gap:8px;flex-wrap:wrap;align-items:center;margin:6px 0">
-      <label class="fld"><span>Período</span><select id="rel_per" onchange="renderRelatorio()"><option value="mensal">Mensal (mês atual)</option><option value="semanal">Semanal (mês atual)</option><option value="anual">Anual</option><option value="individual">Individual (contábil)</option></select></label>
+      <label class="fld"><span>Período</span><select id="rel_per" onchange="renderRelatorio()"><option value="mensal">Mensal (mês atual)</option><option value="semanal">Semanal (mês atual)</option><option value="anual">Anual</option><option value="individual">Individual (contábil)</option><option value="ponto">Espelho de ponto (mês)</option></select></label>
       <label class="fld" id="rel_anowrap" style="display:none"><span>Ano</span><select id="rel_ano" onchange="renderRelatorio()"></select></label>
       <label class="fld" id="rel_funcwrap" style="display:none"><span>Funcionário</span><select id="rel_func" onchange="renderRelatorio()"></select></label>
       <div style="flex:1"></div>
@@ -2171,7 +2171,7 @@ async function _pontoLoop(){
         var best=_ponto.matcher.findBestMatch(det.descriptor);
         if(best&&best.label!=="unknown"){
           var now=Date.now(),last=_ponto.lastHit[best.label]||0;
-          if(now-last>45000){_ponto.busy=true;try{await _pontoRegistrar(best.label);}catch(e){}_ponto.busy=false;}
+          if(now-last>180000){_ponto.busy=true;try{await _pontoRegistrar(best.label);}catch(e){}_ponto.busy=false;}
           // dentro do intervalo: ignora em silêncio (não apaga o comprovante)
         }else{if(st)st.textContent="Rosto não reconhecido. Aproxime-se.";}
       }else{if(st)st.textContent="Aponte o rosto para a câmera";}
@@ -2210,7 +2210,41 @@ function _pontoComprov(m,d,tipo){
 function openRelatorios(){if(!isAdmin())return;var m=document.getElementById("relmodal");if(!m)return;var hist=_relHist();var anos={};Object.keys(hist).forEach(function(ym){anos[ym.slice(0,4)]=1;});if(state.schedule)anos[String(state.schedule.year)]=1;var al=Object.keys(anos).sort().reverse();if(!al.length)al=[String(new Date().getFullYear())];var sel=document.getElementById("rel_ano");if(sel)sel.innerHTML=al.map(function(a){return '<option value="'+a+'">'+a+'</option>';}).join("");var fsel=document.getElementById("rel_func");if(fsel)fsel.innerHTML=(state.militares||[]).map(function(x){return '<option value="'+x.id+'">'+esc((x.posto?x.posto+" ":"")+x.nome)+'</option>';}).join("");var per=document.getElementById("rel_per");if(per)per.value=state.schedule?"mensal":"anual";m.style.display="flex";renderRelatorio();}
 function closeRelatorios(){var m=document.getElementById("relmodal");if(m)m.style.display="none";}
 function _relTable(c){if(!c||!c.rows.length)return '<div class="muted">Sem dados para o período.</div>';var h='<div style="font-weight:700;color:#1e1b4b;margin-bottom:6px">'+esc(c.titulo)+'</div><div class="tblwrap"><table class="stat"><thead><tr>'+c.cols.map(function(x){return '<th>'+esc(x)+'</th>';}).join("")+'</tr></thead><tbody>'+c.rows.map(function(r){return '<tr>'+r.map(function(v,i){return '<td'+(i===0?' style="text-align:left"':'')+'>'+esc(String(v))+'</td>';}).join("")+'</tr>';}).join("")+'</tbody></table></div>';return h;}
-function renderRelatorio(){var per=(val("rel_per")||"mensal");var aw=document.getElementById("rel_anowrap");if(aw)aw.style.display=(per==="anual")?"":"none";var fw=document.getElementById("rel_funcwrap");if(fw)fw.style.display=(per==="individual")?"":"none";var box=document.getElementById("rel_body");if(!box)return;box.innerHTML=(per==="mensal")?_relMensalHTML():(per==="semanal"?_relSemanalHTML():(per==="individual"?_relIndividualHTML():_relAnualHTML()));}
+function renderRelatorio(){var per=(val("rel_per")||"mensal");var aw=document.getElementById("rel_anowrap");if(aw)aw.style.display=(per==="anual")?"":"none";var fw=document.getElementById("rel_funcwrap");if(fw)fw.style.display=(per==="individual"||per==="ponto")?"":"none";var box=document.getElementById("rel_body");if(!box)return;
+  if(per==="ponto"){box.innerHTML='<div class="muted">Carregando marcações…</div>';_relPontoRender(box);return;}
+  box.innerHTML=(per==="mensal")?_relMensalHTML():(per==="semanal"?_relSemanalHTML():(per==="individual"?_relIndividualHTML():_relAnualHTML()));}
+function _hhToMin(s){var p=String(s||"").split(":");return (+p[0])*60+(+(p[1]||0));}
+function _turnoInicioMin(res){if(!res)return null;if(res.tipo==="folga")return _hhToMin((res.cfg&&res.cfg.hIni)||"");try{var c=_colsOf(res)[0];if(c&&c.hhmm){var mm=String(c.hhmm).match(/(\d{1,2})[h:](\d{2})?/);if(mm)return (+mm[1])*60+(+(mm[2]||0));}}catch(e){}return null;}
+async function _relPontoRender(box){
+  if(!state.schedule||!state.schedule.result){box.innerHTML='<div class="muted">Gere a escala do mês para o espelho de ponto.</div>';return;}
+  var fid=val("rel_func");if(!fid){box.innerHTML='<div class="muted">Escolha o funcionário.</div>';return;}
+  var m=byMil(isNaN(+fid)?fid:+fid);if(!m){box.innerHTML='<div class="muted">Funcionário não encontrado.</div>';return;}
+  var res=state.schedule.result,y=state.schedule.year,mo=state.schedule.month,N=res.N;
+  var ini=new Date(y,mo,1),fim=new Date(y,mo+1,1);
+  var r;try{r=await db.from("pontos").select("tipo,marcado_em").eq("org_id",state.user.orgId).eq("pessoa_id",String(m.id)).gte("marcado_em",ini.toISOString()).lt("marcado_em",fim.toISOString()).order("marcado_em",{ascending:true});}catch(e){box.innerHTML='<div class="muted">Erro ao ler marcações: '+esc(e.message||e)+'</div>';return;}
+  if(r&&r.error){box.innerHTML='<div class="muted">Erro: '+esc(r.error.message)+'</div>';return;}
+  var byDay={};(r.data||[]).forEach(function(p){var dt=new Date(p.marcado_em);(byDay[dt.getDate()]=byDay[dt.getDate()]||[]).push({tipo:p.tipo,dt:dt});});
+  var startMin=_turnoInicioMin(res),AB=["Dom","Seg","Ter","Qua","Qui","Sex","Sáb"];
+  var hoje=new Date();hoje.setHours(0,0,0,0);
+  var rows=[],tot={serv:0,pres:0,falta:0,atraso:0};
+  for(var d=1;d<=N;d++){
+    var dt=new Date(y,mo,d),prev,sit="—",ent="—",sai="—";
+    var marc=byDay[d]||[],es=marc.filter(function(x){return x.tipo==="entrada";}),ss=marc.filter(function(x){return x.tipo==="saida";});
+    if(es.length)ent=pad(es[0].dt.getHours())+":"+pad(es[0].dt.getMinutes());
+    if(ss.length)sai=pad(ss[ss.length-1].dt.getHours())+":"+pad(ss[ss.length-1].dt.getMinutes());
+    if(onVacation(m,dt))prev="Férias";
+    else if(onAtestado(m,dt))prev="Atestado";
+    else if(_servicoNoDia(res,d,m.id)){prev="Serviço";tot.serv++;
+      if(es.length){tot.pres++;if(startMin!=null){var emin=es[0].dt.getHours()*60+es[0].dt.getMinutes(),late=emin-startMin;if(late>5){sit="Atraso "+late+"min";tot.atraso++;}else sit="Presente";}else sit="Presente";}
+      else{if(dt<hoje){sit="Falta";tot.falta++;}else sit="—";}
+    }else prev="Folga";
+    rows.push([pad(d)+"/"+pad(mo+1)+" ("+AB[dt.getDay()]+")",prev,ent,sai,sit]);
+  }
+  var titulo="Espelho de ponto — "+((m.posto?m.posto+" ":"")+m.nome)+" — "+MESES[mo]+"/"+y;
+  _relCache={tipo:"espelho-ponto",titulo:titulo,cols:["Dia","Previsto","Entrada","Saída","Situação"],rows:rows};
+  var resumo='<div style="font-size:13px;color:var(--mut);margin:4px 0 8px">Dias de serviço: <b>'+tot.serv+'</b> · Presenças: <b>'+tot.pres+'</b> · Faltas: <b style="color:#b91c1c">'+tot.falta+'</b> · Atrasos: <b style="color:#b45309">'+tot.atraso+'</b></div>';
+  box.innerHTML=resumo+_relTable(_relCache);
+}
 function _relIndividualHTML(){
   if(!state.schedule||!state.schedule.result)return '<div class="muted">Gere a escala do mês para o relatório individual.</div>';
   var fid=val("rel_func");if(!fid)return '<div class="muted">Escolha o funcionário.</div>';
