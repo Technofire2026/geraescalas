@@ -503,14 +503,14 @@
     </div>
   </section>
 
-  <footer><span class="noprint">Confira a escala antes de publicar.<br>© 2026 <b>Gera Escalas</b> · <span class="lnk" onclick="openAbout()">Sobre &amp; Política de Privacidade</span> · <span style="color:var(--mut2)">v9.9</span></span></footer>
+  <footer><span class="noprint">Confira a escala antes de publicar.<br>© 2026 <b>Gera Escalas</b> · <span class="lnk" onclick="openAbout()">Sobre &amp; Política de Privacidade</span> · <span style="color:var(--mut2)">v10.0</span></span></footer>
 </main>
 
 <div id="aboutmodal" class="modal" style="display:none" onclick="if(event.target===this)closeAbout()">
   <div class="mbox">
     <button class="xbtn" onclick="closeAbout()">Fechar ✕</button>
     <h2>Gera Escalas</h2>
-    <p class="muted">Escalas de plantão, turno e giro · Versão 9.9 · 2026</p>
+    <p class="muted">Escalas de plantão, turno e giro · Versão 10.0 · 2026</p>
 
     <h3>Autoria e direitos autorais</h3>
     <p>© 2026 <b>Gera Escalas</b> — desenvolvido por Luís Cesar. Todos os direitos reservados.</p>
@@ -697,8 +697,9 @@
         <div style="flex:1 1 150px"><label style="display:block;font-size:13px;margin-bottom:2px">De</label><input id="afd_de" type="date" style="width:100%;font:inherit;padding:8px;border-radius:8px;border:1px solid #334;background:#11162a;color:#fff"></div>
         <div style="flex:1 1 150px"><label style="display:block;font-size:13px;margin-bottom:2px">Até</label><input id="afd_ate" type="date" style="width:100%;font:inherit;padding:8px;border-radius:8px;border:1px solid #334;background:#11162a;color:#fff"></div>
       </div>
-      <div style="margin-top:12px"><button class="btn primary" onclick="gerarAFD()">📄 Gerar AFD (rascunho)</button></div>
+      <div style="margin-top:12px;display:flex;gap:8px;flex-wrap:wrap"><button class="btn primary" onclick="gerarAFD()">📄 Gerar AFD (rascunho)</button><button id="afd_assinar" class="btn" style="display:none;color:#fff;background:#1e2540;border:1px solid #475569" onclick="assinarAFD()">✍ Assinar (ICP-Brasil / .p7s)</button></div>
       <div id="afd_msg" style="font-size:13px;margin-top:10px;white-space:pre-wrap"></div>
+      <div id="afd_sigmsg" style="font-size:13px;margin-top:8px;white-space:pre-wrap"></div>
     </div>
 
     <div id="ponto_kiosk" style="display:none;text-align:center">
@@ -2170,10 +2171,33 @@ async function gerarAFD(){
   var probs=await _afdVerificar(lines);
   var txt=lines.join("\r\n")+"\r\n";
   var bytes=new Uint8Array(_afdBytes(txt));var blob=new Blob([bytes],{type:"text/plain"});var a=document.createElement("a");a.href=URL.createObjectURL(blob);a.download="AFD_"+rep.cnpj+"_"+de+"_a_"+ate+".txt";document.body.appendChild(a);a.click();setTimeout(function(){URL.revokeObjectURL(a.href);a.remove();},500);
+  _ponto.afdTxt=txt;_ponto.afdNome=a.download;var ab=document.getElementById("afd_assinar");if(ab)ab.style.display="";var sm=document.getElementById("afd_sigmsg");if(sm)sm.textContent="";
   var sc=Object.keys(semCpf);var aviso=sc.length?("\n⚠ "+sc.length+" pessoa(s) com marcação mas SEM CPF ficaram de fora (preencha o CPF na Equipe): "+sc.map(function(k){return semCpf[k];}).join(", ")):"";
   var chk=probs.length?("\n⚠ Autoverificação do layout encontrou "+probs.length+" problema(s):\n• "+probs.slice(0,12).join("\n• ")):"\n✓ Autoverificação do layout: tudo certo (tamanhos, CRC-16, hash SHA-256 encadeado, NSR e contagens do trailer).";
   say("AFD gerado (rascunho): "+cnt5+" empregado(s), "+cnt7+" marcação(ões)."+chk+"\nLembrete: a validação oficial (governo/contador) e a assinatura ICP-Brasil ainda são necessárias."+aviso, probs.length?"#fde68a":"#86efac");
   try{log("AFD gerado (rascunho)",de+" a "+ate+" · "+cnt7+" marcações · "+(probs.length?(probs.length+" avisos"):"layout ok"));}catch(e){}
+}
+async function assinarAFD(){
+  if(!isAdmin())return;
+  var sm=document.getElementById("afd_sigmsg");function say(t,c){if(sm){sm.textContent=t;sm.style.color=c||"#a7b0d0";}}
+  if(!_ponto.afdTxt){say("Gere o AFD primeiro (📄 Gerar AFD).","#fca5a5");return;}
+  if(!cloudReady()||!window.db){say("Sem conexão com a nuvem para assinar.","#fca5a5");return;}
+  say("Assinando… (requer o certificado A1 configurado no Supabase).");
+  var bytes=_afdBytes(_ponto.afdTxt),bin="";for(var i=0;i<bytes.length;i++)bin+=String.fromCharCode(bytes[i]&0xff);
+  var b64=btoa(bin);
+  var r;try{r=await db.functions.invoke("assinar-afd",{body:{conteudo:b64,nome:_ponto.afdNome}});}
+  catch(e){say("Erro ao chamar a assinatura: "+(e.message||e),"#fca5a5");return;}
+  var d=r&&r.data,err=(r&&r.error&&(r.error.message||r.error))||(d&&!d.ok&&d.erro)||"";
+  if(!d||!d.ok){
+    if(/configurad|secret|certificad/i.test(String(err)))
+      say("Certificado ainda não configurado.\nPara assinar, adquira um certificado ICP-Brasil A1 (e-CNPJ) e cadastre no Supabase os segredos CERT_PFX_BASE64 (o .pfx em base64) e CERT_PFX_SENHA (a senha).\nNunca envie o certificado/senha por aqui — só nos Secrets do Supabase.","#fde68a");
+    else say("Não assinou: "+(err||"erro desconhecido"),"#fca5a5");
+    return;
+  }
+  var der=atob(d.p7s),u=new Uint8Array(der.length);for(var j=0;j<der.length;j++)u[j]=der.charCodeAt(j);
+  var blob=new Blob([u],{type:"application/pkcs7-signature"});var a=document.createElement("a");a.href=URL.createObjectURL(blob);a.download=(_ponto.afdNome||"AFD.txt")+".p7s";document.body.appendChild(a);a.click();setTimeout(function(){URL.revokeObjectURL(a.href);a.remove();},500);
+  say("✓ Assinatura gerada (.p7s)"+(d.titular?(" — titular: "+d.titular):"")+".\nEntregue sempre o AFD e o .p7s juntos. Confirme a validade no validador oficial do governo.","#86efac");
+  try{log("AFD assinado (.p7s)",(d.titular||"")+" · "+(_ponto.afdNome||""));}catch(e){}
 }
 async function _afdVerificar(lines){
   var probs=[],expLen={"1":302,"2":331,"5":118,"7":137},cntByType={},prevHash="",nsrEsp=0,sigOk=false;
