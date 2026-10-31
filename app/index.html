@@ -503,14 +503,14 @@
     </div>
   </section>
 
-  <footer><span class="noprint">Confira a escala antes de publicar.<br>© 2026 <b>Gera Escalas</b> · <span class="lnk" onclick="openAbout()">Sobre &amp; Política de Privacidade</span> · <span style="color:var(--mut2)">v8.6</span></span></footer>
+  <footer><span class="noprint">Confira a escala antes de publicar.<br>© 2026 <b>Gera Escalas</b> · <span class="lnk" onclick="openAbout()">Sobre &amp; Política de Privacidade</span> · <span style="color:var(--mut2)">v8.7</span></span></footer>
 </main>
 
 <div id="aboutmodal" class="modal" style="display:none" onclick="if(event.target===this)closeAbout()">
   <div class="mbox">
     <button class="xbtn" onclick="closeAbout()">Fechar ✕</button>
     <h2>Gera Escalas</h2>
-    <p class="muted">Escalas de plantão, turno e giro · Versão 8.6 · 2026</p>
+    <p class="muted">Escalas de plantão, turno e giro · Versão 8.7 · 2026</p>
 
     <h3>Autoria e direitos autorais</h3>
     <p>© 2026 <b>Gera Escalas</b> — desenvolvido por Luís Cesar. Todos os direitos reservados.</p>
@@ -805,7 +805,7 @@ function isAdmin(){return !!(state.user&&(state.user.role==="admin"||state.user.
 var ADMIN_EMAILS=["lcsmbm@gmail.com","geraescalas@gmail.com"];
 function isPlatformAdmin(){return !!(state.user&&ADMIN_EMAILS.indexOf(((state.user.login)||"").toLowerCase())>=0);}
 function applyPerms(){var admin=isAdmin();var cc=document.getElementById("configcard");if(cc&&!admin)cc.style.display="none";var g=document.getElementById("btngerar");if(g)g.style.display=admin?"":"none";var c=document.getElementById("btncob");if(c)c.style.display=admin?"":"none";["btnhe","btnrel","btntroca"].forEach(function(id){var b=document.getElementById(id);if(b)b.style.display=admin?"":"none";});var cont=document.querySelector(".card .cont");if(cont)cont.style.display=admin?"":"none";var af=document.querySelector("#efetivo .addform");if(af)af.style.display=admin?"":"none";}
-function renderUserbar(){var u=state.user;if(!u)return;var admin=(u.role==="admin"||u.role==="owner");var tag=(u.role==="owner")?' <span class="rotag" style="background:rgba(231,199,102,.25);color:#ffe9a8">Proprietário</span>':(admin?'':(u.role==="membro"?' <span class="rotag">Funcionário</span>':' <span class="rotag">somente leitura</span>'));document.getElementById("userbar").innerHTML='<span class="who">'+esc((u.posto?u.posto+" ":"")+u.nome)+tag+'</span>'+'<button class="ubtn" title="Manual de uso" aria-label="Manual" onclick="openHelp()">📖 Manual</button>'+'<button class="ubtn" title="Avisos" onclick="openNotif()">🔔'+(state.notifCount?(' <b style="color:#b91c1c">'+state.notifCount+'</b>'):'')+'</button>'+'<button class="ubtn" title="Permutas de serviço" onclick="openPermuta()">🔁 Permutas</button>'+(isPlatformAdmin()?'<button class="ubtn" title="Painel do dono (métricas)" onclick="openPainel()">📊 Painel</button>':'')+(isPlatformAdmin()?'<button class="ubtn" title="Painel de clientes (dono)" onclick="openClientes()">👥 Clientes</button>':'')+(isPlatformAdmin()?'<button class="ubtn" title="Curso de treinamento (dono)" onclick="window.open(\'/curso.html\',\'_blank\',\'noopener\')">🎓 Curso</button>':'')+(admin?'<button class="ubtn ico-only" title="Configurações" aria-label="Configurações" onclick="openConfig()">⚙</button>':'')+'<button class="ubtn ico-only" title="Sair" aria-label="Sair" onclick="logout()">⎋</button>';}
+function renderUserbar(){var u=state.user;if(!u)return;var admin=(u.role==="admin"||u.role==="owner");var tag=(u.role==="owner")?' <span class="rotag" style="background:rgba(231,199,102,.25);color:#ffe9a8">Proprietário</span>':(admin?'':(u.role==="membro"?' <span class="rotag">Funcionário</span>':' <span class="rotag">somente leitura</span>'));document.getElementById("userbar").innerHTML='<span class="who">'+esc((u.posto?u.posto+" ":"")+u.nome)+tag+'</span>'+'<button class="ubtn" title="Manual de uso" aria-label="Manual" onclick="openHelp()">📖 Manual</button>'+'<button class="ubtn" title="Avisos" onclick="openNotif()">🔔'+(state.notifCount?(' <b style="color:#b91c1c">'+state.notifCount+'</b>'):'')+'</button>'+'<button class="ubtn" title="Permutas de serviço" onclick="openPermuta()">🔁 Permutas</button>'+((isPlatformAdmin()&&admin)?'<button class="ubtn" title="Painel do dono (métricas)" onclick="openPainel()">📊 Painel</button>':'')+((isPlatformAdmin()&&admin)?'<button class="ubtn" title="Painel de clientes (dono)" onclick="openClientes()">👥 Clientes</button>':'')+((isPlatformAdmin()&&admin)?'<button class="ubtn" title="Curso de treinamento (dono)" onclick="window.open(\'/curso.html\',\'_blank\',\'noopener\')">🎓 Curso</button>':'')+(admin?'<button class="ubtn ico-only" title="Configurações" aria-label="Configurações" onclick="openConfig()">⚙</button>':'')+'<button class="ubtn ico-only" title="Sair" aria-label="Sair" onclick="logout()">⎋</button>';}
 
 /* ===== REGISTRO / AUDITORIA ===== */
 function loadLog(){try{var l=localStorage.getItem("ciops:log");state.logArr=l?JSON.parse(l):[];}catch(e){state.logArr=[];}}
