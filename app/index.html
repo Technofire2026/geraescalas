@@ -417,6 +417,10 @@
       <div id="horbox"></div>
       <div style="margin-top:8px"><button class="btn ghost" onclick="salvarHorarios()">Salvar horários</button> <span class="tiny" id="hor_msg"></span></div>
       <hr style="border:none;border-top:1px solid var(--line);margin:18px 0">
+      <h3 style="margin:0 0 8px;font-size:15px">Férias (padrão)</h3>
+      <p class="tiny" style="margin:0 0 8px">Quantos dias cada período de férias tem por padrão. <b>30</b> para o padrão CLT; <b>35</b> para militares (30 + 5 de recesso administrativo). Você ainda pode ajustar os dias por pessoa no efetivo.</p>
+      <div style="display:flex;gap:8px;align-items:center;flex-wrap:wrap"><label class="fld" style="max-width:160px"><span>Dias de férias (padrão)</span><input id="cfg_feriasdias" type="number" min="1" max="120" placeholder="30" style="width:100%"></label><button class="btn primary" onclick="salvarFeriasDias()">Salvar</button><span class="tiny" id="cfg_fermsg"></span></div>
+      <hr style="border:none;border-top:1px solid var(--line);margin:18px 0">
       <h3 style="margin:0 0 8px;font-size:15px">Assinaturas da escala</h3>
       <div class="row">
         <label class="fld"><span>Responsável — cargo/posto (antes do nome)</span><input id="cfg_dirposto" placeholder="ex.: Gerente / Cel BM"></label>
@@ -503,14 +507,14 @@
     </div>
   </section>
 
-  <footer><span class="noprint">Confira a escala antes de publicar.<br>© 2026 <b>Gera Escalas</b> · <span class="lnk" onclick="openAbout()">Sobre &amp; Política de Privacidade</span> · <span style="color:var(--mut2)">v10.0</span></span></footer>
+  <footer><span class="noprint">Confira a escala antes de publicar.<br>© 2026 <b>Gera Escalas</b> · <span class="lnk" onclick="openAbout()">Sobre &amp; Política de Privacidade</span> · <span style="color:var(--mut2)">v10.1</span></span></footer>
 </main>
 
 <div id="aboutmodal" class="modal" style="display:none" onclick="if(event.target===this)closeAbout()">
   <div class="mbox">
     <button class="xbtn" onclick="closeAbout()">Fechar ✕</button>
     <h2>Gera Escalas</h2>
-    <p class="muted">Escalas de plantão, turno e giro · Versão 10.0 · 2026</p>
+    <p class="muted">Escalas de plantão, turno e giro · Versão 10.1 · 2026</p>
 
     <h3>Autoria e direitos autorais</h3>
     <p>© 2026 <b>Gera Escalas</b> — desenvolvido por Luís Cesar. Todos os direitos reservados.</p>
@@ -738,6 +742,7 @@ const MESES=["Janeiro","Fevereiro","Março","Abril","Maio","Junho","Julho","Agos
 const DIAS=["Domingo","Segunda","Terça","Quarta","Quinta","Sexta","Sábado"];
 const ABREV=["Dom","Seg","Ter","Qua","Qui","Sex","Sáb"];
 const FERIAS_DIAS=30;
+function feriasPadrao(){var n=parseInt((typeof state!=="undefined"&&state.config&&state.config.feriasDias),10);return (n>0)?n:FERIAS_DIAS;} // padrão configurável (30 CLT, 35 militar c/ recesso)
 const EXT_SAT=2; // dias extras de folga p/ quem entra no sábado (Sát 1º + Dom 2º)
 function extSat(N){return EXT_SAT;} // folga estendida de sábado (2 dias) — só p/ quem entra no sábado
 const pad=n=>String(n).padStart(2,"0");
@@ -753,7 +758,7 @@ const esc=s=>String(s).replace(/[&<>"]/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;',
 
 function feriasPeriods(m){
   const arr=(m.ferias&&m.ferias.length)?m.ferias:(m.feriasStart?[{id:0,start:m.feriasStart,dias:FERIAS_DIAS}]:[]);
-  return arr.filter(f=>f.start).map(f=>{const dias=(f.dias===""||f.dias==null)?FERIAS_DIAS:f.dias;const s=parseYmd(f.start);return{id:f.id,start:s,dias:dias,end:addDays(s,dias-1),ret:addDays(s,dias)};}).filter(p=>p.dias>0);
+  return arr.filter(f=>f.start).map(f=>{const dias=(f.dias===""||f.dias==null)?feriasPadrao():f.dias;const s=parseYmd(f.start);return{id:f.id,start:s,dias:dias,end:addDays(s,dias-1),ret:addDays(s,dias)};}).filter(p=>p.dias>0);
 }
 function atestadoPeriods(m){
   return (m.atestados||[]).filter(a=>a.start&&a.dias>0).map(a=>{const s=parseYmd(a.start);return{id:a.id,start:s,end:addDays(s,a.dias-1),ret:addDays(s,a.dias),dias:a.dias};});
@@ -1253,6 +1258,7 @@ function renderTurmasLegend(){
 function renderConfigForm(){if(document.getElementById("horbox"))renderHorarios();if(document.getElementById("assin_box"))renderAssinatura();if(document.getElementById("docbox"))renderDoc();if(document.getElementById("setores_list"))renderSetoresList();if(document.getElementById("turmas_list"))renderTurmas();
   document.getElementById("cfg_dirnome").value=state.config.diretorNome||"";
   document.getElementById("cfg_dirposto").value=state.config.diretorPosto||"";
+  var _fd=document.getElementById("cfg_feriasdias");if(_fd)_fd.value=feriasPadrao();
   var _cr=document.getElementById("cfg_cargoresp");if(_cr)_cr.value=state.config.cargoResp||"";
   var _ca=document.getElementById("cfg_cargoassina");if(_ca)_ca.value=state.config.cargoAssina||"";
   var selHtml='<option value="auto">Automático (maior patente/antiguidade da escala)</option>';
@@ -1404,6 +1410,15 @@ function salvarAssinaturas(){
   saveConfig();log("Configuração de assinaturas","Diretor: "+((state.config.diretorPosto?state.config.diretorPosto+" ":"")+state.config.diretorNome));
   if(state.schedule)renderSchedule();
   var msg=document.getElementById("cfg_msg");if(msg){msg.textContent="Assinaturas salvas.";setTimeout(function(){msg.textContent="";},2500);}
+}
+function salvarFeriasDias(){
+  if(!isAdmin())return;var el=document.getElementById("cfg_feriasdias");var m=document.getElementById("cfg_fermsg");
+  var n=parseInt(el&&el.value,10);
+  if(!(n>0)||n>120){if(m){m.textContent="Informe um número de dias válido (1 a 120).";m.style.color="#b91c1c";}return;}
+  state.config.feriasDias=n;saveConfig();
+  log("Dias de férias (padrão)",String(n));
+  if(typeof renderRoster==="function")renderRoster();
+  if(m){m.textContent="Padrão de "+n+" dias salvo.";m.style.color="#15803d";setTimeout(function(){m.textContent="";},2500);}
 }
 function addOperador(){if(!isOwner())return;
   var nome=val("op_nome").trim(),posto=val("op_posto").trim(),login=val("op_login").trim().toLowerCase(),senha=val("op_senha"),msg=document.getElementById("cfg_opmsg");
@@ -1753,7 +1768,7 @@ function saveEdit(id){
   state.editing=null;saveMil();renderRoster();if(state.schedule)renderSchedule();
   log("Edição de pessoa",antes+" → "+depois);
 }
-function addPeriodo(id){const m=byMil(id);if(!m)return;m.ferias=m.ferias||[];m.ferias.push({id:uid(),start:"",dias:FERIAS_DIAS});saveMil();renderRoster();}
+function addPeriodo(id){const m=byMil(id);if(!m)return;m.ferias=m.ferias||[];m.ferias.push({id:uid(),start:"",dias:feriasPadrao()});saveMil();renderRoster();}
 function setPeriodo(id,pid,val_){const m=byMil(id);if(!m)return;m.ferias=(m.ferias||[]).map(f=>f.id===pid?Object.assign({},f,{start:val_}):f);saveMil();renderRoster();log("Férias definidas",((m.posto?m.posto+" ":"")+m.nome)+": início "+val_);}
 function setPeriodoDias(id,pid,val_){const m=byMil(id);if(!m)return;const n=parseInt(val_,10);m.ferias=(m.ferias||[]).map(f=>f.id===pid?Object.assign({},f,{dias:isNaN(n)?"":n}):f);saveMil();renderRoster();log("Férias (dias)",((m.posto?m.posto+" ":"")+m.nome)+": "+(isNaN(n)?"":n)+" dia(s)");}
 function removePeriodo(id,pid){const m=byMil(id);if(!m)return;m.ferias=(m.ferias||[]).filter(f=>f.id!==pid);saveMil();renderRoster();log("Férias removidas",(m.posto?m.posto+" ":"")+m.nome);}
@@ -1927,7 +1942,7 @@ function renderRoster(){
     let hv='<ul class="mil">';
     state.militares.forEach(function(m){
       hv+='<li><div style="flex:1;min-width:0"><div class="mname">'+(m.posto?'<span class="pg">'+esc(m.posto)+' </span>':'')+esc(m.nome)+'</div>';
-      var fs=(m.ferias||[]).filter(function(f){return f.start;}).map(function(f){return brDate(parseYmd(f.start))+' ('+((f.dias===""||f.dias==null)?FERIAS_DIAS:f.dias)+'d)';});
+      var fs=(m.ferias||[]).filter(function(f){return f.start;}).map(function(f){return brDate(parseYmd(f.start))+' ('+((f.dias===""||f.dias==null)?feriasPadrao():f.dias)+'d)';});
       if(fs.length)hv+='<div class="tiny">✈ Férias: '+esc(fs.join('; '))+'</div>';
       var ats=(m.atestados||[]).filter(function(a){return a.start;}).map(function(a){return brDate(parseYmd(a.start))+' ('+(a.dias||0)+'d)';});
       if(ats.length)hv+='<div class="tiny">🩺 Atestado: '+esc(ats.join('; '))+'</div>';
@@ -1953,11 +1968,11 @@ function renderRoster(){
       h+='<div class="mname">'+(m.posto?'<span class="pg">'+esc(m.posto)+' </span>':'')+esc(m.nome)+' <button class="mini" title="Editar" onclick="editMilitar('+m.id+')">✎</button>'+(_ex.length?' <button class="mini" title="Ver dados" onclick="toggleMil('+m.id+')">ⓘ</button>':'')+(_podeAcesso?' <button class="mini" title="Dar acesso de funcionário (pede e recebe permuta) e enviar e-mail de login" onclick="enviarAcessoFunc('+m.id+')" style="color:#4f46e5">✉ acesso</button>':'')+'</div>';
       if(_ex.length)h+='<div class="tiny" id="mil_dados_'+m.id+'" style="display:none;color:var(--mut);margin:2px 0 4px">'+_ex.join(" · ")+'</div>';
     }
-    h+='<div class="fer"><div class="lbl">✈ Férias (dias editáveis · padrão '+FERIAS_DIAS+')</div>';
+    h+='<div class="fer"><div class="lbl">✈ Férias (dias editáveis · padrão '+feriasPadrao()+')</div>';
     const arr=m.ferias||[];
     if(arr.length===0)h+='<span class="tiny">nenhum período</span>';
     arr.forEach(f=>{const pp=f.start?feriasPeriods({ferias:[f]})[0]:null;let info=pp?('<span class="info">→ '+brDate(pp.end)+' · retorna '+brDate(pp.ret)+'</span>'):'';
-      h+='<div class="per"><input type="date" value="'+(f.start||"")+'" onchange="setPeriodo('+m.id+','+f.id+',this.value)"><input type="number" class="dias" min="1" title="dias deste período" value="'+((f.dias===""||f.dias==null)?FERIAS_DIAS:f.dias)+'" onchange="setPeriodoDias('+m.id+','+f.id+',this.value)">'+info+'<button onclick="removePeriodo('+m.id+','+f.id+')">✕</button></div>';});
+      h+='<div class="per"><input type="date" value="'+(f.start||"")+'" onchange="setPeriodo('+m.id+','+f.id+',this.value)"><input type="number" class="dias" min="1" title="dias deste período" value="'+((f.dias===""||f.dias==null)?feriasPadrao():f.dias)+'" onchange="setPeriodoDias('+m.id+','+f.id+',this.value)">'+info+'<button onclick="removePeriodo('+m.id+','+f.id+')">✕</button></div>';});
     h+='<button class="addper" onclick="addPeriodo('+m.id+')">＋ período</button></div>';
     h+='<div class="fer atest"><div class="lbl">🩺 Atestado médico (nº de dias)</div>';
     const ats=m.atestados||[];
