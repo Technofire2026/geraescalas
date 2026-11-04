@@ -514,14 +514,14 @@
     </div>
   </section>
 
-  <footer><span class="noprint">Confira a escala antes de publicar.<br>© 2026 <b>Gera Escalas</b> · <span class="lnk" onclick="openAbout()">Sobre &amp; Política de Privacidade</span> · <span style="color:var(--mut2)">v12.1</span></span></footer>
+  <footer><span class="noprint">Confira a escala antes de publicar.<br>© 2026 <b>Gera Escalas</b> · <span class="lnk" onclick="openAbout()">Sobre &amp; Política de Privacidade</span> · <span style="color:var(--mut2)">v12.2</span></span></footer>
 </main>
 
 <div id="aboutmodal" class="modal" style="display:none" onclick="if(event.target===this)closeAbout()">
   <div class="mbox">
     <button class="xbtn" onclick="closeAbout()">Fechar ✕</button>
     <h2>Gera Escalas</h2>
-    <p class="muted">Escalas de plantão, turno e giro · Versão 12.1 · 2026</p>
+    <p class="muted">Escalas de plantão, turno e giro · Versão 12.2 · 2026</p>
 
     <h3>Autoria e direitos autorais</h3>
     <p>© 2026 <b>Gera Escalas</b> — desenvolvido por Luís Cesar. Todos os direitos reservados.</p>
@@ -1511,6 +1511,8 @@ function gerarFolga(mils,year,month,cfg,seed){
   for(var dd=N;dd>=1;dd--){nextP[dd]=permit(dd+1)?(dd+1):((dd+1<=N)?nextP[dd+1]:N+999);}
   var st=mils.map(function(m,i){var sd=seed&&seed.folgaPer&&seed.folgaPer[m.id];return{ref:m,order:i,cons:(sd&&sd.cons!=null)?sd.cons:0,gi:(sd&&sd.gi!=null)?sd.gi:0,until:0,total:0,doms:0};});
   function unav(m,d){return isUnavailable(m,new Date(year,month,d));}
+  // cota mensal de folgas por pessoa = ritmo da escala (ex.: 5x2 → ~2/7 dos dias disponíveis). O "folgam por dia" é TETO, não meta.
+  st.forEach(function(s){var av=0;for(var dd2=1;dd2<=N;dd2++){if(!unav(s.ref,dd2))av++;}s.cotaF=Math.round(av*flen/(work+flen));});
   // fim do bloco de folga; nunca deixa a folga cair em dia bloqueado (ex.: sexta/sábado de pico); apara domingo extra de quem já bateu a cota
   function setU(s,d){var ue=d+blockLen-1;
     for(var q=d+1;q<=ue;q++){var sun=new Date(year,month,q).getDay()===0;if(!permit(q)&&!(gDom&&sun)){ue=q-1;break;}}
@@ -1602,6 +1604,20 @@ function gerarFolga(mils,year,month,cfg,seed){
       });
     }
   }
+  // ---- LIMPEZA (último passo): respeita o ritmo (5x2 ≈ 2/7 dos dias). "Folgam por dia" é TETO, não meta. Só remove se NÃO criar >work dias seguidos e preservando os domingos da cota. ----
+  st.forEach(function(s){
+    function temF(dd){return folga[dd].some(function(x){return x.id===s.ref.id;});}
+    function runSemFolga(dd){var b=0,q=dd-1;while(q>=1&&!temF(q)&&!unav(s.ref,q)){b++;q--;}var a=0;q=dd+1;while(q<=N&&!temF(q)&&!unav(s.ref,q)){a++;q++;}return b+1+a;}
+    var meus=[];for(var d=1;d<=N;d++)if(temF(d))meus.push(d);
+    var excesso=meus.length-(s.cotaF||meus.length);
+    if(excesso<=0)return;
+    var doms=meus.filter(function(d){return new Date(year,month,d).getDay()===0;});
+    var semana=meus.filter(function(d){return new Date(year,month,d).getDay()!==0;});
+    var cands=semana.concat(doms.slice(gDom?domTarget:0)); // só domingos ALÉM da cota podem sair
+    for(var i=0;i<cands.length&&excesso>0;i++){var dd=cands[i];if(runSemFolga(dd)<=work){folga[dd]=folga[dd].filter(function(x){return x.id!==s.ref.id;});excesso--;}}
+  });
+  // recomputa indicadores finais (após a limpeza)
+  estourou=false;(function(){var rc={};st.forEach(function(s){rc[s.ref.id]=0;s.doms=0;s.total=0;});for(var d2=1;d2<=N;d2++){var sun2=new Date(year,month,d2).getDay()===0;st.forEach(function(s){if(unav(s.ref,d2)){rc[s.ref.id]=0;return;}if(folga[d2].some(function(x){return x.id===s.ref.id;})){rc[s.ref.id]=0;s.total++;if(sun2)s.doms++;}else{rc[s.ref.id]++;if(rc[s.ref.id]>work)estourou=true;}});}})();
   var per={};st.forEach(function(s){per[s.ref.id]={cons:s.cons,gi:s.gi};});
   var nDom=0;for(var dS=1;dS<=N;dS++){if(new Date(year,month,dS).getDay()===0)nDom++;}
   var semDom=gDom?st.filter(function(s){return s.doms===0;}).map(function(s){return s.ref.nome;}):[];            // nenhum domingo (viola a lei)
