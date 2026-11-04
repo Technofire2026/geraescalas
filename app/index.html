@@ -513,14 +513,14 @@
     </div>
   </section>
 
-  <footer><span class="noprint">Confira a escala antes de publicar.<br>© 2026 <b>Gera Escalas</b> · <span class="lnk" onclick="openAbout()">Sobre &amp; Política de Privacidade</span> · <span style="color:var(--mut2)">v10.7</span></span></footer>
+  <footer><span class="noprint">Confira a escala antes de publicar.<br>© 2026 <b>Gera Escalas</b> · <span class="lnk" onclick="openAbout()">Sobre &amp; Política de Privacidade</span> · <span style="color:var(--mut2)">v10.8</span></span></footer>
 </main>
 
 <div id="aboutmodal" class="modal" style="display:none" onclick="if(event.target===this)closeAbout()">
   <div class="mbox">
     <button class="xbtn" onclick="closeAbout()">Fechar ✕</button>
     <h2>Gera Escalas</h2>
-    <p class="muted">Escalas de plantão, turno e giro · Versão 10.7 · 2026</p>
+    <p class="muted">Escalas de plantão, turno e giro · Versão 10.8 · 2026</p>
 
     <h3>Autoria e direitos autorais</h3>
     <p>© 2026 <b>Gera Escalas</b> — desenvolvido por Luís Cesar. Todos os direitos reservados.</p>
@@ -896,8 +896,8 @@ function reiniciarApp(){
   try{["ciops:militares","ciops:carry","ciops:config","ciops:log","ciops:auth","ciops:schedule"].forEach(function(k){localStorage.removeItem(k);});}catch(e){}
   try{location.reload();}catch(e){try{location.href=location.pathname;}catch(_){}}
 }
-async function logout(){try{stopNotifRealtime();}catch(e){}try{if(db)await db.auth.signOut();}catch(e){}try{["ciops:militares","ciops:carry","ciops:config","ciops:log","ciops:schedule"].forEach(function(k){localStorage.removeItem(k);});}catch(e){}state.user=null;state.editing=null;state.militares=[];state.schedule=null;state.carry={};document.getElementById("app").style.display="none";document.getElementById("authgate").style.display="flex";renderCloudGate("entrar");}
-function showApp(){document.getElementById("authgate").style.display="none";document.getElementById("app").style.display="";var _cc=document.getElementById("configcard");if(_cc)_cc.style.display="none";renderUserbar();renderSetorSel();renderAddSetor();renderRoster();renderContControls();applyPerms();renderProBanner();var _m=state.config.modo||"auto";var _r=document.querySelector('input[name="modo"][value="'+_m+'"]');if(_r)_r.checked=true;var _sf=document.getElementById("satfolga");if(_sf)_sf.checked=!!state.config.satFolga2c;var _tp=document.getElementById("tipo");if(_tp)_tp.value=(state.schedule&&state.schedule.result&&state.schedule.result.tipo)||state.config.tipo||"giro";var _ts=document.getElementById("turnosel");if(_ts&&state.config.hor&&state.config.hor.turno)_ts.value=state.config.hor.turno.sel||"dia";setTipo();if(state.schedule){var _ms=document.getElementById("mes");if(_ms)_ms.value=state.schedule.month;var _an=document.getElementById("ano");if(_an)_an.value=state.schedule.year;renderSchedule();renderStats();}showTab(state.schedule?"escala":"efetivo");try{state._somOff=localStorage.getItem("ge_som")==="off";}catch(e){}try{refreshNotifCount();}catch(e){}try{startNotifRealtime();}catch(e){}try{if(!state._audioHooked){state._audioHooked=true;document.addEventListener("click",_unlockAudio);document.addEventListener("touchstart",_unlockAudio);document.addEventListener("visibilitychange",function(){if(!document.hidden)_unlockAudio();});}}catch(e){}try{checkNovidades();}catch(e){}}
+async function logout(){try{stopNotifRealtime();}catch(e){}try{stopDataRealtime();}catch(e){}try{if(db)await db.auth.signOut();}catch(e){}try{["ciops:militares","ciops:carry","ciops:config","ciops:log","ciops:schedule"].forEach(function(k){localStorage.removeItem(k);});}catch(e){}state.user=null;state.editing=null;state.militares=[];state.schedule=null;state.carry={};document.getElementById("app").style.display="none";document.getElementById("authgate").style.display="flex";renderCloudGate("entrar");}
+function showApp(){document.getElementById("authgate").style.display="none";document.getElementById("app").style.display="";var _cc=document.getElementById("configcard");if(_cc)_cc.style.display="none";renderUserbar();renderSetorSel();renderAddSetor();renderRoster();renderContControls();applyPerms();renderProBanner();var _m=state.config.modo||"auto";var _r=document.querySelector('input[name="modo"][value="'+_m+'"]');if(_r)_r.checked=true;var _sf=document.getElementById("satfolga");if(_sf)_sf.checked=!!state.config.satFolga2c;var _tp=document.getElementById("tipo");if(_tp)_tp.value=(state.schedule&&state.schedule.result&&state.schedule.result.tipo)||state.config.tipo||"giro";var _ts=document.getElementById("turnosel");if(_ts&&state.config.hor&&state.config.hor.turno)_ts.value=state.config.hor.turno.sel||"dia";setTipo();if(state.schedule){var _ms=document.getElementById("mes");if(_ms)_ms.value=state.schedule.month;var _an=document.getElementById("ano");if(_an)_an.value=state.schedule.year;renderSchedule();renderStats();}showTab(state.schedule?"escala":"efetivo");try{state._somOff=localStorage.getItem("ge_som")==="off";}catch(e){}try{refreshNotifCount();}catch(e){}try{startNotifRealtime();}catch(e){}try{startDataRealtime();}catch(e){}try{if(!state._audioHooked){state._audioHooked=true;document.addEventListener("click",_unlockAudio);document.addEventListener("touchstart",_unlockAudio);document.addEventListener("visibilitychange",function(){if(!document.hidden){_unlockAudio();try{startDataRealtime();}catch(e){}try{_remotePeek();}catch(e){}}});}}catch(e){}try{checkNovidades();}catch(e){}}
 function isOwner(){return !!(state.user&&state.user.role==="owner");}
 function isAdmin(){return !!(state.user&&(state.user.role==="admin"||state.user.role==="owner"));}
 var ADMIN_EMAILS=["lcsmbm@gmail.com","geraescalas@gmail.com"];
@@ -3189,6 +3189,64 @@ function startNotifRealtime(){
   if(!state._notifPoll){state._notifPoll=setInterval(function(){try{refreshNotifCount();}catch(e){}},30000);}
 }
 function stopNotifRealtime(){try{if(state._notifChan&&db){db.removeChannel(state._notifChan);}}catch(e){}state._notifChan=null;if(state._notifPoll){clearInterval(state._notifPoll);state._notifPoll=null;}}
+/* ===== Tempo real dos DADOS (escala, efetivo) — atualiza sem precisar fechar/abrir ===== */
+function _syncFlash(txt){
+  try{
+    var el=document.getElementById("_syncToast");
+    if(!el){el=document.createElement("div");el.id="_syncToast";el.style.cssText="position:fixed;left:50%;transform:translateX(-50%);bottom:calc(16px + env(safe-area-inset-bottom,0px));z-index:99999;background:#16a34a;color:#fff;font:600 13px/1.3 system-ui,-apple-system,sans-serif;padding:9px 14px;border-radius:999px;box-shadow:0 6px 20px rgba(0,0,0,.25);opacity:0;transition:opacity .2s;pointer-events:none";document.body.appendChild(el);}
+    el.textContent=txt||"Atualizado";el.style.opacity="1";
+    clearTimeout(state._syncT);state._syncT=setTimeout(function(){el.style.opacity="0";},3500);
+  }catch(e){}
+}
+function _applyRemoteState(chave,dados){
+  try{
+    if(chave==="setores"){ if(JSON.stringify(state.setores||null)!==JSON.stringify(dados||null)){ state.setores=(dados&&dados.length)?dados:(state.setores||[{id:"principal",nome:"Setor principal"}]); try{localStorage.setItem("ciops:setores",JSON.stringify(state.setores));}catch(e){} try{renderSetorSel();renderAddSetor();}catch(e){} } return; }
+    var at=chave.indexOf("@");if(at<0)return;                 // só dados por setor
+    var base=chave.slice(0,at),setor=chave.slice(at+1);
+    if(setor!==setorAtual())return;                           // mudança em outro setor: será lida ao trocar de setor
+    if(base==="militares"){
+      if(JSON.stringify(dados||[])!==JSON.stringify(state.militares||[])){
+        try{localStorage.setItem("ciops:militares",JSON.stringify(dados||[]));}catch(e){}
+        try{load();}catch(e){}
+        try{renderRoster();}catch(e){}
+        if(state.schedule){try{renderSchedule();renderStats();}catch(e){}}
+        _syncFlash("Equipe atualizada");
+      }
+      return;
+    }
+    if(base==="schedule"){
+      var cur=null;try{cur=serializeSchedule();}catch(e){}
+      if(JSON.stringify(dados||null)!==JSON.stringify(cur||null)){
+        try{ if(dados){localStorage.setItem("ciops:schedule",JSON.stringify(dados));}else{localStorage.removeItem("ciops:schedule");state.schedule=null;} }catch(e){}
+        if(dados&&typeof restoreSchedule==="function"){try{restoreSchedule();}catch(e){}}
+        try{renderSchedule();renderStats();}catch(e){}
+        _syncFlash("Escala atualizada");
+      }
+      return;
+    }
+    if(base==="config"){ try{localStorage.setItem("ciops:config",JSON.stringify(dados||{}));}catch(e){} if(dados)state.config=dados; return; }
+    if(base==="carry"){ try{localStorage.setItem("ciops:carry",JSON.stringify(dados||{}));}catch(e){} state.carry=dados||{}; return; }
+  }catch(e){}
+}
+function startDataRealtime(){
+  if(!db||!state.user||!state.user.orgId)return;
+  stopDataRealtime();
+  try{
+    state._dataChan=db.channel("data-"+state.user.orgId)
+      .on("postgres_changes",{event:"*",schema:"public",table:"app_state",filter:"org_id=eq."+state.user.orgId},function(p){
+        try{var nw=(p&&p.new)||{};var old=(p&&p.old)||{};var ch=nw.chave||old.chave;if(ch)_applyRemoteState(ch,(nw.dados!==undefined)?nw.dados:null);}catch(e){}
+      })
+      .on("postgres_changes",{event:"*",schema:"public",table:"members",filter:"org_id=eq."+state.user.orgId},function(p){
+        try{if(typeof isAdmin==="function"&&isAdmin()&&typeof renderOperadoresCloud==="function")renderOperadoresCloud();}catch(e){}
+      })
+      .subscribe();
+  }catch(e){}
+}
+function stopDataRealtime(){try{if(state._dataChan&&db)db.removeChannel(state._dataChan);}catch(e){}state._dataChan=null;}
+async function _remotePeek(){
+  if(!db||!state.user||!state.user.orgId)return;
+  try{var sa=setorAtual();var q=await db.from("app_state").select("chave,dados").eq("org_id",state.user.orgId).in("chave",["schedule@"+sa,"militares@"+sa,"setores"]);(q.data||[]).forEach(function(r){_applyRemoteState(r.chave,r.dados);});}catch(e){}
+}
 function _urlB64ToU8(base64){var pad="=".repeat((4-base64.length%4)%4);var b64=(base64+pad).replace(/-/g,"+").replace(/_/g,"/");var raw=atob(b64);var out=new Uint8Array(raw.length);for(var i=0;i<raw.length;i++)out[i]=raw.charCodeAt(i);return out;}
 async function ativarPush(){
   var m=document.getElementById("pushmsg");
