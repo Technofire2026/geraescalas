@@ -514,14 +514,14 @@
     </div>
   </section>
 
-  <footer><span class="noprint">Confira a escala antes de publicar.<br>© 2026 <b>Gera Escalas</b> · <span class="lnk" onclick="openAbout()">Sobre &amp; Política de Privacidade</span> · <span style="color:var(--mut2)">v11.7</span></span></footer>
+  <footer><span class="noprint">Confira a escala antes de publicar.<br>© 2026 <b>Gera Escalas</b> · <span class="lnk" onclick="openAbout()">Sobre &amp; Política de Privacidade</span> · <span style="color:var(--mut2)">v11.9</span></span></footer>
 </main>
 
 <div id="aboutmodal" class="modal" style="display:none" onclick="if(event.target===this)closeAbout()">
   <div class="mbox">
     <button class="xbtn" onclick="closeAbout()">Fechar ✕</button>
     <h2>Gera Escalas</h2>
-    <p class="muted">Escalas de plantão, turno e giro · Versão 11.7 · 2026</p>
+    <p class="muted">Escalas de plantão, turno e giro · Versão 11.9 · 2026</p>
 
     <h3>Autoria e direitos autorais</h3>
     <p>© 2026 <b>Gera Escalas</b> — desenvolvido por Luís Cesar. Todos os direitos reservados.</p>
@@ -876,28 +876,30 @@ function doLogin(){
 }
 function limparEscalas(){
   if(!isAdmin())return;
-  var ok=false;try{ok=confirm("Isto zera a escala atual e o histórico de continuidade, mantendo o efetivo, os operadores e as configurações. Deseja continuar?");}catch(e){ok=true;}
-  if(!ok)return;
-  state.schedule=null;try{localStorage.removeItem("ciops:schedule");}catch(e){}
-  state.carry={};saveCarry();state.contInfo=null;
-  var esc=document.getElementById("escala");if(esc)esc.innerHTML='<div class="placeholder">📅 Escolha o período, confira o efetivo e clique em <b>Gerar escala</b>.</div>';
-  var av=document.getElementById("avisos");if(av)av.innerHTML="";
-  var ph=document.getElementById("printhdr");if(ph)ph.innerHTML="";
-  var sc=document.getElementById("statcard");if(sc)sc.style.display="none";
-  ["btncsv","btnprint","btncob","btnhe"].forEach(function(id){var b=document.getElementById(id);if(b)b.disabled=true;});
-  renderContControls();
-  log("Escalas limpas (efetivo/operadores mantidos)","");
-  try{alert("Escalas e continuidade zeradas. Efetivo, operadores e configurações mantidos.");}catch(e){}
+  confirmModal({tone:"danger",icon:"🗑",title:"Zerar escalas",okTone:"danger",okLabel:"Zerar",cancelLabel:"Cancelar",
+    html:'<p style="margin:2px 0;font-size:13.5px;color:#334155;line-height:1.55">Isto zera a <b>escala atual</b> e o <b>histórico de continuidade</b>, mantendo o efetivo, os operadores e as configurações.</p>',
+    onOk:function(){
+      state.schedule=null;try{localStorage.removeItem("ciops:schedule");}catch(e){}
+      state.carry={};saveCarry();state.contInfo=null;
+      var esc=document.getElementById("escala");if(esc)esc.innerHTML='<div class="placeholder">📅 Escolha o período, confira o efetivo e clique em <b>Gerar escala</b>.</div>';
+      var av=document.getElementById("avisos");if(av)av.innerHTML="";
+      var ph=document.getElementById("printhdr");if(ph)ph.innerHTML="";
+      var sc=document.getElementById("statcard");if(sc)sc.style.display="none";
+      ["btncsv","btnprint","btncob","btnhe"].forEach(function(id){var b=document.getElementById(id);if(b)b.disabled=true;});
+      renderContControls();
+      log("Escalas limpas (efetivo/operadores mantidos)","");
+      showMsg("Escalas e continuidade zeradas. Efetivo, operadores e configurações mantidos.");
+    }});
 }
 function reiniciarApp(){
   if(!isOwner())return;
-  var ok=false;try{ok=confirm("ATENÇÃO: isto apaga TODOS os dados deste navegador (efetivo, escalas, operadores, configurações e auditoria) e recomeça do zero. Deseja continuar?");}catch(e){ok=true;}
-  if(!ok)return;
-  var t=null;try{t=prompt("Para confirmar, digite REINICIAR (em maiúsculas):");}catch(e){t="REINICIAR";}
-  if(t==null)return;
-  if((""+t).trim().toUpperCase()!=="REINICIAR"){try{alert("Confirmação incorreta. Nada foi apagado.");}catch(e){}return;}
-  try{["ciops:militares","ciops:carry","ciops:config","ciops:log","ciops:auth","ciops:schedule"].forEach(function(k){localStorage.removeItem(k);});}catch(e){}
-  try{location.reload();}catch(e){try{location.href=location.pathname;}catch(_){}}
+  confirmModal({tone:"danger",icon:"⚠",title:"Apagar TODOS os dados",okTone:"danger",okLabel:"Apagar tudo",cancelLabel:"Cancelar",
+    requireText:"REINICIAR",inputPlaceholder:"digite REINICIAR para confirmar",
+    html:'<p style="margin:2px 0;font-size:13.5px;color:#334155;line-height:1.55">Isto apaga <b>TODOS os dados deste navegador</b> (efetivo, escalas, operadores, configurações e auditoria) e recomeça do zero. <b>Não pode ser desfeito.</b></p>',
+    onOk:function(){
+      try{["ciops:militares","ciops:carry","ciops:config","ciops:log","ciops:auth","ciops:schedule"].forEach(function(k){localStorage.removeItem(k);});}catch(e){}
+      try{location.reload();}catch(e){try{location.href=location.pathname;}catch(_){}}
+    }});
 }
 async function logout(){try{stopNotifRealtime();}catch(e){}try{stopDataRealtime();}catch(e){}try{if(db)await db.auth.signOut();}catch(e){}try{["ciops:militares","ciops:carry","ciops:config","ciops:log","ciops:schedule"].forEach(function(k){localStorage.removeItem(k);});}catch(e){}state.user=null;state.editing=null;state.militares=[];state.schedule=null;state.carry={};document.getElementById("app").style.display="none";document.getElementById("authgate").style.display="flex";renderCloudGate("entrar");}
 function showApp(){document.getElementById("authgate").style.display="none";document.getElementById("app").style.display="";var _cc=document.getElementById("configcard");if(_cc)_cc.style.display="none";renderUserbar();renderSetorSel();renderAddSetor();renderRoster();renderContControls();applyPerms();renderProBanner();var _m=state.config.modo||"auto";var _r=document.querySelector('input[name="modo"][value="'+_m+'"]');if(_r)_r.checked=true;var _sf=document.getElementById("satfolga");if(_sf)_sf.checked=!!state.config.satFolga2c;var _tp=document.getElementById("tipo");if(_tp)_tp.value=(state.schedule&&state.schedule.result&&state.schedule.result.tipo)||state.config.tipo||"giro";var _ts=document.getElementById("turnosel");if(_ts&&state.config.hor&&state.config.hor.turno)_ts.value=state.config.hor.turno.sel||"dia";setTipo();if(state.schedule){var _ms=document.getElementById("mes");if(_ms)_ms.value=state.schedule.month;var _an=document.getElementById("ano");if(_an)_an.value=state.schedule.year;renderSchedule();renderStats();}showTab(state.schedule?"escala":"efetivo");try{state._somOff=localStorage.getItem("ge_som")==="off";}catch(e){}try{refreshNotifCount();}catch(e){}try{startNotifRealtime();}catch(e){}try{startDataRealtime();}catch(e){}try{if(!state._audioHooked){state._audioHooked=true;document.addEventListener("click",_unlockAudio);document.addEventListener("touchstart",_unlockAudio);document.addEventListener("visibilitychange",function(){if(!document.hidden){_unlockAudio();try{startDataRealtime();}catch(e){}try{_remotePeek();}catch(e){}}});}}catch(e){}try{checkNovidades();}catch(e){}}
@@ -1076,8 +1078,10 @@ async function enviarAcessoFunc(id){
   var m=byMil(id);if(!m)return;
   var email=((m.email||"").trim());
   if(!email||email.indexOf("@")<1){alert("Cadastre o e-mail da pessoa primeiro (bot\u00e3o \u270e Editar).");return;}
-  var ok=true;try{ok=confirm("Dar acesso de FUNCION\u00c1RIO (v\u00ea a escala, pede e recebe permuta) e enviar o e-mail de login para "+(m.nome||email)+"?");}catch(e){}
-  if(!ok)return;
+  var _go=await new Promise(function(res){confirmModal({icon:"\u2709\ufe0f",title:"Dar acesso de funcion\u00e1rio",okLabel:"Dar acesso",cancelLabel:"Cancelar",
+    message:"Dar acesso de FUNCION\u00c1RIO (v\u00ea a escala, pede e recebe permuta) e enviar o e-mail de login para "+(m.nome||email)+"?",
+    onOk:function(){res(true);},onCancel:function(){res(false);}});});
+  if(!_go)return;
   var setor=(typeof setorNome==="function"?setorNome():"")||"";
   var criado=false,jaExiste=false,funcErro=null;
   var cr=null;try{cr=await db.functions.invoke("criar-funcionarios",{body:{funcionarios:[{nome:m.nome,email:email,pessoa:m.nome,setor:setor,role:"membro"}]}});}catch(e){cr={error:{message:(e&&e.message)||String(e)}};}
@@ -1104,7 +1108,8 @@ async function enviarAcessoFunc(id){
 async function removeOperadorCloud(userId){
   if(!isOwner())return;
   if(userId===state.user.uid){alert("Voc\u00ea n\u00e3o pode remover a si mesmo.");return;}
-  var ok=true;try{ok=confirm("Remover este operador? Ele perder\u00e1 o acesso a esta organiza\u00e7\u00e3o.");}catch(e){}
+  var ok=await new Promise(function(res){confirmModal({tone:"danger",icon:"\ud83d\uddd1",title:"Remover operador",okTone:"danger",okLabel:"Remover",cancelLabel:"Cancelar",
+    message:"Remover este operador? Ele perder\u00e1 o acesso a esta organiza\u00e7\u00e3o.",onOk:function(){res(true);},onCancel:function(){res(false);}});});
   if(!ok)return;
   var r=await db.from("members").delete().eq("org_id",state.user.orgId).eq("user_id",userId);
   if(r.error){alert("Falha: "+r.error.message);return;}
@@ -1246,10 +1251,13 @@ function renameTurma(id){
   t.nome=nv;saveConfig();renderTurmas();
 }
 function removeTurma(id){
-  if(!isAdmin())return;var ok=true;try{ok=confirm("Remover este time? As pessoas dele ficarão sem time.");}catch(e){}if(!ok)return;
-  state.config.turmas=(state.config.turmas||[]).filter(function(x){return x.id!==id;});
-  (state.militares||[]).forEach(function(m){if(m.turmaId===id)m.turmaId=null;});
-  saveConfig();saveMil();renderTurmas();
+  if(!isAdmin())return;
+  confirmModal({tone:"danger",icon:"🗑",title:"Remover time",okTone:"danger",okLabel:"Remover",cancelLabel:"Cancelar",
+    message:"Remover este time? As pessoas dele ficarão sem time.",onOk:function(){
+      state.config.turmas=(state.config.turmas||[]).filter(function(x){return x.id!==id;});
+      (state.militares||[]).forEach(function(m){if(m.turmaId===id)m.turmaId=null;});
+      saveConfig();saveMil();renderTurmas();
+    }});
 }
 function setMilitarTurma(militarId,turmaId){
   if(!isAdmin())return;var m=(state.militares||[]).find(function(x){return x.id===militarId;});if(!m)return;
@@ -1379,14 +1387,17 @@ function importBackup(input){if(!isAdmin())return;
   r.onload=function(){
     var data;try{data=JSON.parse(r.result);}catch(e){if(msg)msg.textContent="Arquivo inválido.";return;}
     if(!data||data.app!=="escala-ciops"){if(msg)msg.textContent="Este arquivo não é um backup válido.";return;}
-    var ok=true;try{ok=confirm("Importar o backup? Os dados atuais deste navegador serão substituídos.");}catch(e){ok=true;}
-    if(!ok){input.value="";return;}
-    function put(k,v){if(v==null)return;try{localStorage.setItem(k,v);}catch(e){}}
-    put("ciops:militares",data.militares);put("ciops:carry",data.carry);put("ciops:config",data.config);put("ciops:log",data.log);put("ciops:auth",data.auth);put("ciops:schedule",data.schedule);
-    load();loadConfig();loadLog();
-    log("Backup importado",f.name||"");
-    renderUserbar();renderRoster();renderContControls();renderConfigForm();if(state.schedule)renderSchedule();
-    if(msg)msg.textContent="Backup importado com sucesso.";input.value="";
+    confirmModal({tone:"danger",icon:"⬆",title:"Importar backup",okTone:"danger",okLabel:"Importar",cancelLabel:"Cancelar",
+      message:"Importar o backup? Os dados atuais deste navegador serão substituídos.",
+      onCancel:function(){input.value="";},
+      onOk:function(){
+        function put(k,v){if(v==null)return;try{localStorage.setItem(k,v);}catch(e){}}
+        put("ciops:militares",data.militares);put("ciops:carry",data.carry);put("ciops:config",data.config);put("ciops:log",data.log);put("ciops:auth",data.auth);put("ciops:schedule",data.schedule);
+        load();loadConfig();loadLog();
+        log("Backup importado",f.name||"");
+        renderUserbar();renderRoster();renderContControls();renderConfigForm();if(state.schedule)renderSchedule();
+        if(msg)msg.textContent="Backup importado com sucesso.";input.value="";
+      }});
   };
   r.readAsText(f);
 }
@@ -1461,7 +1472,7 @@ function salvarMestra(){
   log("Senha-mestra de recuperação definida/alterada","");renderConfigForm();
 }
 function setOperRole(login,role){if(!isOwner())return;if(role!=="admin"&&role!=="view")return;var a=loadAuth();var u=a.users.find(function(x){return x.login===login;});if(!u||u.role==="owner")return;u.role=role;saveAuth(a);log("Alteração de acesso",login+" → "+(role==="admin"?"Administrador":"Visualização"));renderConfigForm();}
-function removeOperador(login){if(!isOwner())return;var a=loadAuth();var u=a.users.find(function(x){return x.login===login;});if(!u||u.role==="owner")return;var ok=true;try{ok=confirm("Remover o operador \""+login+"\"?");}catch(e){ok=true;}if(!ok)return;a.users=a.users.filter(function(x){return x.login!==login;});saveAuth(a);log("Remoção de operador",login);renderConfigForm();}
+function removeOperador(login){if(!isOwner())return;var a=loadAuth();var u=a.users.find(function(x){return x.login===login;});if(!u||u.role==="owner")return;confirmModal({tone:"danger",icon:"🗑",title:"Remover operador",okTone:"danger",okLabel:"Remover",cancelLabel:"Cancelar",message:'Remover o operador "'+login+'"?',onOk:function(){a.users=a.users.filter(function(x){return x.login!==login;});saveAuth(a);log("Remoção de operador",login);renderConfigForm();}});}
 function trocarSenha(){
   var atual=val("ps_atual"),nova=val("ps_nova"),msg=document.getElementById("cfg_psmsg");if(!state.user)return;
   var a=loadAuth(),u=a.users.find(function(x){return x.login===state.user.login;});
@@ -1811,9 +1822,13 @@ async function addMilitarComAcesso(){
 }
 function removeMilitar(id){
   const m=byMil(id);
-  if(m){var ok=true;try{ok=confirm("Excluir "+((m.posto?m.posto+" ":"")+m.nome)+" do efetivo?");}catch(e){ok=true;}if(!ok)return;}
-  state.militares=state.militares.filter(x=>x.id!==id);saveMil();renderRoster();
-  if(m)log("Exclusão de pessoa",(m.posto?m.posto+" ":"")+m.nome);
+  var fazer=function(){
+    state.militares=state.militares.filter(x=>x.id!==id);saveMil();renderRoster();
+    if(m)log("Exclusão de pessoa",(m.posto?m.posto+" ":"")+m.nome);
+  };
+  if(m){confirmModal({tone:"danger",icon:"🗑",title:"Excluir pessoa",okTone:"danger",okLabel:"Excluir",cancelLabel:"Cancelar",
+    message:"Excluir "+((m.posto?m.posto+" ":"")+m.nome)+" do efetivo?",onOk:fazer});return;}
+  fazer();
 }
 function move(idx,dir){const a=state.militares,j=idx+dir;if(j<0||j>=a.length)return;const t=a[idx];a[idx]=a[j];a[j]=t;saveMil();renderRoster();log("Reordenação do efetivo","");}
 function toggleMil(id){var e=document.getElementById("mil_dados_"+id);if(e)e.style.display=(e.style.display==="none"||!e.style.display)?"block":"none";}
@@ -1878,11 +1893,19 @@ function confirmModal(opts){
   ov.setAttribute("style","position:fixed;inset:0;z-index:99999;background:rgba(15,23,42,.55);display:flex;align-items:center;justify-content:center;padding:16px;overflow:auto;-webkit-overflow-scrolling:touch");
   var emphCancel=(opts.emphasize==="cancel");
   var pri="background:#4f46e5;color:#fff;border:1px solid #4f46e5";
+  var dng="background:#dc2626;color:#fff;border:1px solid #dc2626";
   var gho="background:#fff;color:#334155;border:1px solid #cbd5e1";
+  var okPri=(opts.okTone==="danger")?dng:pri;
   var bbase="padding:10px 16px;border-radius:9px;font:inherit;font-weight:700;cursor:pointer;min-width:120px;flex:1 1 auto;max-width:220px";
-  var okStyle=bbase+";"+(emphCancel?gho:pri), cnStyle=bbase+";"+(emphCancel?pri:gho);
+  var okStyle=bbase+";"+(emphCancel?gho:okPri), cnStyle=bbase+";"+(emphCancel?okPri:gho);
+  // cabeçalho opcional (título + ícone) e corpo (html ou mensagem simples)
+  var head="";
+  if(opts.title){var col=(opts.tone==="danger")?"#b91c1c":"#1e293b";var ic=opts.icon||((opts.tone==="danger")?"⚠":"");
+    head='<div style="display:flex;align-items:center;gap:9px;margin-bottom:'+(opts.html||opts.message?"8px":"0")+'">'+(ic?'<span style="font-size:22px;line-height:1">'+ic+'</span>':'')+'<b style="font-size:15.5px;color:'+col+'">'+esc(opts.title)+'</b></div>';}
+  var inp=opts.requireText?'<input id="cm_input" type="text" autocomplete="off" autocapitalize="characters" placeholder="'+esc(opts.inputPlaceholder||("digite "+opts.requireText))+'" style="margin-top:11px;width:100%;box-sizing:border-box;padding:10px 11px;border:1px solid #cbd5e1;border-radius:8px;font:inherit">':"";
+  var body=head+(opts.html||(opts.message?'<p style="margin:2px 0;font-size:13.5px;color:#334155;line-height:1.55">'+esc(opts.message)+'</p>':""))+inp;
   ov.innerHTML='<div role="dialog" aria-modal="true" style="background:#fff;border-radius:14px;max-width:460px;width:100%;max-height:88vh;display:flex;flex-direction:column;box-shadow:0 20px 50px rgba(0,0,0,.35)">'+
-      '<div style="padding:16px 18px;overflow:auto;-webkit-overflow-scrolling:touch">'+(opts.html||"")+'</div>'+
+      '<div style="padding:16px 18px;overflow:auto;-webkit-overflow-scrolling:touch">'+body+'</div>'+
       '<div style="border-top:1px solid #eef2f7;padding:12px 16px;display:flex;gap:9px;justify-content:flex-end;flex-wrap:wrap">'+
         '<button id="cm_cancel" style="'+cnStyle+'">'+esc(opts.cancelLabel||"Cancelar")+'</button>'+
         '<button id="cm_ok" style="'+okStyle+'">'+esc(opts.okLabel||"OK")+'</button>'+
@@ -1890,7 +1913,9 @@ function confirmModal(opts){
   document.body.appendChild(ov);
   function close(){if(ov.parentNode)ov.parentNode.removeChild(ov);}
   document.getElementById("cm_cancel").onclick=function(){close();if(opts.onCancel)opts.onCancel();};
-  document.getElementById("cm_ok").onclick=function(){close();if(opts.onOk)opts.onOk();};
+  document.getElementById("cm_ok").onclick=function(){
+    if(opts.requireText){var ip=document.getElementById("cm_input"),v=(ip&&ip.value||"");if(v.trim().toUpperCase()!==String(opts.requireText).toUpperCase()){if(ip){ip.style.borderColor="#dc2626";ip.focus();}return;}}
+    close();if(opts.onOk)opts.onOk();};
   ov.addEventListener("click",function(e){if(e.target===ov){close();if(opts.onCancel)opts.onCancel();}});
 }
 function _gerarCore(forcar){
@@ -2275,13 +2300,27 @@ function renderFolga(){
   var av="";
   if(res.cfg&&res.cfg.domingo){
     var _dt=res.domTarget||1,_nd=res.numDomingos||0,_md=res.cfg.maxDia||1,_ne=res.nEfetivo||0;
-    var _sugTeto=_nd>0?Math.ceil(_ne*_dt/_nd):_md;
-    var _sugDom=(_ne>0&&_nd>0)?Math.max(1,Math.floor(_nd*_md/_ne)):1;
-    var _sug='<br><b>Para atender, escolha uma opção:</b> aumentar <b>“folgam por dia”</b> para <b>'+_sugTeto+'</b>; ou reduzir <b>“domingos por pessoa”</b> para <b>'+_sugDom+'</b>; ou <b>incluir mais funcionários</b>; ou <b>pagar hora extra</b> nesses domingos.';
+    var _dias=(res.cfg.dias||[0,1,2,3,4,5,6]),_restrito=_dias.length<7,_bloco=((res.cfg.folgaModo||"bloco")!=="inter");
+    var _cabeDom=(_ne*_dt<=_nd*_md); // a capacidade de domingos (teto × domingos) comporta a cota?
+    var _sugTeto=Math.ceil(_ne*_dt/Math.max(1,_nd));
+    var _sugDom=Math.max(1,Math.floor(_nd*_md/Math.max(1,_ne)));
+    // monta só as sugestões que REALMENTE ajudam (nunca sugere o valor que já está)
+    var _opts=[];
+    var _falhou=((res.semDomingo&&res.semDomingo.length)||(res.domShort&&res.domShort.length)||res.estourou);
+    var _tetoSug=(_sugTeto>_md)?_sugTeto:(_falhou?(_md+1):0); // se já cabe no domingo mas falhou (dias/carga), subir o teto ainda ajuda
+    if(_tetoSug>_md)_opts.push('aumentar <b>“folgam por dia”</b> para <b>'+_tetoSug+'</b> (ou mais)');
+    if(_dt>1&&_sugDom<_dt)_opts.push('reduzir <b>“domingos por pessoa”</b> para <b>'+_sugDom+'</b>');
+    if(_restrito)_opts.push('<b>liberar mais dias</b> para folga (principalmente <b>sábado</b>)');
+    if(_restrito&&_bloco)_opts.push('mudar para <b>“não seguidas”</b> (encaixa melhor quando faltam dias)');
+    _opts.push('<b>incluir mais funcionários</b>');
+    _opts.push('<b>pagar hora extra</b> nos domingos');
+    var _sug='<br><b>Para atender, escolha uma opção:</b> '+_opts.join('; ou ')+'.';
     if(res.semDomingo&&res.semDomingo.length){
-      av+='<div style="background:#fef2f2;border:1px solid #fecaca;color:#b91c1c;border-radius:8px;padding:8px 10px;margin:8px 0;font-size:13px">⚠ <b>Descanso dominical (lei) não garantido</b> — ficaram sem nenhum domingo de folga: <b>'+esc(res.semDomingo.join(", "))+'</b>.'+_sug+'</div>';
+      var _pq0=_cabeDom?('os <b>dias de folga estão restritos</b>'+(_restrito?' (sexta/sábado bloqueados)':'')+(_bloco?' e, em <b>bloco</b>, a 2ª folga não encaixa':'')):('faltam vagas de domingo: precisaria de '+(_ne*_dt)+' e só há '+(_nd*_md));
+      av+='<div style="background:#fef2f2;border:1px solid #fecaca;color:#b91c1c;border-radius:8px;padding:8px 10px;margin:8px 0;font-size:13px">⚠ <b>Descanso dominical (lei) não garantido</b> — ficaram sem nenhum domingo de folga: <b>'+esc(res.semDomingo.join(", "))+'</b>. '+_pq0+'.'+_sug+'</div>';
     }else if(res.domShort&&res.domShort.length){
-      av+='<div style="background:#fff7ed;border:1px solid #fed7aa;color:#9a3412;border-radius:8px;padding:8px 10px;margin:8px 0;font-size:13px">⚠ <b>Não deu para dar '+_dt+' domingo'+(_dt>1?'s':'')+' de folga a todos</b> — com <b>'+_ne+'</b> funcionário(s), teto de <b>'+_md+'</b>/dia e <b>'+_nd+'</b> domingo(s) no mês, não cabe (precisaria de '+(_ne*_dt)+' folgas de domingo e só há '+(_nd*_md)+'). Ficaram com menos: <b>'+esc(res.domShort.join(", "))+'</b>.'+_sug+'</div>';
+      var _pq=_cabeDom?('os <b>dias de folga estão restritos</b>'+(_restrito?' (sexta/sábado bloqueados)':'')+' e não encaixam '+_dt+' domingo'+(_dt>1?'s':'')+' para todos'):('não cabe: precisaria de '+(_ne*_dt)+' folgas de domingo e só há '+(_nd*_md));
+      av+='<div style="background:#fff7ed;border:1px solid #fed7aa;color:#9a3412;border-radius:8px;padding:8px 10px;margin:8px 0;font-size:13px">⚠ <b>Não deu para dar '+_dt+' domingo'+(_dt>1?'s':'')+' de folga a todos</b> — '+_pq+'. Ficaram com menos: <b>'+esc(res.domShort.join(", "))+'</b>.'+_sug+'</div>';
     }else if(res.excedeuMax){
       av+='<div style="background:#eff6ff;border:1px solid #bfdbfe;color:#1d4ed8;border-radius:8px;padding:8px 10px;margin:8px 0;font-size:13px">ℹ Em algum <b>domingo</b> o app liberou <b>mais pessoas que o “folgam por dia”</b> para <b>garantir o descanso de domingo</b> de todos (exigência legal). Isso só acontece no domingo; nos demais dias o teto é respeitado.</div>';
     }
@@ -2494,7 +2533,9 @@ async function salvarCert(){
   try{log("Certificado A1 cadastrado",d.titular||"");}catch(e){}
 }
 async function removerCert(){
-  if(!isAdmin())return;if(!confirm("Remover o certificado cadastrado? A assinatura do AFD deixará de funcionar até cadastrar outro."))return;
+  if(!isAdmin())return;
+  var _go=await new Promise(function(res){confirmModal({tone:"danger",icon:"🗑",title:"Remover certificado",okTone:"danger",okLabel:"Remover",cancelLabel:"Cancelar",message:"Remover o certificado cadastrado? A assinatura do AFD deixará de funcionar até cadastrar outro.",onOk:function(){res(true);},onCancel:function(){res(false);}});});
+  if(!_go)return;
   var mm=document.getElementById("cert_msg");function say(t,c){if(mm){mm.textContent=t;mm.style.color=c||"#a7b0d0";}}
   var r;try{r=await db.functions.invoke("cert-salvar",{body:{acao:"remover"}});}catch(e){say("Erro ao remover: "+(e.message||e),"#fca5a5");return;}
   if(r&&r.data&&r.data.ok){say("Certificado removido.","#fde68a");loadCertStatus();try{log("Certificado A1 removido","");}catch(e){}}
@@ -3060,7 +3101,8 @@ async function liberarAcesso(orgId,nome){
   if(v===null)return;
   var meses=parseInt(v,10);
   if(isNaN(meses)||meses<1||meses>120){alert("Informe um número de 1 a 120 meses.");return;}
-  if(!confirm('Confirmar: liberar "'+nome+'" por '+meses+' mês(es) de cortesia?'))return;
+  var _go=await new Promise(function(res){confirmModal({icon:"🎁",title:"Liberar cortesia",okLabel:"Liberar",cancelLabel:"Cancelar",message:'Confirmar: liberar "'+nome+'" por '+meses+' mês(es) de cortesia?',onOk:function(){res(true);},onCancel:function(){res(false);}});});
+  if(!_go)return;
   var r;try{r=await db.rpc("admin_liberar_acesso",{p_org_id:orgId,p_meses:meses});}catch(e){alert("Erro: "+(e.message||e));return;}
   if(r.error){alert("Não foi possível liberar: "+r.error.message);return;}
   var fim=(r.data&&r.data[0]&&r.data[0].assinatura_valida_ate)?r.data[0].assinatura_valida_ate:null;
@@ -3874,7 +3916,8 @@ async function renameSetor(id){
 }
 async function removeSetor(id){
   if(!isOwner())return;var lista=state.setores||[];if(lista.length<=1)return;
-  var ok=true;try{ok=confirm("Remover este setor e a escala dele? Não pode ser desfeito.");}catch(e){}if(!ok)return;
+  var _go=await new Promise(function(res){confirmModal({tone:"danger",icon:"🗑",title:"Remover setor",okTone:"danger",okLabel:"Remover",cancelLabel:"Cancelar",message:"Remover este setor e a escala dele? Não pode ser desfeito.",onOk:function(){res(true);},onCancel:function(){res(false);}});});
+  if(!_go)return;
   try{await Promise.all(["militares","config","carry","schedule"].map(function(b){return db.from("app_state").delete().eq("org_id",state.user.orgId).eq("chave",b+"@"+id);}));}catch(e){}
   var novo=lista.filter(function(x){return x.id!==id;});state.setores=novo;try{localStorage.setItem("ciops:setores",JSON.stringify(novo));}catch(e){}
   await cloudPush("setores");
