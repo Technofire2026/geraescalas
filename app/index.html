@@ -304,8 +304,8 @@
       <div class="setorbar" style="display:flex;align-items:center;gap:8px;margin-bottom:12px;flex-wrap:wrap;border-bottom:1px solid var(--line);padding-bottom:10px"><span class="tiny" style="font-weight:700">Setor:</span><select id="setorSel" onchange="switchSetor(this.value)" style="font:inherit;padding:6px 8px;border:1px solid var(--line2);border-radius:6px;min-width:170px"></select><span class="tiny" id="setorHint" style="color:var(--mut)"></span></div>
       <div class="row">
         <div style="display:flex;align-items:center;gap:8px;font-weight:600"><span class="ico" style="color:var(--cbm)">📅</span> Período</div>
-        <label class="fld" style="flex:1;min-width:130px"><span>Mês</span><select id="mes" style="width:100%"></select></label>
-        <label class="fld" style="flex:0 0 120px"><span>Ano</span><input type="number" id="ano" style="width:100%"></label>
+        <label class="fld" style="flex:1;min-width:130px"><span>Mês</span><select id="mes" style="width:100%" onchange="refreshFolgaBadge()"></select></label>
+        <label class="fld" style="flex:0 0 120px"><span>Ano</span><input type="number" id="ano" style="width:100%" onchange="refreshFolgaBadge()"></label>
         <div class="actions" style="flex:1 1 100%;display:flex;gap:8px;flex-wrap:wrap;margin-top:4px">
           <button class="btn primary" id="btngerar" onclick="gerar()" style="flex:1 1 220px;justify-content:center">↻ Gerar escala</button>
           <button class="btn ghost" id="btncob" onclick="aplicarCobertura()" disabled title="Recalcula a escala a partir do dia do afastamento: o sucessor assume (sobreaviso) e a folga do efetivo é reduzida no período" style="flex:1 1 200px;justify-content:center">🩺 Aplicar afastamento</button>
@@ -1811,37 +1811,25 @@ function showMsg(msg){document.getElementById("erro").innerHTML=msg?('<div class
 function gerar(){if(!isAdmin())return;if(bloqueadoPro())return;_btnLoad("btngerar",_gerarCore);}
 // Confere, ANTES de gerar, se o descanso dominical cabe no efetivo/teto/cota. Devolve {ok} ou {ok:false,msg}.
 function _preflightDomingo(cfg,year,month){
-  var N=new Date(year,month+1,0).getDate();
-  var nDom=0;for(var d=1;d<=N;d++){if(new Date(year,month,d).getDay()===0)nDom++;}
-  var maxDia=Math.max(1,parseInt(cfg.maxDia||1,10));
-  var dt=Math.max(1,parseInt(cfg.domFolgas||1,10));
+  var N=new Date(year,month+1,0).getDate(),nDom=0;
+  for(var d=1;d<=N;d++){if(new Date(year,month,d).getDay()===0)nDom++;}
   // efetivo que realmente pode folgar no mês (exclui quem está indisponível o mês inteiro)
   var nEf=state.militares.filter(function(m){for(var d=1;d<=N;d++){if(!isUnavailable(m,new Date(year,month,d)))return true;}return false;}).length;
-  if(nEf===0||nDom===0)return {ok:true};
-  var capacidade=nDom*maxDia;   // vagas de folga aos domingos no mês
-  var demanda=nEf*dt;           // domingos que a regra pede
-  if(demanda<=capacidade)return {ok:true};
-  var sugTeto=Math.ceil(demanda/nDom);            // teto/dia necessário p/ a cota atual
-  var sugDom=Math.max(1,Math.floor(capacidade/nEf)); // domingos/pessoa possíveis com o teto atual
-  var faltaMin=(nEf>capacidade);                  // nem o mínimo legal (1 domingo/pessoa) cabe
+  var f=_domFeas(cfg,nEf,nDom);
+  if(f.status!=="lei_nao")return {ok:true};  // "ok" ou "lei_ok": a lei está atendida → gera sem travar
   var L=[];
-  L.push("⚠ DESCANSO DOMINICAL — a configuração não cabe neste mês");
+  L.push("⛔ DESCANSO DOMINICAL — esta configuração NÃO atende a lei neste mês");
   L.push("");
   L.push("Efetivo que pode folgar: "+nEf+"   •   Domingos no mês: "+nDom);
-  L.push("Folgam por dia (teto): "+maxDia+"   •   Domingos por pessoa: "+dt);
+  L.push("Folgam por dia (teto): "+f.maxDia);
   L.push("");
-  L.push("Vagas aos domingos: "+nDom+"×"+maxDia+" = "+capacidade);
-  L.push("A regra pede: "+nEf+"×"+dt+" = "+demanda);
+  L.push("Vagas aos domingos: "+nDom+"×"+f.maxDia+" = "+f.cap+"  —  mas são "+nEf+" pessoas; alguém ficaria SEM nenhum domingo de folga.");
   L.push("");
-  if(faltaMin)L.push("Nem o mínimo legal (1 domingo para cada pessoa) cabe — alguém ficará sem domingo de folga.\n");
-  L.push("Para atender a lei, escolha uma opção:");
-  L.push("• Aumentar “folgam por dia” para "+sugTeto+" (ou mais); ou");
-  L.push("• Reduzir “domingos por pessoa” para "+sugDom+"; ou");
-  L.push("• Incluir mais pessoas na escala; ou usar hora extra para cobrir os domingos.");
+  L.push("Mudança MÍNIMA para atender a lei:");
+  L.push("• Aumentar “folgam por dia” para "+f.sugTetoLei+"; ou");
+  L.push("• Incluir mais pessoas na escala; ou pagar hora extra nos domingos.");
   L.push("");
-  L.push("A escala será montada SEM ultrapassar o teto nem a cota — por isso alguns ficarão com menos domingos que o previsto.");
-  L.push("");
-  L.push("Deseja gerar mesmo assim?");
+  L.push("Recomendado: cancele e ajuste em “Editar regras” (há botões de ajuste rápido). Deseja gerar mesmo assim?");
   return {ok:false,msg:L.join("\n")};
 }
 function _gerarCore(){
@@ -1920,12 +1908,47 @@ function folgaBlocoSpill(){
   // um bloco de folga começa num dia permitido e ocupa "flen" dias corridos; se algum dia seguinte do bloco não for permitido, "vaza"
   return dias.some(function(w){for(var k=1;k<flen;k++){if(!set[(w+k)%7])return true;}return false;});
 }
+// contexto do mês selecionado: nº de domingos e efetivo que pode folgar
+function _domCtx(){
+  var y=parseInt((document.getElementById("ano")||{}).value,10),m=parseInt((document.getElementById("mes")||{}).value,10);
+  var now=new Date();if(isNaN(y))y=now.getFullYear();if(isNaN(m))m=now.getMonth();
+  var N=new Date(y,m+1,0).getDate(),nDom=0;for(var d=1;d<=N;d++){if(new Date(y,m,d).getDay()===0)nDom++;}
+  var nEf=(state.militares||[]).filter(function(p){for(var d=1;d<=N;d++){if(!isUnavailable(p,new Date(y,m,d)))return true;}return false;}).length;
+  return {y:y,m:m,N:N,nDom:nDom,nEf:nEf};
+}
+// viabilidade do descanso dominical: status ok | lei_ok (lei atendida, só a cota não cabe) | lei_nao (viola a lei)
+function _domFeas(cfg,nEf,nDom){
+  var maxDia=Math.max(1,parseInt(cfg.maxDia||1,10)),dt=Math.max(1,parseInt(cfg.domFolgas||1,10));
+  var cap=nDom*maxDia,dem=nEf*dt,r={maxDia:maxDia,dt:dt,nEf:nEf,nDom:nDom,cap:cap,dem:dem};
+  if(nEf===0||nDom===0||dem<=cap){r.status="ok";return r;}
+  r.sugTetoCota=Math.ceil(dem/nDom);        // teto p/ dar a cota a todos
+  r.sugDom=Math.max(1,Math.floor(cap/nEf)); // domingos/pessoa possíveis com o teto atual
+  r.sugTetoLei=Math.ceil(nEf/nDom);         // teto mínimo p/ a lei (1 domingo a cada um)
+  r.status=(nEf<=cap)?"lei_ok":"lei_nao";
+  return r;
+}
+function fixDomTeto(v){var e=document.getElementById("fg_max");if(e){e.value=v;setFolgaCfg();}}
+function fixDomCota(v){var e=document.getElementById("fg_dom_n");if(e){e.value=v;setFolgaCfg();}}
 function updateFolgaWarn(){
   var w=document.getElementById("fg_warn");if(!w)return;
   var t=(document.getElementById("tipo")||{}).value;
-  if(t!=="folga"||!folgaBlocoSpill()){w.style.display="none";w.innerHTML="";return;}
-  w.style.display="";
-  w.innerHTML='⚠ Com <b>folga em bloco</b> e folga permitida só em alguns dias, o 2º dia de folga pode cair num dia <b>não permitido</b> (ex.: sexta ou sábado). Para manter a folga só nos dias escolhidos, use <b>não seguidas</b>. <button class="btn ghost" style="padding:2px 8px;font-size:12px" onclick="usarNaoSeguidas()">Usar “não seguidas”</button>';
+  if(t!=="folga"){w.style.display="none";w.innerHTML="";return;}
+  var parts=[];
+  if(folgaBlocoSpill()){
+    parts.push('⚠ Com <b>folga em bloco</b> e folga permitida só em alguns dias, o 2º dia de folga pode cair num dia <b>não permitido</b> (ex.: sexta ou sábado). Para manter a folga só nos dias escolhidos, use <b>não seguidas</b>. <button class="btn ghost" style="padding:2px 8px;font-size:12px" onclick="usarNaoSeguidas()">Usar “não seguidas”</button>');
+  }
+  var fc=state.config.folgaCfg||{};
+  if(fc.domingo!==false){
+    var c=_domCtx(),f=_domFeas(fc,c.nEf,c.nDom);
+    if(f.status==="lei_nao"){
+      parts.push('<span style="color:#b91c1c">⛔ <b>Não atende a lei neste mês.</b> '+f.nEf+' pessoa(s), teto <b>'+f.maxDia+'</b>/dia e <b>'+f.nDom+'</b> domingos → só cabem <b>'+f.cap+'</b> folgas de domingo; alguém ficaria <b>sem nenhum domingo</b>. Mudança mínima:</span> <button class="btn ghost" style="padding:2px 8px;font-size:12px" onclick="fixDomTeto('+f.sugTetoLei+')">Folgam por dia → '+f.sugTetoLei+'</button> <span style="color:#6b7280">ou inclua mais pessoas / hora extra.</span>');
+    }else if(f.status==="lei_ok"){
+      parts.push('<span style="color:#9a3412">ℹ <b>A lei já é atendida</b> (cada um terá ao menos 1 domingo), mas não cabe dar <b>'+f.dt+'</b> domingos a todos (pede '+f.dem+', há '+f.cap+'). Para atender sua escolha:</span> <button class="btn ghost" style="padding:2px 8px;font-size:12px" onclick="fixDomCota('+f.sugDom+')">Domingos/pessoa → '+f.sugDom+'</button> <button class="btn ghost" style="padding:2px 8px;font-size:12px" onclick="fixDomTeto('+f.sugTetoCota+')">Folgam por dia → '+f.sugTetoCota+'</button>');
+    }
+  }
+  if(!parts.length){w.style.display="none";w.innerHTML="";return;}
+  w.style.display="";w.style.color="";w.style.fontWeight="500";
+  w.innerHTML=parts.join('<hr style="border:none;border-top:1px solid #0000001a;margin:6px 0">');
 }
 function usarNaoSeguidas(){var e=document.getElementById("fg_modo");if(e)e.value="inter";setFolgaCfg();}
 function presetFolga(t,f){var e;if(e=document.getElementById("fg_trab"))e.value=t;if(e=document.getElementById("fg_folga"))e.value=f;setFolgaCfg();}
@@ -1959,6 +1982,7 @@ function renderCfgResumo(){
     if(t==="giro"||t==="3giros"||t==="24h"||t==="turno"){var fds=(state.config.fdsRodizio!==false);var mg=(document.querySelector('input[name="modo"]:checked')||{}).value;var jaGira=(t==="giro"&&mg==="giro");if(fds||jaGira)s+=' Evita que a mesma pessoa pegue fins de semana seguidos.';}
   }
   s+=cont?' Começa aproveitando o fim do mês anterior.':' Começa do zero (sem o mês anterior).';
+  if(t==="folga"){var _fc=state.config.folgaCfg||{};if(_fc.domingo!==false){var _c=_domCtx(),_f=_domFeas(_fc,_c.nEf,_c.nDom);if(_f.status==="lei_nao")s+=' <b style="color:#b91c1c">⛔ Não atende a lei neste mês — abra “Editar regras” para ajustar.</b>';else if(_f.status==="lei_ok")s+=' <span style="color:#9a3412">ℹ A lei está atendida; só não cabe dar '+_f.dt+' domingos a todos.</span>';}}
   el.innerHTML='<b style="color:var(--cbm,#4f46e5)">⚙ Configuração atual:</b> '+s;
 }
 function toggleCfgEditor(){var p=document.getElementById("cfgEditor"),b=document.getElementById("cfg_editbtn");if(!p)return;var abrir=(p.style.display==="none"||!p.style.display);p.style.display=abrir?"flex":"none";if(b)b.textContent=abrir?"▴ Fechar edição":"✏️ Editar regras";}
@@ -2067,6 +2091,7 @@ function _aplicarCoberturaCore(){
 function renderContControls(){document.getElementById("limparcont").style.display=Object.keys(state.carry).length>0?"inline":"none";}
 function renderRoster(){
   document.getElementById("qtd").textContent=state.militares.length+" cadastrado(s)";
+  try{if(document.getElementById("cfg_resumo")){renderCfgResumo();updateFolgaWarn();}}catch(e){}
   const box=document.getElementById("lista");
   if(state.militares.length===0){box.innerHTML='<div class="empty">Nenhuma pessoa cadastrada. Adicione a equipe para montar a escala.</div>';return;}
   if(!isAdmin()){
