@@ -514,14 +514,14 @@
     </div>
   </section>
 
-  <footer><span class="noprint">Confira a escala antes de publicar.<br>© 2026 <b>Gera Escalas</b> · <span class="lnk" onclick="openAbout()">Sobre &amp; Política de Privacidade</span> · <span style="color:var(--mut2)">v11.6</span></span></footer>
+  <footer><span class="noprint">Confira a escala antes de publicar.<br>© 2026 <b>Gera Escalas</b> · <span class="lnk" onclick="openAbout()">Sobre &amp; Política de Privacidade</span> · <span style="color:var(--mut2)">v11.7</span></span></footer>
 </main>
 
 <div id="aboutmodal" class="modal" style="display:none" onclick="if(event.target===this)closeAbout()">
   <div class="mbox">
     <button class="xbtn" onclick="closeAbout()">Fechar ✕</button>
     <h2>Gera Escalas</h2>
-    <p class="muted">Escalas de plantão, turno e giro · Versão 11.6 · 2026</p>
+    <p class="muted">Escalas de plantão, turno e giro · Versão 11.7 · 2026</p>
 
     <h3>Autoria e direitos autorais</h3>
     <p>© 2026 <b>Gera Escalas</b> — desenvolvido por Luís Cesar. Todos os direitos reservados.</p>
@@ -1850,22 +1850,50 @@ function _preflightDomingo(cfg,year,month){
   var nEf=state.militares.filter(function(m){for(var d=1;d<=N;d++){if(!isUnavailable(m,new Date(year,month,d)))return true;}return false;}).length;
   var f=_domFeas(cfg,nEf,nDom);
   if(f.status!=="lei_nao")return {ok:true};  // "ok" ou "lei_ok": a lei está atendida → gera sem travar
-  var L=[];
-  L.push("⛔ DESCANSO DOMINICAL — esta configuração NÃO atende a lei neste mês");
-  L.push("");
-  L.push("Efetivo que pode folgar: "+nEf+"   •   Domingos no mês: "+nDom);
-  L.push("Folgam por dia (teto): "+f.maxDia);
-  L.push("");
-  L.push("Vagas aos domingos: "+nDom+"×"+f.maxDia+" = "+f.cap+"  —  mas são "+nEf+" pessoas; alguém ficaria SEM nenhum domingo de folga.");
-  L.push("");
-  L.push("Mudança MÍNIMA para atender a lei:");
-  L.push("• Aumentar “folgam por dia” para "+f.sugTetoLei+"; ou");
-  L.push("• Incluir mais pessoas na escala; ou pagar hora extra nos domingos.");
-  L.push("");
-  L.push("Recomendado: cancele e ajuste em “Editar regras” (há botões de ajuste rápido). Deseja gerar mesmo assim?");
-  return {ok:false,msg:L.join("\n")};
+  var mesTxt=(typeof MESES!=="undefined"&&MESES[month])?(MESES[month]+"/"+year):"neste mês";
+  var html=''+
+    '<div style="display:flex;align-items:center;gap:9px;margin-bottom:8px">'+
+      '<span style="font-size:24px;line-height:1">⛔</span>'+
+      '<b style="font-size:15.5px;color:#b91c1c">Descanso dominical — não cabe '+esc(mesTxt)+'</b>'+
+    '</div>'+
+    '<p style="margin:6px 0;font-size:13.5px;color:#334155">Com esta configuração, <b>alguém ficaria sem nenhum domingo</b> de folga — o que <b>não atende a lei</b>.</p>'+
+    '<div style="background:#f8fafc;border:1px solid #e5e7eb;border-radius:9px;padding:9px 11px;font-size:13px;color:#334155;margin:9px 0;line-height:1.6">'+
+      'Efetivo que pode folgar: <b>'+nEf+'</b> &nbsp;·&nbsp; Domingos no mês: <b>'+nDom+'</b><br>'+
+      'Folgam por dia (teto): <b>'+f.maxDia+'</b><br>'+
+      'Vagas aos domingos: '+nDom+'×'+f.maxDia+' = <b>'+f.cap+'</b> — mas são <b>'+nEf+'</b> pessoas.'+
+    '</div>'+
+    '<p style="margin:9px 0 4px;font-size:13.5px;color:#334155"><b>Mudança mínima para atender a lei:</b></p>'+
+    '<ul style="margin:0;padding-left:18px;font-size:13.5px;color:#334155;line-height:1.6">'+
+      '<li>Aumentar <b>“folgam por dia”</b> para <b>'+f.sugTetoLei+'</b>; ou</li>'+
+      '<li>Incluir <b>mais pessoas</b> na escala; ou pagar <b>hora extra</b> nos domingos.</li>'+
+    '</ul>'+
+    '<p style="margin:10px 0 0;font-size:12.5px;color:#6b7280">Dica: em <b>“Editar regras”</b> há botões de ajuste rápido que corrigem isso com um toque.</p>';
+  return {ok:false,html:html};
 }
-function _gerarCore(){
+// Modal próprio (substitui o confirm nativo — abre bem no celular). opts: {html, okLabel, cancelLabel, emphasize, onOk, onCancel}
+function confirmModal(opts){
+  opts=opts||{};
+  var old=document.getElementById("cmodal");if(old)old.parentNode.removeChild(old);
+  var ov=document.createElement("div");ov.id="cmodal";
+  ov.setAttribute("style","position:fixed;inset:0;z-index:99999;background:rgba(15,23,42,.55);display:flex;align-items:center;justify-content:center;padding:16px;overflow:auto;-webkit-overflow-scrolling:touch");
+  var emphCancel=(opts.emphasize==="cancel");
+  var pri="background:#4f46e5;color:#fff;border:1px solid #4f46e5";
+  var gho="background:#fff;color:#334155;border:1px solid #cbd5e1";
+  var bbase="padding:10px 16px;border-radius:9px;font:inherit;font-weight:700;cursor:pointer;min-width:120px;flex:1 1 auto;max-width:220px";
+  var okStyle=bbase+";"+(emphCancel?gho:pri), cnStyle=bbase+";"+(emphCancel?pri:gho);
+  ov.innerHTML='<div role="dialog" aria-modal="true" style="background:#fff;border-radius:14px;max-width:460px;width:100%;max-height:88vh;display:flex;flex-direction:column;box-shadow:0 20px 50px rgba(0,0,0,.35)">'+
+      '<div style="padding:16px 18px;overflow:auto;-webkit-overflow-scrolling:touch">'+(opts.html||"")+'</div>'+
+      '<div style="border-top:1px solid #eef2f7;padding:12px 16px;display:flex;gap:9px;justify-content:flex-end;flex-wrap:wrap">'+
+        '<button id="cm_cancel" style="'+cnStyle+'">'+esc(opts.cancelLabel||"Cancelar")+'</button>'+
+        '<button id="cm_ok" style="'+okStyle+'">'+esc(opts.okLabel||"OK")+'</button>'+
+      '</div></div>';
+  document.body.appendChild(ov);
+  function close(){if(ov.parentNode)ov.parentNode.removeChild(ov);}
+  document.getElementById("cm_cancel").onclick=function(){close();if(opts.onCancel)opts.onCancel();};
+  document.getElementById("cm_ok").onclick=function(){close();if(opts.onOk)opts.onOk();};
+  ov.addEventListener("click",function(e){if(e.target===ov){close();if(opts.onCancel)opts.onCancel();}});
+}
+function _gerarCore(forcar){
   if(state.militares.length===0){showErro("Cadastre pelo menos uma pessoa antes de gerar a escala.");return;}
   showMsg("");
   const year=parseInt(val("ano"),10),month=parseInt(val("mes"),10);
@@ -1877,11 +1905,13 @@ function _gerarCore(){
   if(tipo==="folga"){
     var cfgF=state.config.folgaCfg||{trab:6,folga:1,maxDia:1,domingo:true};
     // AVISO PRÉVIO: confere se o descanso dominical cabe na configuração ANTES de montar a escala
-    if(cfgF.domingo){
+    if(cfgF.domingo&&!forcar){
       var _pf=_preflightDomingo(cfgF,year,month);
       if(_pf&&!_pf.ok){
-        var _go=true;try{_go=confirm(_pf.msg);}catch(e){_go=true;}
-        if(!_go){showErro("Geração cancelada. Ajuste a regra do domingo em “Editar regras” (folgam por dia, domingos por pessoa) ou inclua mais pessoas.");return;}
+        confirmModal({html:_pf.html,emphasize:"cancel",cancelLabel:"Cancelar e ajustar",okLabel:"Gerar mesmo assim",
+          onCancel:function(){showErro("Geração cancelada. Ajuste a regra do domingo em “Editar regras” (folgam por dia, domingos por pessoa) ou inclua mais pessoas.");},
+          onOk:function(){_btnLoad("btngerar",function(){_gerarCore(true);});}});
+        return;
       }
     }
     var rF=gerarFolga(state.militares,year,month,cfgF,seed);
