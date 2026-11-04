@@ -468,7 +468,7 @@
         <label class="fld"><span>Nome</span><input id="op_nome"></label>
         <label class="fld"><span>Posto</span><input id="op_posto" style="width:110px"></label>
         <label class="fld"><span>E-mail</span><input id="op_login" type="email" placeholder="email@exemplo.com"></label>
-        <label class="fld"><span>Senha</span><div class="pwwrap"><input id="op_senha" type="password"><button type="button" class="eye" onclick="togglePw('op_senha',this)" aria-label="Mostrar senha">👁</button></div></label><label class="fld"><span>Acesso</span><select id="op_role" style="font:inherit;padding:6px;border:1px solid var(--line2);border-radius:6px"><option value="view">Visualização</option><option value="admin">Administrador</option><option value="membro">Funcionário</option></select></label><label class="fld"><span>Pessoa na escala (funcionário)</span><input id="op_pessoa" placeholder="nome exato na escala"></label><label class="fld"><span>Setor (funcionário)</span><select id="op_setor_sel" style="font:inherit;padding:6px;border:1px solid var(--line2);border-radius:6px"></select></label>
+        <label class="fld"><span>Senha</span><div class="pwwrap"><input id="op_senha" type="password"><button type="button" class="eye" onclick="togglePw('op_senha',this)" aria-label="Mostrar senha"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M1 12s4-7 11-7 11 7 11 7-4 7-11 7-11-7-11-7z"></path><circle cx="12" cy="12" r="3"></circle></svg></button></div></label><label class="fld"><span>Acesso</span><select id="op_role" style="font:inherit;padding:6px;border:1px solid var(--line2);border-radius:6px"><option value="view">Visualização</option><option value="admin">Administrador</option><option value="membro">Funcionário</option></select></label><label class="fld"><span>Pessoa na escala (funcionário)</span><input id="op_pessoa" placeholder="nome exato na escala"></label><label class="fld"><span>Setor (funcionário)</span><select id="op_setor_sel" style="font:inherit;padding:6px;border:1px solid var(--line2);border-radius:6px"></select></label>
         <button class="btn dark" onclick="criarOperador()">Adicionar operador</button>
       </div>
       <span class="tiny" id="cfg_opmsg"></span>
@@ -480,14 +480,14 @@
         <h3 style="margin:0 0 4px;font-size:15px">Senha-mestra de recuperação (opcional)</h3>
         <p class="tiny">Define uma senha que permite <b>reassumir a propriedade</b> caso você perca o acesso. Se não definir, a recuperação só será possível restaurando um <b>Backup</b>. Guarde-a em local seguro e não compartilhe.</p>
         <div class="tiny" id="cfg_masterstatus" style="margin-bottom:6px"></div>
-        <label class="fld"><span>Definir / alterar senha-mestra</span><div class="pwwrap"><input id="cfg_master" type="password" placeholder="nova senha-mestra"><button type="button" class="eye" onclick="togglePw('cfg_master',this)" aria-label="Mostrar senha">👁</button></div></label>
+        <label class="fld"><span>Definir / alterar senha-mestra</span><div class="pwwrap"><input id="cfg_master" type="password" placeholder="nova senha-mestra"><button type="button" class="eye" onclick="togglePw('cfg_master',this)" aria-label="Mostrar senha"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M1 12s4-7 11-7 11 7 11 7-4 7-11 7-11-7-11-7z"></path><circle cx="12" cy="12" r="3"></circle></svg></button></div></label>
         <div style="display:flex;gap:8px;align-items:center;flex-wrap:wrap"><button class="btn ghost" onclick="salvarMestra()">Salvar senha-mestra</button><button class="btn ghost" onclick="removerMestra()">Remover</button> <span class="tiny" id="cfg_mastermsg"></span></div>
       </div>
       <hr style="border:none;border-top:1px solid var(--line);margin:18px 0">
       <h3 style="margin:0 0 8px;font-size:15px">Trocar minha senha</h3>
       <div class="row">
-        <label class="fld"><span>Senha atual</span><div class="pwwrap"><input id="ps_atual" type="password"><button type="button" class="eye" onclick="togglePw('ps_atual',this)" aria-label="Mostrar senha">👁</button></div></label>
-        <label class="fld"><span>Nova senha</span><div class="pwwrap"><input id="ps_nova" type="password"><button type="button" class="eye" onclick="togglePw('ps_nova',this)" aria-label="Mostrar senha">👁</button></div></label>
+        <label class="fld"><span>Senha atual</span><div class="pwwrap"><input id="ps_atual" type="password"><button type="button" class="eye" onclick="togglePw('ps_atual',this)" aria-label="Mostrar senha"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M1 12s4-7 11-7 11 7 11 7-4 7-11 7-11-7-11-7z"></path><circle cx="12" cy="12" r="3"></circle></svg></button></div></label>
+        <label class="fld"><span>Nova senha</span><div class="pwwrap"><input id="ps_nova" type="password"><button type="button" class="eye" onclick="togglePw('ps_nova',this)" aria-label="Mostrar senha"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M1 12s4-7 11-7 11 7 11 7-4 7-11 7-11-7-11-7z"></path><circle cx="12" cy="12" r="3"></circle></svg></button></div></label>
         <button class="btn dark" onclick="trocarSenha()">Alterar senha</button>
         <span class="tiny" id="cfg_psmsg"></span>
       </div>
@@ -514,14 +514,14 @@
     </div>
   </section>
 
-  <footer><span class="noprint">Confira a escala antes de publicar.<br>© 2026 <b>Gera Escalas</b> · <span class="lnk" onclick="openAbout()">Sobre &amp; Política de Privacidade</span> · <span style="color:var(--mut2)">v11.2</span></span></footer>
+  <footer><span class="noprint">Confira a escala antes de publicar.<br>© 2026 <b>Gera Escalas</b> · <span class="lnk" onclick="openAbout()">Sobre &amp; Política de Privacidade</span> · <span style="color:var(--mut2)">v11.4</span></span></footer>
 </main>
 
 <div id="aboutmodal" class="modal" style="display:none" onclick="if(event.target===this)closeAbout()">
   <div class="mbox">
     <button class="xbtn" onclick="closeAbout()">Fechar ✕</button>
     <h2>Gera Escalas</h2>
-    <p class="muted">Escalas de plantão, turno e giro · Versão 11.2 · 2026</p>
+    <p class="muted">Escalas de plantão, turno e giro · Versão 11.4 · 2026</p>
 
     <h3>Autoria e direitos autorais</h3>
     <p>© 2026 <b>Gera Escalas</b> — desenvolvido por Luís Cesar. Todos os direitos reservados.</p>
@@ -844,10 +844,12 @@ function loadAuth(){try{var a=localStorage.getItem("ciops:auth");var o=a?JSON.pa
 function saveAuth(a){try{localStorage.setItem("ciops:auth",JSON.stringify(a));}catch(e){}}
 function authMsg(m){var e=document.getElementById("authmsg");if(e)e.textContent=m||"";}
 function ain(id,ph,type){
-  if(type==="password")return '<div class="pwwrap"><input class="ain" id="'+id+'" placeholder="'+ph+'" type="password" onkeydown="if(event.key===\'Enter\')_authEnter()"><button type="button" class="eye" onclick="togglePw(\''+id+'\',this)" aria-label="Mostrar senha">👁</button></div>';
+  if(type==="password")return '<div class="pwwrap"><input class="ain" id="'+id+'" placeholder="'+ph+'" type="password" onkeydown="if(event.key===\'Enter\')_authEnter()"><button type="button" class="eye" onclick="togglePw(\''+id+'\',this)" aria-label="Mostrar senha"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M1 12s4-7 11-7 11 7 11 7-4 7-11 7-11-7-11-7z"></path><circle cx="12" cy="12" r="3"></circle></svg></button></div>';
   return '<input class="ain" id="'+id+'" placeholder="'+ph+'" type="text" onkeydown="if(event.key===\'Enter\')_authEnter()">';
 }
-function togglePw(id,btn){var el=document.getElementById(id);if(!el)return;var show=el.type==="password";el.type=show?"text":"password";if(btn)btn.textContent=show?"🙈":"👁";}
+var _EYEo='<svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M1 12s4-7 11-7 11 7 11 7-4 7-11 7-11-7-11-7z"></path><circle cx="12" cy="12" r="3"></circle></svg>';
+var _EYEx='<svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M17.9 17.9A10.3 10.3 0 0 1 12 20C5 20 1 12 1 12a18.5 18.5 0 0 1 4-5.9m2.9-1.8A9.3 9.3 0 0 1 12 4c7 0 11 8 11 8a18.6 18.6 0 0 1-2.2 3.2M1 1l22 22"></path></svg>';
+function togglePw(id,btn){var el=document.getElementById(id);if(!el)return;var show=el.type==="password";el.type=show?"text":"password";if(btn)btn.innerHTML=show?_EYEx:_EYEo;}
 function _authEnter(){var a=loadAuth();if(a.users.length===0)setupOperador();else doLogin();}
 function renderAuthGate(){
   var a=loadAuth();var box=document.getElementById("authbox");
@@ -1518,18 +1520,27 @@ function gerarFolga(mils,year,month,cfg,seed){
       var livres=maxDia-off.length;
       for(var ni=0;ni<need.length;ni++){if(ni<livres){need[ni].until=d+blockLen-1;off.push(need[ni]);}}
       // se faltou vaga p/ algum obrigatório, alguém vai passar do limite (vira o aviso "estourou" no laço de baixo)
-      // domingo obrigatório (CLT): garante "domTarget" domingo(s) de folga/mês por pessoa — este PODE exceder o máx/dia de propósito
       if(gDom&&isSun){
-        var needers=avail.filter(function(s){return off.indexOf(s)<0&&s.doms<domTarget;}); // ainda não atingiram o nº de domingos
-        needers.sort(function(a,b){return (a.doms-b.doms)||(b.cons-a.cons)||(a.order-b.order);}); // quem tem menos domingos primeiro
         var domRest=0;for(var dq=d;dq<=N;dq++){if(new Date(year,month,dq).getDay()===0)domRest++;}
-        var devidos=0;needers.forEach(function(s){devidos+=(domTarget-s.doms);}); // total de domingos ainda devidos
-        var precisaHoje=Math.ceil(devidos/Math.max(1,domRest)); // mínimo de domingos a conceder hoje p/ caber todos (1 por pessoa/domingo)
-        var vagas=Math.max(0,maxDia-off.length);
-        var quota=Math.min(needers.length,Math.max(precisaHoje,Math.min(vagas,needers.length)));
-        for(var z=0;z<quota;z++){needers[z].until=d+blockLen-1;off.push(needers[z]);}
+        // 1) MÍNIMO LEGAL: todos precisam de >=1 domingo de folga. Pode exceder o "folgam por dia" p/ garantir.
+        var semNenhum=avail.filter(function(s){return off.indexOf(s)<0&&s.doms===0;});
+        if(semNenhum.length){
+          semNenhum.sort(function(a,b){return (b.cons-a.cons)||(a.order-b.order);});
+          var precisaMin=Math.ceil(semNenhum.length/Math.max(1,domRest));
+          var qMin=Math.max(precisaMin,Math.min(Math.max(0,maxDia-off.length),semNenhum.length));
+          for(var z=0;z<qMin&&z<semNenhum.length;z++){semNenhum[z].until=d+blockLen-1;off.push(semNenhum[z]);}
+        }
+        // 2) domingos ADICIONAIS (até o nº configurado): só com vaga livre; NUNCA excede o teto.
+        if(domTarget>1){
+          var vagasEx=maxDia-off.length;
+          if(vagasEx>0){
+            var extra=avail.filter(function(s){return off.indexOf(s)<0&&s.doms>0&&s.doms<domTarget;});
+            extra.sort(function(a,b){return (a.doms-b.doms)||(b.cons-a.cons)||(a.order-b.order);});
+            for(var ze=0;ze<vagasEx&&ze<extra.length;ze++){extra[ze].until=d+blockLen-1;off.push(extra[ze]);}
+          }
+        }
+        if(off.length>maxDia)excedeuMax=true; // só pelo mínimo legal
       }
-      if(off.length>maxDia)excedeuMax=true; // só acontece pelo domingo obrigatório
       var slots=maxDia-off.length;
       if(slots>0){
         var cobreDom=blocoCobreDomingo(d); // bloco a partir de hoje pega um domingo (ex.: sáb+dom)
@@ -1553,8 +1564,10 @@ function gerarFolga(mils,year,month,cfg,seed){
     if(modo==='inter'){avail.forEach(function(s){if(offIds[s.ref.id]&&s.until<=d){s.gi=(s.gi+1)%flen;}});}
   }
   var per={};st.forEach(function(s){per[s.ref.id]={cons:s.cons,gi:s.gi};});
-  var semDom=gDom?st.filter(function(s){return s.doms<domTarget;}).map(function(s){return s.ref.nome;}):[];
-  return {N:N,tipo:"folga",folga:folga,cols:[{lab:"Folga(s)"}],durs:[0],cover:{},changed:{},vacant:[],_folgaPer:per,semDomingo:semDom,domTarget:domTarget,excedeuMax:excedeuMax,estourou:estourou,estourouSem:estourouSem,cfg:{trab:work,folga:flen,maxDia:maxDia,domingo:gDom,domFolgas:domTarget,dias:diasP,hIni:(cfg.hIni||"18:00"),hFim:(cfg.hFim||"23:00"),maxSem:maxSem,folgaModo:modo}};
+  var nDom=0;for(var dS=1;dS<=N;dS++){if(new Date(year,month,dS).getDay()===0)nDom++;}
+  var semDom=gDom?st.filter(function(s){return s.doms===0;}).map(function(s){return s.ref.nome;}):[];            // nenhum domingo (viola a lei)
+  var domShort=gDom?st.filter(function(s){return s.doms<domTarget;}).map(function(s){return s.ref.nome;}):[];   // não atingiu o nº configurado
+  return {N:N,tipo:"folga",folga:folga,cols:[{lab:"Folga(s)"}],durs:[0],cover:{},changed:{},vacant:[],_folgaPer:per,semDomingo:semDom,domShort:domShort,domTarget:domTarget,numDomingos:nDom,nEfetivo:st.length,excedeuMax:excedeuMax,estourou:estourou,estourouSem:estourouSem,cfg:{trab:work,folga:flen,maxDia:maxDia,domingo:gDom,domFolgas:domTarget,dias:diasP,hIni:(cfg.hIni||"18:00"),hFim:(cfg.hFim||"23:00"),maxSem:maxSem,folgaModo:modo}};
 }
 function computeStatsFolga(res,mils,year,month){
   var off={};mils.forEach(function(m){off[m.id]={f:0,sun:false};});
@@ -2137,11 +2150,22 @@ function renderFolga(){
   var _subinfo=isAdmin()?(" · "+res.cfg.trab+"x"+res.cfg.folga+" · máx "+res.cfg.maxDia+"/dia"):"";
   var head='<div class="printhead">'+_logo+'<div style="flex:1">'+_cab+'<div class="phtit">'+esc(_tit)+'</div><div class="phsub">'+MESES[month]+" de "+year+_subinfo+"</div></div></div>";
   var av="";
-  if(res.semDomingo&&res.semDomingo.length){var _dt=res.domTarget||1;av+='<div style="background:#fff7ed;border:1px solid #fed7aa;color:#9a3412;border-radius:8px;padding:8px 10px;margin:8px 0;font-size:13px">⚠ '+(_dt>1?('Não atingiram os <b>'+_dt+' domingos</b> de folga'):'Sem folga no domingo neste mês')+': <b>'+esc(res.semDomingo.join(", "))+'</b>. Aumente o “máx/dia” ou o efetivo.</div>';}
+  if(res.cfg&&res.cfg.domingo){
+    var _dt=res.domTarget||1,_nd=res.numDomingos||0,_md=res.cfg.maxDia||1,_ne=res.nEfetivo||0;
+    var _sugTeto=_nd>0?Math.ceil(_ne*_dt/_nd):_md;
+    var _sugDom=(_ne>0&&_nd>0)?Math.max(1,Math.floor(_nd*_md/_ne)):1;
+    var _sug='<br><b>Para atender, escolha uma opção:</b> aumentar <b>“folgam por dia”</b> para <b>'+_sugTeto+'</b>; ou reduzir <b>“domingos por pessoa”</b> para <b>'+_sugDom+'</b>; ou <b>incluir mais funcionários</b>; ou <b>pagar hora extra</b> nesses domingos.';
+    if(res.semDomingo&&res.semDomingo.length){
+      av+='<div style="background:#fef2f2;border:1px solid #fecaca;color:#b91c1c;border-radius:8px;padding:8px 10px;margin:8px 0;font-size:13px">⚠ <b>Descanso dominical (lei) não garantido</b> — ficaram sem nenhum domingo de folga: <b>'+esc(res.semDomingo.join(", "))+'</b>.'+_sug+'</div>';
+    }else if(res.domShort&&res.domShort.length){
+      av+='<div style="background:#fff7ed;border:1px solid #fed7aa;color:#9a3412;border-radius:8px;padding:8px 10px;margin:8px 0;font-size:13px">⚠ <b>Não deu para dar '+_dt+' domingo'+(_dt>1?'s':'')+' de folga a todos</b> — com <b>'+_ne+'</b> funcionário(s), teto de <b>'+_md+'</b>/dia e <b>'+_nd+'</b> domingo(s) no mês, não cabe (precisaria de '+(_ne*_dt)+' folgas de domingo e só há '+(_nd*_md)+'). Ficaram com menos: <b>'+esc(res.domShort.join(", "))+'</b>.'+_sug+'</div>';
+    }else if(res.excedeuMax){
+      av+='<div style="background:#eff6ff;border:1px solid #bfdbfe;color:#1d4ed8;border-radius:8px;padding:8px 10px;margin:8px 0;font-size:13px">ℹ Em algum <b>domingo</b> o app liberou <b>mais pessoas que o “folgam por dia”</b> para <b>garantir o descanso de domingo</b> de todos (exigência legal). Isso só acontece no domingo; nos demais dias o teto é respeitado.</div>';
+    }
+  }
   if(res.estourou)av+='<div style="background:#fef2f2;border:1px solid #fecaca;color:#b91c1c;border-radius:8px;padding:8px 10px;margin:8px 0;font-size:13px">⚠ <b>As regras escolhidas não comportam a '+res.cfg.trab+'x'+res.cfg.folga+'</b> — para respeitar o <b>“folgam por dia” ('+res.cfg.maxDia+')</b>, alguém ficaria mais de '+res.cfg.trab+' dias seguidos de trabalho. Para evitar: aumente o <b>“folgam por dia”</b>, <b>libere mais dias</b> da semana para folga, aumente o <b>teto de folgas/semana</b>, <b>ou pague hora extra</b>.</div>';
   var _ll=limiteLegal(state.schedule.year,state.schedule.month);var _clt=(res.stats||[]).filter(function(s){return (s.horas||0)>_ll.mes||(s.maxSemH||0)>_ll.sem;});
   if(_clt.length)av+='<div style="background:#fff7ed;border:1px solid #fed7aa;color:#9a3412;border-radius:8px;padding:8px 10px;margin:8px 0;font-size:13px">⚠ <b>Carga acima do limite legal</b> para '+_clt.length+' pessoa(s) (acima de <b>'+_ll.sem+'h/semana</b> ~'+_ll.mes+'h/m\u00eas \u2014 '+_ll.nota+'). <b>Oriente\u00e7\u00e3o:</b> aumente os dias de folga permitidos ou o m\u00e1ximo de folgas/semana, ou <b>pague hora extra</b>. Veja detalhes na aba <b>Estat\u00edstica</b>.</div>';
-  else if(res.excedeuMax)av+='<div style="background:#eff6ff;border:1px solid #bfdbfe;color:#1d4ed8;border-radius:8px;padding:8px 10px;margin:8px 0;font-size:13px">ℹ Em alguns <b>domingos</b> o app liberou <b>mais pessoas que o “folgam por dia”</b> para <b>garantir a folga de domingo</b> de todos (descanso semanal). Isso só acontece no domingo; nos demais dias o “folgam por dia” é respeitado.</div>';
   if(!isAdmin())av=""; // avisos de gestão não aparecem para o funcionário
   var AB=["Dom","Seg","Ter","Qua","Qui","Sex","Sáb"];
   var _vw=state._folgaView||"dia";
@@ -2162,14 +2186,15 @@ function renderFolga(){
         var _exc=((res.extras&&res.extras[gd2])||[]).filter(function(e){return String(e.id)===String(m.id);});
         var _exh=_exc.reduce(function(a,e){return a+(+e.horas||0);},0);
         var _mk=_exh>0?'<br><span title="Hora extra: '+_exh+'h" style="font-size:8px;color:#ea580c;font-weight:700">+'+_exh+'h</span>':'';
-        var _bg=((_wd2===0||_wd2===6)?';background:#fffbeb':'');
+        var _bg=((_wd2===0||_wd2===6)?';background:#eef2ff':'');
         if(isAdmin())gh+='<td onclick="openHoraExtra(\''+m.id+'\','+gd2+')" title="Clique para lançar hora extra" style="cursor:pointer;text-align:center;padding:3px 5px'+_bg+'">'+cell+_mk+'</td>';
         else gh+='<td style="text-align:center;padding:3px 5px'+_bg+'">'+cell+_mk+'</td>';
       }
       gh+='</tr>';
     });
     gh+='</tbody></table></div><div class="tiny" style="margin-top:6px;color:var(--mut)"><b style="color:#16a34a">S</b> serviço · <b style="color:#2563eb">F</b> folga · 🏖️ férias · 🩹 atestado · <b style="color:#ea580c">+Xh</b> hora extra'+(isAdmin()?' · <span class="noprint">clique numa célula para lançar hora extra</span>':'')+'</div>';
-    document.getElementById("escala").innerHTML=head+av+toggle+gh+signatureBlockHTML();
+    var _heTip=isAdmin()?'<div class="noprint" style="display:flex;align-items:center;gap:8px;background:#fff7ed;border:1px solid #fed7aa;color:#9a3412;border-radius:8px;padding:8px 10px;margin:6px 0;font-size:13px">💡 <span><b>Hora extra na grade:</b> clique em qualquer dia da grade (na linha da pessoa) para lançar a hora extra dela naquele dia.</span></div>':'';
+    document.getElementById("escala").innerHTML=head+av+toggle+_heTip+gh+signatureBlockHTML();
     var tlg=document.getElementById("turmasLegend");if(tlg)tlg.style.display="none";
     return;
   }
@@ -2753,7 +2778,20 @@ function exportEfetivoCSV(){
   var blob=new Blob([csv],{type:"text/csv;charset=utf-8;"}),a=document.createElement("a");a.href=URL.createObjectURL(blob);a.download="Equipe"+(setorNome()?"_"+_slug(setorNome()):"")+".csv";document.body.appendChild(a);a.click();setTimeout(function(){URL.revokeObjectURL(a.href);a.remove();},300);
   try{log("Equipe exportada (CSV)",mils.length+" pessoa(s)");}catch(e){}
 }
+function _imprimirEquipe(){
+  var mils=state.militares||[];
+  if(!mils.length){alert("Cadastre a equipe primeiro.");return;}
+  var org=(state.user&&state.user.orgNome)||"";var setor=setorNome();var when=new Date().toLocaleDateString("pt-BR");
+  var rows=mils.map(function(m,i){
+    var fer=(m.ferias||[]).filter(function(f){return f.start;}).map(function(f){return brDate(parseYmd(f.start))+" ("+((f.dias===""||f.dias==null)?feriasPadrao():f.dias)+"d)";}).join("; ");
+    return '<tr><td>'+(i+1)+'</td><td style="text-align:left">'+esc((m.posto?m.posto+" ":"")+m.nome)+'</td><td>'+esc(m.cpf||"")+'</td><td style="text-align:left">'+esc(m.email||"")+'</td><td>'+esc(m.tel||"")+'</td><td style="text-align:left">'+esc(fer||"—")+'</td></tr>';
+  }).join("");
+  var html='<!doctype html><html lang="pt-BR"><head><meta charset="utf-8"><title>Equipe'+(setor?(" - "+setor):"")+'</title><style>body{font-family:-apple-system,Arial,sans-serif;color:#0f172a;padding:20px}h1{font-size:18px;margin:0 0 2px}.sub{color:#64748b;font-size:12px;margin-bottom:12px}table{border-collapse:collapse;width:100%;font-size:12px}th,td{border:1px solid #cbd5e1;padding:5px 7px;text-align:center}th{background:#eef2ff}@media print{button{display:none}}</style></head><body><h1>Equipe'+(setor?(" — "+esc(setor)):"")+'</h1><div class="sub">'+esc(org)+' · '+mils.length+' pessoa(s) · gerado em '+when+'</div><table><thead><tr><th>#</th><th>Nome</th><th>CPF</th><th>E-mail</th><th>Telefone</th><th>Férias</th></tr></thead><tbody>'+rows+'</tbody></table><button onclick="window.print()" style="margin-top:14px;padding:8px 14px">Imprimir / salvar PDF</button></body></html>';
+  var w=window.open("","_blank");if(!w){alert("Permita pop-ups para imprimir/gerar PDF.");return;}
+  w.document.write(html);w.document.close();setTimeout(function(){try{w.focus();w.print();}catch(e){}},350);
+}
 function imprimir(){
+  if((state._tab||"escala")==="efetivo"){_imprimirEquipe();return;}
   var old=document.title;var sn=_slug(setorNome());var per=_periodoLabel();var t=state._tab||"escala";var nome;
   if(t==="mapa"){var dd=document.getElementById("mapa_data");var dv=(dd&&dd.value)?dd.value.split("-").reverse().join("-"):per;nome="Mapa-do-dia_"+dv;}
   else if(t==="stat"){nome="Estatistica"+(sn?"_"+sn:"")+"_"+per;}
@@ -3538,7 +3576,7 @@ function renderCloudGate(mode){
   }
   var isC=mode==="criar";
   var tabs=`<div style="display:flex;gap:8px;margin:6px 0 14px"><button class="btn ${isC?'ghost':'primary'}" style="flex:1;justify-content:center" onclick="renderCloudGate('entrar')">Entrar</button><button class="btn ${isC?'primary':'ghost'}" style="flex:1;justify-content:center" onclick="renderCloudGate('criar')">Criar conta</button></div>`;
-  var form=isC?`<label class="fld"><span>Seu nome</span><input id="cg_nome"></label><label class="fld"><span>Nome da organiza\u00e7\u00e3o</span><input id="cg_org" placeholder="ex.: Hospital X / CBMMA \u2014 CIOPS"></label><label class="fld"><span>CNPJ ou CPF (para cobran\u00e7a)</span><input id="cg_doc" placeholder="somente n\u00fameros" inputmode="numeric"></label><label class="fld"><span>WhatsApp (com DDD)</span><input id="cg_tel" placeholder="(98) 90000-0000" inputmode="tel"></label><label class="fld"><span>E-mail</span><input id="cg_email" type="email"></label><label class="fld"><span>Senha (m\u00edn. 6)</span><div class="pwwrap"><input id="cg_senha" type="password"><button type="button" class="eye" onclick="togglePw('cg_senha',this)" aria-label="Mostrar senha">👁</button></div></label><button class="btn primary" style="width:100%;justify-content:center;margin-top:6px" onclick="cloudSignup()">Criar conta e organiza\u00e7\u00e3o</button>`:`<label class="fld"><span>E-mail</span><input id="cg_email" type="email"></label><label class="fld"><span>Senha</span><div class="pwwrap"><input id="cg_senha" type="password"><button type="button" class="eye" onclick="togglePw('cg_senha',this)" aria-label="Mostrar senha">👁</button></div></label><button class="btn primary" style="width:100%;justify-content:center;margin-top:6px" onclick="cloudLogin()">Entrar</button><button class="btn ghost" style="width:100%;justify-content:center;margin-top:8px" onclick="cloudRecover()">Esqueci minha senha</button>`;
+  var form=isC?`<label class="fld"><span>Seu nome</span><input id="cg_nome"></label><label class="fld"><span>Nome da organiza\u00e7\u00e3o</span><input id="cg_org" placeholder="ex.: Hospital X / CBMMA \u2014 CIOPS"></label><label class="fld"><span>CNPJ ou CPF (para cobran\u00e7a)</span><input id="cg_doc" placeholder="somente n\u00fameros" inputmode="numeric"></label><label class="fld"><span>WhatsApp (com DDD)</span><input id="cg_tel" placeholder="(98) 90000-0000" inputmode="tel"></label><label class="fld"><span>E-mail</span><input id="cg_email" type="email"></label><label class="fld"><span>Senha (m\u00edn. 6)</span><div class="pwwrap"><input id="cg_senha" type="password"><button type="button" class="eye" onclick="togglePw('cg_senha',this)" aria-label="Mostrar senha"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M1 12s4-7 11-7 11 7 11 7-4 7-11 7-11-7-11-7z"></path><circle cx="12" cy="12" r="3"></circle></svg></button></div></label><button class="btn primary" style="width:100%;justify-content:center;margin-top:6px" onclick="cloudSignup()">Criar conta e organiza\u00e7\u00e3o</button>`:`<label class="fld"><span>E-mail</span><input id="cg_email" type="email"></label><label class="fld"><span>Senha</span><div class="pwwrap"><input id="cg_senha" type="password"><button type="button" class="eye" onclick="togglePw('cg_senha',this)" aria-label="Mostrar senha"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M1 12s4-7 11-7 11 7 11 7-4 7-11 7-11-7-11-7z"></path><circle cx="12" cy="12" r="3"></circle></svg></button></div></label><button class="btn primary" style="width:100%;justify-content:center;margin-top:6px" onclick="cloudLogin()">Entrar</button><button class="btn ghost" style="width:100%;justify-content:center;margin-top:8px" onclick="cloudRecover()">Esqueci minha senha</button>`;
   box.innerHTML=`<div style="max-width:380px;margin:0 auto;text-align:left">${AUTH_BRAND}${tabs}${form}<div id="cg_msg" class="tiny" style="margin-top:12px"></div>${AUTH_HIST}</div>`;
 }
 async function cloudSignup(){
@@ -3600,7 +3638,7 @@ function renderRecoveryGate(){
   document.getElementById("authgate").style.display="flex";
   var _ap=document.getElementById("app");if(_ap)_ap.style.display="none";
   var box=document.getElementById("authbox");
-  box.innerHTML=`<div style="max-width:380px;margin:0 auto;text-align:left">${AUTH_BRAND}<h2>Defina sua nova senha</h2><p class="tiny">Escolha uma nova senha para a sua conta do Gera Escalas.</p><label class="fld"><span>Nova senha (mínimo 6)</span><div class="pwwrap"><input id="rc_pw" type="password"><button type="button" class="eye" onclick="togglePw('rc_pw',this)">👁</button></div></label><label class="fld"><span>Confirmar nova senha</span><input id="rc_pw2" type="password"></label><button class="btn primary" style="width:100%;justify-content:center;margin-top:6px" onclick="doRecoverySave()">Salvar nova senha</button><div id="rc_msg" class="tiny" style="margin-top:10px"></div></div>`;
+  box.innerHTML=`<div style="max-width:380px;margin:0 auto;text-align:left">${AUTH_BRAND}<h2>Defina sua nova senha</h2><p class="tiny">Escolha uma nova senha para a sua conta do Gera Escalas.</p><label class="fld"><span>Nova senha (mínimo 6)</span><div class="pwwrap"><input id="rc_pw" type="password"><button type="button" class="eye" onclick="togglePw('rc_pw',this)"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M1 12s4-7 11-7 11 7 11 7-4 7-11 7-11-7-11-7z"></path><circle cx="12" cy="12" r="3"></circle></svg></button></div></label><label class="fld"><span>Confirmar nova senha</span><input id="rc_pw2" type="password"></label><button class="btn primary" style="width:100%;justify-content:center;margin-top:6px" onclick="doRecoverySave()">Salvar nova senha</button><div id="rc_msg" class="tiny" style="margin-top:10px"></div></div>`;
 }
 async function doRecoverySave(){
   var pw=(val("rc_pw")||""),pw2=(val("rc_pw2")||"");var m=document.getElementById("rc_msg");
