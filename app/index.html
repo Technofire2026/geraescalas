@@ -179,7 +179,7 @@
   .printhdr{display:none}
   @media print{
     body{background:#fff}
-    header.app,.stripe,#config,#efetivo,.leg,.actions,footer .noprint{display:none !important}
+    header.app,.stripe,#config,.leg,.actions,#maintabs,.panebar,#efetivo .addform,footer .noprint{display:none !important}
     main{max-width:100%;padding:0}
     .card{border:none;box-shadow:none;margin-bottom:10px}
     .grid{display:block}
@@ -975,13 +975,13 @@ async function renderOperadoresCloud(){
   (q.data||[]).forEach(function(u){
     var isMe=(state.user&&u.user_id===state.user.uid);
     var ident=esc((u.posto?u.posto+" ":"")+(u.nome||"(sem nome)"))+(u.email?' \u2014 <b>'+esc(u.email)+'</b>':'')+(isMe?' <span class="tiny">(voc\u00ea)</span>':'');
-    if(u.role==="owner"){oh+='<div class="oprow">\U0001F451 <b>Propriet\u00e1rio</b> \u2014 '+ident+'</div>';return;}
+    if(u.role==="owner"){oh+='<div class="oprow">\ud83d\udc51 <b>Propriet\u00e1rio</b> \u2014 '+ident+'</div>';return;}
     if(u.role==="membro"){
       var _sol=(state.setores||[{nome:"Setor principal"}]).map(function(x){return '<option value="'+esc(x.nome)+'"'+(((u.setor||""))===x.nome?" selected":"")+'>'+esc(x.nome)+'</option>';}).join("");
-      oh+='<div class="oprow">\U0001F477 '+ident+' <span class="tiny">(Funcion\u00e1rio'+(u.pessoa_nome?' \u2014 '+esc(u.pessoa_nome):'')+')</span>'+(owner?(' <span class="tiny">Setor:</span> <select onchange="setOperSetor(\''+u.user_id+'\',this.value)">'+_sol+'</select> <button class="mini" title="Remover" onclick="removeOperadorCloud(\''+u.user_id+'\')">\U0001F5D1</button>'):(u.setor?(' <span class="tiny">\u00b7 '+esc(u.setor)+'</span>'):''))+'</div>';return;
+      oh+='<div class="oprow">\ud83d\udc77 '+ident+' <span class="tiny">(Funcion\u00e1rio'+(u.pessoa_nome?' \u2014 '+esc(u.pessoa_nome):'')+')</span>'+(owner?(' <span class="tiny">Setor:</span> <select onchange="setOperSetor(\''+u.user_id+'\',this.value)">'+_sol+'</select> <button class="mini" title="Remover" onclick="removeOperadorCloud(\''+u.user_id+'\')">\ud83d\uddd1</button>'):(u.setor?(' <span class="tiny">\u00b7 '+esc(u.setor)+'</span>'):''))+'</div>';return;
     }
     if(owner){
-      oh+='<div class="oprow">'+ident+' <select onchange="setOperRoleCloud(\''+u.user_id+'\',this.value)"><option value="admin"'+(u.role==="admin"?" selected":"")+'>Administrador</option><option value="view"'+(u.role!=="admin"?" selected":"")+'>Visualiza\u00e7\u00e3o</option></select> <button class="mini" title="Remover" onclick="removeOperadorCloud(\''+u.user_id+'\')">\U0001F5D1</button></div>';
+      oh+='<div class="oprow">'+ident+' <select onchange="setOperRoleCloud(\''+u.user_id+'\',this.value)"><option value="admin"'+(u.role==="admin"?" selected":"")+'>Administrador</option><option value="view"'+(u.role!=="admin"?" selected":"")+'>Visualiza\u00e7\u00e3o</option></select> <button class="mini" title="Remover" onclick="removeOperadorCloud(\''+u.user_id+'\')">🗑</button></div>';
     }else{
       oh+='<div class="oprow">'+ident+' <span class="tiny">('+(u.role==="admin"?"Administrador":"Visualiza\u00e7\u00e3o")+')</span></div>';
     }
@@ -3538,7 +3538,7 @@ function renderCloudGate(mode){
   }
   var isC=mode==="criar";
   var tabs=`<div style="display:flex;gap:8px;margin:6px 0 14px"><button class="btn ${isC?'ghost':'primary'}" style="flex:1;justify-content:center" onclick="renderCloudGate('entrar')">Entrar</button><button class="btn ${isC?'primary':'ghost'}" style="flex:1;justify-content:center" onclick="renderCloudGate('criar')">Criar conta</button></div>`;
-  var form=isC?`<label class="fld"><span>Seu nome</span><input id="cg_nome"></label><label class="fld"><span>Nome da organiza\u00e7\u00e3o</span><input id="cg_org" placeholder="ex.: Hospital X / CBMMA \u2014 CIOPS"></label><label class="fld"><span>CNPJ ou CPF (para cobran\u00e7a)</span><input id="cg_doc" placeholder="somente n\u00fameros" inputmode="numeric"></label><label class="fld"><span>WhatsApp (com DDD)</span><input id="cg_tel" placeholder="(98) 90000-0000" inputmode="tel"></label><label class="fld"><span>E-mail</span><input id="cg_email" type="email"></label><label class="fld"><span>Senha (m\u00edn. 6)</span><div class="pwwrap"><input id="cg_senha" type="password"><button type="button" class="eye" onclick="togglePw('cg_senha',this)">\U0001F441</button></div></label><button class="btn primary" style="width:100%;justify-content:center;margin-top:6px" onclick="cloudSignup()">Criar conta e organiza\u00e7\u00e3o</button>`:`<label class="fld"><span>E-mail</span><input id="cg_email" type="email"></label><label class="fld"><span>Senha</span><div class="pwwrap"><input id="cg_senha" type="password"><button type="button" class="eye" onclick="togglePw('cg_senha',this)">\U0001F441</button></div></label><button class="btn primary" style="width:100%;justify-content:center;margin-top:6px" onclick="cloudLogin()">Entrar</button><button class="btn ghost" style="width:100%;justify-content:center;margin-top:8px" onclick="cloudRecover()">Esqueci minha senha</button>`;
+  var form=isC?`<label class="fld"><span>Seu nome</span><input id="cg_nome"></label><label class="fld"><span>Nome da organiza\u00e7\u00e3o</span><input id="cg_org" placeholder="ex.: Hospital X / CBMMA \u2014 CIOPS"></label><label class="fld"><span>CNPJ ou CPF (para cobran\u00e7a)</span><input id="cg_doc" placeholder="somente n\u00fameros" inputmode="numeric"></label><label class="fld"><span>WhatsApp (com DDD)</span><input id="cg_tel" placeholder="(98) 90000-0000" inputmode="tel"></label><label class="fld"><span>E-mail</span><input id="cg_email" type="email"></label><label class="fld"><span>Senha (m\u00edn. 6)</span><div class="pwwrap"><input id="cg_senha" type="password"><button type="button" class="eye" onclick="togglePw('cg_senha',this)" aria-label="Mostrar senha">👁</button></div></label><button class="btn primary" style="width:100%;justify-content:center;margin-top:6px" onclick="cloudSignup()">Criar conta e organiza\u00e7\u00e3o</button>`:`<label class="fld"><span>E-mail</span><input id="cg_email" type="email"></label><label class="fld"><span>Senha</span><div class="pwwrap"><input id="cg_senha" type="password"><button type="button" class="eye" onclick="togglePw('cg_senha',this)" aria-label="Mostrar senha">👁</button></div></label><button class="btn primary" style="width:100%;justify-content:center;margin-top:6px" onclick="cloudLogin()">Entrar</button><button class="btn ghost" style="width:100%;justify-content:center;margin-top:8px" onclick="cloudRecover()">Esqueci minha senha</button>`;
   box.innerHTML=`<div style="max-width:380px;margin:0 auto;text-align:left">${AUTH_BRAND}${tabs}${form}<div id="cg_msg" class="tiny" style="margin-top:12px"></div>${AUTH_HIST}</div>`;
 }
 async function cloudSignup(){
