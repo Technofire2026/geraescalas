@@ -514,14 +514,14 @@
     </div>
   </section>
 
-  <footer><span class="noprint">Confira a escala antes de publicar.<br>© 2026 <b>Gera Escalas</b> · <span class="lnk" onclick="openAbout()">Sobre &amp; Política de Privacidade</span> · <span style="color:var(--mut2)">v11.9</span></span></footer>
+  <footer><span class="noprint">Confira a escala antes de publicar.<br>© 2026 <b>Gera Escalas</b> · <span class="lnk" onclick="openAbout()">Sobre &amp; Política de Privacidade</span> · <span style="color:var(--mut2)">v12.0</span></span></footer>
 </main>
 
 <div id="aboutmodal" class="modal" style="display:none" onclick="if(event.target===this)closeAbout()">
   <div class="mbox">
     <button class="xbtn" onclick="closeAbout()">Fechar ✕</button>
     <h2>Gera Escalas</h2>
-    <p class="muted">Escalas de plantão, turno e giro · Versão 11.9 · 2026</p>
+    <p class="muted">Escalas de plantão, turno e giro · Versão 12.0 · 2026</p>
 
     <h3>Autoria e direitos autorais</h3>
     <p>© 2026 <b>Gera Escalas</b> — desenvolvido por Luís Cesar. Todos os direitos reservados.</p>
@@ -1511,8 +1511,11 @@ function gerarFolga(mils,year,month,cfg,seed){
   for(var dd=N;dd>=1;dd--){nextP[dd]=permit(dd+1)?(dd+1):((dd+1<=N)?nextP[dd+1]:N+999);}
   var st=mils.map(function(m,i){var sd=seed&&seed.folgaPer&&seed.folgaPer[m.id];return{ref:m,order:i,cons:(sd&&sd.cons!=null)?sd.cons:0,gi:(sd&&sd.gi!=null)?sd.gi:0,until:0,total:0,doms:0};});
   function unav(m,d){return isUnavailable(m,new Date(year,month,d));}
-  // fim do bloco de folga; se a pessoa já atingiu a cota de domingos, apara o domingo do fim do bloco (nunca dá domingo a mais)
-  function setU(s,d){var ue=d+blockLen-1;if(gDom&&s.doms>=domTarget){while(ue>d&&new Date(year,month,ue).getDay()===0)ue--;}s.until=ue;}
+  // fim do bloco de folga; nunca deixa a folga cair em dia bloqueado (ex.: sexta/sábado de pico); apara domingo extra de quem já bateu a cota
+  function setU(s,d){var ue=d+blockLen-1;
+    for(var q=d+1;q<=ue;q++){var sun=new Date(year,month,q).getDay()===0;if(!permit(q)&&!(gDom&&sun)){ue=q-1;break;}}
+    if(gDom&&s.doms>=domTarget){while(ue>d&&new Date(year,month,ue).getDay()===0)ue--;}
+    s.until=ue;}
   var folga={},excedeuMax=false,estourou=false,estourouSem=false,semAtual=-1;
   for(var d=1;d<=N;d++){
     var date=new Date(year,month,d),isSun=date.getDay()===0;
@@ -2307,7 +2310,10 @@ function renderFolga(){
     // monta só as sugestões que REALMENTE ajudam (nunca sugere o valor que já está)
     var _opts=[];
     var _falhou=((res.semDomingo&&res.semDomingo.length)||(res.domShort&&res.domShort.length)||res.estourou);
-    var _tetoSug=(_sugTeto>_md)?_sugTeto:(_falhou?(_md+1):0); // se já cabe no domingo mas falhou (dias/carga), subir o teto ainda ajuda
+    // nº de dias da semana em que PODE haver folga (inclui domingo quando exigido) → quanto menos dias, mais gente precisa folgar por dia
+    var _nDiasP=(function(){var s={};_dias.forEach(function(x){s[x]=1;});if(res.cfg.domingo)s[0]=1;return Object.keys(s).length;})();
+    var _tetoDias=_restrito?Math.ceil(_ne*(res.cfg.folga||1)/Math.max(1,_nDiasP)):0; // teto p/ caber as folgas nos poucos dias permitidos
+    var _tetoSug=Math.max(_sugTeto,_tetoDias,_falhou?(_md+1):0);
     if(_tetoSug>_md)_opts.push('aumentar <b>“folgam por dia”</b> para <b>'+_tetoSug+'</b> (ou mais)');
     if(_dt>1&&_sugDom<_dt)_opts.push('reduzir <b>“domingos por pessoa”</b> para <b>'+_sugDom+'</b>');
     if(_restrito)_opts.push('<b>liberar mais dias</b> para folga (principalmente <b>sábado</b>)');
