@@ -514,14 +514,14 @@
     </div>
   </section>
 
-  <footer><span class="noprint">Confira a escala antes de publicar.<br>© 2026 <b>Gera Escalas</b> · <span class="lnk" onclick="openAbout()">Sobre &amp; Política de Privacidade</span> · <span style="color:var(--mut2)">v11.5</span></span></footer>
+  <footer><span class="noprint">Confira a escala antes de publicar.<br>© 2026 <b>Gera Escalas</b> · <span class="lnk" onclick="openAbout()">Sobre &amp; Política de Privacidade</span> · <span style="color:var(--mut2)">v11.6</span></span></footer>
 </main>
 
 <div id="aboutmodal" class="modal" style="display:none" onclick="if(event.target===this)closeAbout()">
   <div class="mbox">
     <button class="xbtn" onclick="closeAbout()">Fechar ✕</button>
     <h2>Gera Escalas</h2>
-    <p class="muted">Escalas de plantão, turno e giro · Versão 11.5 · 2026</p>
+    <p class="muted">Escalas de plantão, turno e giro · Versão 11.6 · 2026</p>
 
     <h3>Autoria e direitos autorais</h3>
     <p>© 2026 <b>Gera Escalas</b> — desenvolvido por Luís Cesar. Todos os direitos reservados.</p>
@@ -1554,6 +1554,39 @@ function gerarFolga(mils,year,month,cfg,seed){
     });
     // no modo intercalado, avança o grupo de trabalho da pessoa ao concluir uma folga (bloco de 1 dia)
     if(modo==='inter'){avail.forEach(function(s){if(offIds[s.ref.id]&&s.until<=d){s.gi=(s.gi+1)%flen;}});}
+  }
+  // ---- REPARO DE COTA: garante que ninguém folga mais domingos que o configurado (garantia dura) ----
+  if(gDom){
+    var sl=[];for(var ds=1;ds<=N;ds++){if(new Date(year,month,ds).getDay()===0)sl.push(ds);}
+    st.forEach(function(s){
+      var meus=sl.filter(function(d){return folga[d].some(function(x){return x.id===s.ref.id;});});
+      for(var k=domTarget;k<meus.length;k++){
+        var dS2=meus[k];
+        folga[dS2]=folga[dS2].filter(function(x){return x.id!==s.ref.id;}); // passa a trabalhar nesse domingo excedente
+        var cand2=null;
+        for(var ofs=1;ofs<=3&&cand2==null;ofs++){
+          [dS2-ofs,dS2+ofs].forEach(function(dd){
+            if(cand2!=null||dd<1||dd>N)return;
+            if(new Date(year,month,dd).getDay()===0)return;   // não jogar noutro domingo
+            if(!permit(dd))return;                            // só em dia permitido p/ folga
+            if(unav(s.ref,dd))return;
+            if(folga[dd].some(function(x){return x.id===s.ref.id;}))return;
+            if(folga[dd].length>=maxDia)return;               // respeita o teto
+            cand2=dd;
+          });
+        }
+        if(cand2!=null)folga[cand2].push(s.ref); // compensa o descanso num dia próximo (mantém o teto)
+      }
+    });
+    // recomputa indicadores após o reparo
+    estourou=false;var rc={};st.forEach(function(s){rc[s.ref.id]=0;s.doms=0;s.total=0;});
+    for(var d2=1;d2<=N;d2++){var sun2=new Date(year,month,d2).getDay()===0;
+      st.forEach(function(s){
+        if(unav(s.ref,d2)){rc[s.ref.id]=0;return;}
+        if(folga[d2].some(function(x){return x.id===s.ref.id;})){rc[s.ref.id]=0;s.total++;if(sun2)s.doms++;}
+        else{rc[s.ref.id]++;if(rc[s.ref.id]>work)estourou=true;}
+      });
+    }
   }
   var per={};st.forEach(function(s){per[s.ref.id]={cons:s.cons,gi:s.gi};});
   var nDom=0;for(var dS=1;dS<=N;dS++){if(new Date(year,month,dS).getDay()===0)nDom++;}
