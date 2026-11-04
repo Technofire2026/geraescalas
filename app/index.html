@@ -514,14 +514,14 @@
     </div>
   </section>
 
-  <footer><span class="noprint">Confira a escala antes de publicar.<br>© 2026 <b>Gera Escalas</b> · <span class="lnk" onclick="openAbout()">Sobre &amp; Política de Privacidade</span> · <span style="color:var(--mut2)">v11.9</span></span></footer>
+  <footer><span class="noprint">Confira a escala antes de publicar.<br>© 2026 <b>Gera Escalas</b> · <span class="lnk" onclick="openAbout()">Sobre &amp; Política de Privacidade</span> · <span style="color:var(--mut2)">v12.1</span></span></footer>
 </main>
 
 <div id="aboutmodal" class="modal" style="display:none" onclick="if(event.target===this)closeAbout()">
   <div class="mbox">
     <button class="xbtn" onclick="closeAbout()">Fechar ✕</button>
     <h2>Gera Escalas</h2>
-    <p class="muted">Escalas de plantão, turno e giro · Versão 11.9 · 2026</p>
+    <p class="muted">Escalas de plantão, turno e giro · Versão 12.1 · 2026</p>
 
     <h3>Autoria e direitos autorais</h3>
     <p>© 2026 <b>Gera Escalas</b> — desenvolvido por Luís Cesar. Todos os direitos reservados.</p>
@@ -798,7 +798,7 @@ function serializeSchedule(){
   var g1={},g2={},g3={};if(r.g1){for(var d=1;d<=r.N;d++){g1[d]=idOf(r.g1[d]);g2[d]=idOf(r.g2&&r.g2[d]);g3[d]=idOf(r.g3?r.g3[d]:null);}}
   var cover={};for(var k in (r.cover||{})){var c=r.cover[k];cover[k]={};for(var gi in c){cover[k][gi]={was:idOf(c[gi].was),sub:idOf(c[gi].sub)};}}
   var stats=(r.stats||[]).map(function(s){return {id:s.ref.id,order:s.order,servicos:s.servicos,g1:s.g1,g2:s.g2,sab:s.sab,dom:s.dom,wknd:s.wknd,cob:s.cob,horas:s.horas,folgao:s.folgao,lastDay:s.lastDay,feriasNoMes:s.feriasNoMes,atestadoNoMes:s.atestadoNoMes};});
-  return {year:state.schedule.year,month:state.schedule.month,N:r.N,tipo:r.tipo||"giro",seed:r.seed||null,g1:g1,g2:g2,g3:g3,cols:r.cols||null,durs:r.durs||null,cover:cover,changed:r.changed||{},vacant:r.vacant||[],stats:stats,contInfo:state.contInfo||null,turmas:r.turmas||null,turmasMembros:r.turmasMembros||null,folga:(r.folga?_serFolga(r.folga):null),cfg:r.cfg||null,semDomingo:r.semDomingo||null,excedeuMax:r.excedeuMax||false,estourou:r.estourou||false,extras:r.extras||{}};
+  return {year:state.schedule.year,month:state.schedule.month,N:r.N,tipo:r.tipo||"giro",seed:r.seed||null,g1:g1,g2:g2,g3:g3,cols:r.cols||null,durs:r.durs||null,cover:cover,changed:r.changed||{},vacant:r.vacant||[],stats:stats,contInfo:state.contInfo||null,turmas:r.turmas||null,turmasMembros:r.turmasMembros||null,folga:(r.folga?_serFolga(r.folga):null),cfg:r.cfg||null,semDomingo:r.semDomingo||null,excedeuMax:r.excedeuMax||false,estourou:r.estourou||false,extras:r.extras||{},_amostra:r._amostra||false,_coringaServ:r._coringaServ||null,_coringas:r._coringas||0,_coringaTotal:r._coringaTotal||0};
 }
 function saveSchedule(){try{var o=serializeSchedule();if(o)localStorage.setItem("ciops:schedule",JSON.stringify(o));else localStorage.removeItem("ciops:schedule");}catch(e){}cloudPush("schedule");try{arquivarResumo();}catch(e){}}
 function restoreSchedule(){
@@ -811,7 +811,7 @@ function restoreSchedule(){
     var stats=(o.stats||[]).map(function(s){var m=byId[s.id];if(!m)return null;var ss=Object.assign({},s);ss.ref=m;return ss;}).filter(Boolean);
     var enter={};enter[0]=g2[1]?{ref:g2[1]}:null;for(var d2=1;d2<=o.N;d2++)enter[d2]=g1[d2]?{ref:g1[d2]}:null;
 var _fol=null;if(o.folga){_fol={};for(var fd in o.folga){_fol[fd]=(o.folga[fd]||[]).map(ref).filter(Boolean);}}
-    var result={N:o.N,tipo:o.tipo||"giro",seed:o.seed||null,g1:g1,g2:g2,g3:g3,cols:o.cols||null,durs:o.durs||null,cover:cover,changed:o.changed||{},vacant:o.vacant||[],stats:stats,enter:enter,sel:[],folga:_fol,cfg:o.cfg||null,semDomingo:o.semDomingo||null,excedeuMax:o.excedeuMax||false,estourou:o.estourou||false,turmas:o.turmas||null,turmasMembros:o.turmasMembros||null,extras:o.extras||{}};
+    var result={N:o.N,tipo:o.tipo||"giro",seed:o.seed||null,g1:g1,g2:g2,g3:g3,cols:o.cols||null,durs:o.durs||null,cover:cover,changed:o.changed||{},vacant:o.vacant||[],stats:stats,enter:enter,sel:[],folga:_fol,cfg:o.cfg||null,semDomingo:o.semDomingo||null,excedeuMax:o.excedeuMax||false,estourou:o.estourou||false,turmas:o.turmas||null,turmasMembros:o.turmasMembros||null,extras:o.extras||{},_amostra:o._amostra||false,_coringaServ:o._coringaServ||null,_coringas:o._coringas||0,_coringaTotal:o._coringaTotal||0};
     state.schedule={result:result,year:o.year,month:o.month};
     if(result.tipo==="folga"&&result.folga)computeStatsFolga(result,state.militares,o.year,o.month);
     state.contInfo=o.contInfo||null;
@@ -1511,8 +1511,11 @@ function gerarFolga(mils,year,month,cfg,seed){
   for(var dd=N;dd>=1;dd--){nextP[dd]=permit(dd+1)?(dd+1):((dd+1<=N)?nextP[dd+1]:N+999);}
   var st=mils.map(function(m,i){var sd=seed&&seed.folgaPer&&seed.folgaPer[m.id];return{ref:m,order:i,cons:(sd&&sd.cons!=null)?sd.cons:0,gi:(sd&&sd.gi!=null)?sd.gi:0,until:0,total:0,doms:0};});
   function unav(m,d){return isUnavailable(m,new Date(year,month,d));}
-  // fim do bloco de folga; se a pessoa já atingiu a cota de domingos, apara o domingo do fim do bloco (nunca dá domingo a mais)
-  function setU(s,d){var ue=d+blockLen-1;if(gDom&&s.doms>=domTarget){while(ue>d&&new Date(year,month,ue).getDay()===0)ue--;}s.until=ue;}
+  // fim do bloco de folga; nunca deixa a folga cair em dia bloqueado (ex.: sexta/sábado de pico); apara domingo extra de quem já bateu a cota
+  function setU(s,d){var ue=d+blockLen-1;
+    for(var q=d+1;q<=ue;q++){var sun=new Date(year,month,q).getDay()===0;if(!permit(q)&&!(gDom&&sun)){ue=q-1;break;}}
+    if(gDom&&s.doms>=domTarget){while(ue>d&&new Date(year,month,ue).getDay()===0)ue--;}
+    s.until=ue;}
   var folga={},excedeuMax=false,estourou=false,estourouSem=false,semAtual=-1;
   for(var d=1;d<=N;d++){
     var date=new Date(year,month,d),isSun=date.getDay()===0;
@@ -2238,6 +2241,43 @@ function giroCell(ref,cov){
   }
   return {cls:'', html: ref?((ref.posto?'<span class="pg">'+esc(ref.posto)+' </span>':'')+esc(ref.nome)):'<span class="vago">SEM ESCALA</span>'};
 }
+// ===== Amostra com funcionário CORINGA =====
+// Monta a escala em que TODOS recebem folga/domingo certos (sem estouro de dias) e marca o que passa do teto como "serviço de coringa" (a cobrir com hora extra).
+function _calcCoringa(cfgF,year,month){
+  var r=gerarFolga(state.militares,year,month,cfgF,null);
+  var N=r.N,teto=Math.max(1,parseInt(cfgF.maxDia||1,10)),work=Math.max(1,parseInt(cfgF.trab||5,10)),dt=Math.max(1,parseInt(cfgF.domFolgas||1,10)),gDom=cfgF.domingo!==false;
+  var dias=(cfgF.dias&&cfgF.dias.length)?cfgF.dias:[0,1,2,3,4,5,6];
+  function permit(d){return dias.indexOf(new Date(year,month,d).getDay())>=0;}
+  var SUN=[];for(var d=1;d<=N;d++)if(new Date(year,month,d).getDay()===0)SUN.push(d);
+  var fol={};for(var d=1;d<=N;d++)fol[d]=(r.folga[d]||[]).map(function(x){return x.id;});
+  function isF(d,id){return fol[d].indexOf(id)>=0;}
+  function add(d,id){if(!isF(d,id))fol[d].push(id);}
+  var mils=state.militares;
+  // 1) quebra sequências de trabalho maiores que "work" (insere folga de coringa num dia permitido)
+  mils.forEach(function(m){var run=0,start=0;for(var d=1;d<=N+1;d++){var off=(d>N)||isF(d,m.id)||isUnavailable(m,new Date(year,month,d));if(off){run=0;}else{if(run===0)start=d;run++;if(run>work){var ins=null;for(var q=d;q>=start;q--){if(permit(q)&&!isF(q,m.id)){ins=q;break;}}if(ins==null)ins=d;add(ins,m.id);run=d-ins;}}}});
+  // 2) garante os domingos de folga por pessoa
+  if(gDom)mils.forEach(function(m){var have=SUN.filter(function(d){return isF(d,m.id);}).length;var need=dt-have;if(need>0){var cand=SUN.filter(function(d){return !isF(d,m.id)&&!isUnavailable(m,new Date(year,month,d));}).sort(function(a,b){return fol[a].length-fol[b].length;});for(var i=0;i<need&&i<cand.length;i++)add(cand[i],m.id);}});
+  // o que passou do teto = serviço de coringa naquele dia
+  var serv={},coringas=0,total=0;for(var d=1;d<=N;d++){var o=Math.max(0,fol[d].length-teto);if(o>0){serv[d]=o;total+=o;if(o>coringas)coringas=o;}}
+  var folRef={};for(var d=1;d<=N;d++)folRef[d]=fol[d].map(function(id){return byMil(id);}).filter(Boolean);
+  return {folga:folRef,serv:serv,coringas:coringas,total:total};
+}
+function gerarAmostraCoringa(){
+  if(!isAdmin())return;
+  var year=parseInt(val("ano"),10),month=parseInt(val("mes"),10);
+  var cfgF=state.config.folgaCfg||{trab:6,folga:1,maxDia:1,domingo:true};
+  var c=_calcCoringa(cfgF,year,month);
+  if(c.coringas===0){showMsg("Com estas regras a escala já fecha na lei — não é preciso coringa.");return;}
+  var res=gerarFolga(state.militares,year,month,cfgF,null);
+  res.folga=c.folga;res._amostra=true;res._coringaServ=c.serv;res._coringas=c.coringas;res._coringaTotal=c.total;
+  res.semDomingo=[];res.domShort=[];res.estourou=false;res.extras=res.extras||{};
+  computeStatsFolga(res,state.militares,year,month);
+  state.schedule={result:res,year:year,month:month};
+  var nmF=nextMonth(year,month);state.carry[mkey(nmF.y,nmF.m)]={folgaPer:res._folgaPer};saveCarry();
+  renderSchedule();renderStats();saveSchedule();showTab("escala");
+  log("Amostra com coringa",MESES[month]+"/"+year+" · "+c.coringas+" coringa(s), "+c.total+" serviço(s)");
+}
+function atribuirCoringa(d){openHoraExtra(null,d);} // reaproveita o lançamento de hora extra para aquele dia
 function renderSchedule(){
   if(!state.schedule)return;
   if(state.schedule.result&&state.schedule.result.tipo==="folga"){return renderFolga();}
@@ -2307,7 +2347,10 @@ function renderFolga(){
     // monta só as sugestões que REALMENTE ajudam (nunca sugere o valor que já está)
     var _opts=[];
     var _falhou=((res.semDomingo&&res.semDomingo.length)||(res.domShort&&res.domShort.length)||res.estourou);
-    var _tetoSug=(_sugTeto>_md)?_sugTeto:(_falhou?(_md+1):0); // se já cabe no domingo mas falhou (dias/carga), subir o teto ainda ajuda
+    // nº de dias da semana em que PODE haver folga (inclui domingo quando exigido) → quanto menos dias, mais gente precisa folgar por dia
+    var _nDiasP=(function(){var s={};_dias.forEach(function(x){s[x]=1;});if(res.cfg.domingo)s[0]=1;return Object.keys(s).length;})();
+    var _tetoDias=_restrito?Math.ceil(_ne*(res.cfg.folga||1)/Math.max(1,_nDiasP)):0; // teto p/ caber as folgas nos poucos dias permitidos
+    var _tetoSug=Math.max(_sugTeto,_tetoDias,_falhou?(_md+1):0);
     if(_tetoSug>_md)_opts.push('aumentar <b>“folgam por dia”</b> para <b>'+_tetoSug+'</b> (ou mais)');
     if(_dt>1&&_sugDom<_dt)_opts.push('reduzir <b>“domingos por pessoa”</b> para <b>'+_sugDom+'</b>');
     if(_restrito)_opts.push('<b>liberar mais dias</b> para folga (principalmente <b>sábado</b>)');
@@ -2328,6 +2371,22 @@ function renderFolga(){
   if(res.estourou)av+='<div style="background:#fef2f2;border:1px solid #fecaca;color:#b91c1c;border-radius:8px;padding:8px 10px;margin:8px 0;font-size:13px">⚠ <b>As regras escolhidas não comportam a '+res.cfg.trab+'x'+res.cfg.folga+'</b> — para respeitar o <b>“folgam por dia” ('+res.cfg.maxDia+')</b>, alguém ficaria mais de '+res.cfg.trab+' dias seguidos de trabalho. Para evitar: aumente o <b>“folgam por dia”</b>, <b>libere mais dias</b> da semana para folga, aumente o <b>teto de folgas/semana</b>, <b>ou pague hora extra</b>.</div>';
   var _ll=limiteLegal(state.schedule.year,state.schedule.month);var _clt=(res.stats||[]).filter(function(s){return (s.horas||0)>_ll.mes||(s.maxSemH||0)>_ll.sem;});
   if(_clt.length)av+='<div style="background:#fff7ed;border:1px solid #fed7aa;color:#9a3412;border-radius:8px;padding:8px 10px;margin:8px 0;font-size:13px">⚠ <b>Carga acima do limite legal</b> para '+_clt.length+' pessoa(s) (acima de <b>'+_ll.sem+'h/semana</b> ~'+_ll.mes+'h/m\u00eas \u2014 '+_ll.nota+'). <b>Oriente\u00e7\u00e3o:</b> aumente os dias de folga permitidos ou o m\u00e1ximo de folgas/semana, ou <b>pague hora extra</b>. Veja detalhes na aba <b>Estat\u00edstica</b>.</div>';
+  // Oferta de amostra com coringa quando a escala não fechou na lei
+  if(!res._amostra && ((res.semDomingo&&res.semDomingo.length)||res.estourou||(res.domShort&&res.domShort.length))){
+    av+='<div class="noprint" style="background:#eef2ff;border:1px solid #c7d2fe;color:#3730a3;border-radius:8px;padding:10px 12px;margin:8px 0;font-size:13px">💡 <b>Quer uma saída sem mudar as regras?</b> O app monta uma <b>escala de amostra</b> em que todos recebem folga e domingo certos, e marca os turnos que faltam como <b>serviço de coringa</b> — você cobre cada um com <b>hora extra</b> de alguém do quadro.<br><button class="btn" style="margin-top:8px;background:var(--cbm,#4f46e5);color:#fff" onclick="gerarAmostraCoringa()">🃏 Gerar amostra com coringa</button></div>';
+  }
+  // Painel da amostra: lista dos serviços de coringa a cobrir
+  if(res._amostra){
+    var _cs=res._coringaServ||{},_cd=Object.keys(_cs).map(Number).sort(function(a,b){return a-b;});
+    var _AB2=["Dom","Seg","Ter","Qua","Qui","Sex","Sáb"];
+    var _linhas=_cd.map(function(d){
+      var cob=((res.extras&&res.extras[d])||[]).length,need=_cs[d];
+      var quem=((res.extras&&res.extras[d])||[]).map(function(e){var m=byMil(e.id);return esc(m?m.nome:"?");}).join(", ");
+      var stt=cob>=need?('<span style="color:#16a34a;font-weight:700">✔ coberto</span>'+(quem?' ('+quem+')':'')):('<span style="color:#b91c1c;font-weight:700">faltam '+(need-cob)+'</span>'+(quem?' · já: '+quem:''));
+      return '<div style="display:flex;align-items:center;justify-content:space-between;gap:8px;padding:5px 0;border-top:1px solid #0000000f"><span>Dia <b>'+pad(d)+'</b> ('+_AB2[new Date(state.schedule.year,state.schedule.month,d).getDay()]+') — <b>'+need+'</b> serviço(s) · '+stt+'</span><button class="btn ghost noprint" style="padding:3px 9px;font-size:12px" onclick="atribuirCoringa('+d+')">Atribuir hora extra</button></div>';
+    }).join("");
+    av+='<div style="background:#f5f3ff;border:1px solid #c7d2fe;border-radius:10px;padding:10px 12px;margin:8px 0;font-size:13px;color:#3730a3"><b>🃏 Escala de amostra com coringa</b> — todos com folga e domingo certos. Usa <b>'+(res._coringas||0)+'</b> coringa(s) (máx. no mesmo dia) e <b>'+(res._coringaTotal||0)+'</b> serviço(s) no mês. Cubra cada um com <b>hora extra</b> de quem está de folga:'+_linhas+'<div class="tiny noprint" style="margin-top:8px;color:#6b7280">Para voltar à escala normal, clique em <b>Gerar escala</b>.</div></div>';
+  }
   if(!isAdmin())av=""; // avisos de gestão não aparecem para o funcionário
   var AB=["Dom","Seg","Ter","Qua","Qui","Sex","Sáb"];
   var _vw=state._folgaView||"dia";
