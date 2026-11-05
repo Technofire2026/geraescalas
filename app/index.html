@@ -514,14 +514,14 @@
     </div>
   </section>
 
-  <footer><span class="noprint">Confira a escala antes de publicar.<br>© 2026 <b>Gera Escalas</b> · <span class="lnk" onclick="openAbout()">Sobre &amp; Política de Privacidade</span> · <span style="color:var(--mut2)">v12.2</span></span></footer>
+  <footer><span class="noprint">Confira a escala antes de publicar.<br>© 2026 <b>Gera Escalas</b> · <span class="lnk" onclick="openAbout()">Sobre &amp; Política de Privacidade</span> · <span style="color:var(--mut2)">v12.3</span></span></footer>
 </main>
 
 <div id="aboutmodal" class="modal" style="display:none" onclick="if(event.target===this)closeAbout()">
   <div class="mbox">
     <button class="xbtn" onclick="closeAbout()">Fechar ✕</button>
     <h2>Gera Escalas</h2>
-    <p class="muted">Escalas de plantão, turno e giro · Versão 12.2 · 2026</p>
+    <p class="muted">Escalas de plantão, turno e giro · Versão 12.3 · 2026</p>
 
     <h3>Autoria e direitos autorais</h3>
     <p>© 2026 <b>Gera Escalas</b> — desenvolvido por Luís Cesar. Todos os direitos reservados.</p>
@@ -2932,15 +2932,15 @@ let statSort={col:"servicos",dir:-1};
 function setSort(col){if(statSort.col===col)statSort.dir*=-1;else{statSort.col=col;statSort.dir=-1;}renderStats();}
 // Limite legal de jornada por competencia (EC 141/2026). Edite as datas aqui se a lei mudar.
 function limiteLegal(year,month){
-  var D42=new Date(2026,11,15); // 15/12/2026: entra a 1a etapa (42h/sem, escala 5x2)
-  var D40=new Date(2028,1,15);  // 15/02/2028: 2a etapa (~14 meses depois) -> 40h/sem
+  var D42=new Date(2026,11,16); // 16/12/2026: entra a 1a etapa (42h/sem, escala 5x2)
+  var D40=new Date(2027,11,16); // 16/12/2027: 2a etapa -> 40h/sem
   var ref=new Date(year,(month||0)+1,0); // ultimo dia do mes da escala
   var sem=44,nota="regime anterior";
   if(ref>=D40){sem=40;nota="EC 141/2026 (2\u00aa etapa)";}
   else if(ref>=D42){sem=42;nota="EC 141/2026";}
   return {sem:sem, mes:Math.round(sem*30/7), nota:nota};
 }
-function renderStatsFolga(){var res=state.schedule.result,box=document.getElementById("stats");if(!box)return;var _ll=limiteLegal(state.schedule.year,state.schedule.month);var LIM=_ll.mes;var ss=(res.stats||[]).slice().sort(function(a,b){return (b.horas||0)-(a.horas||0)||a.order-b.order;});box.innerHTML='<table class="stat"><thead><tr><th>Pessoa</th><th>Dias trab.</th><th>Folgas</th><th>Horas/mês</th><th>Semana máx</th><th>CLT</th><th>Domingo</th></tr></thead><tbody>'+ss.map(function(s){var acimaM=(s.horas||0)>LIM,acimaS=(s.maxSemH||0)>_ll.sem;var ok=!acimaM&&!acimaS;return '<tr><td>'+esc((s.ref.posto?s.ref.posto+" ":"")+s.ref.nome)+'</td><td>'+s.trabalhados+'</td><td>'+s.folgasTotal+'</td><td>'+(s.horas||0).toFixed(1).replace(".",",")+'h</td><td>'+(s.maxSemH||0).toFixed(1).replace(".",",")+'h'+(acimaS?' <span style="color:#b91c1c">⚠</span>':'')+'</td><td>'+(ok?'<span style="color:#15803d">ok</span>':'<span style="color:#b91c1c;font-weight:700">acima</span>')+'</td><td>'+(s.sunday?"✓":'<span style="color:#b45309">—</span>')+'</td></tr>';}).join("")+'</tbody></table><div class="tiny" style="margin-top:8px;color:var(--mut)">Limite legal para esta compet\u00eancia: at\u00e9 <b>'+_ll.sem+'h/semana</b> (~'+_ll.mes+'h/m\u00eas) \u2014 '+_ll.nota+'. A <b>EC 141/2026</b> estabelece <b>42h</b> (a partir de 15/12/2026) e depois <b>40h</b>, com escala <b>5x2</b>. Quando algu\u00e9m ficar <b>acima</b>: aumente os <b>dias de folga permitidos</b> ou o <b>m\u00e1ximo de folgas/semana</b>, ou <b>pague hora extra</b>. Alerta de refer\u00eancia \u2014 jornada, extras, banco de horas, intervalos e acordos coletivos dependem do controle de ponto e do seu contador.</div>';var su=document.getElementById("statsummary");if(su)su.innerHTML="";}
+function renderStatsFolga(){var res=state.schedule.result,box=document.getElementById("stats");if(!box)return;var _ll=limiteLegal(state.schedule.year,state.schedule.month);var LIM=_ll.mes;var ss=(res.stats||[]).slice().sort(function(a,b){return (b.horas||0)-(a.horas||0)||a.order-b.order;});box.innerHTML='<table class="stat"><thead><tr><th>Pessoa</th><th>Dias trab.</th><th>Folgas</th><th>Horas/mês</th><th>Semana máx</th><th>CLT</th><th>Domingo</th></tr></thead><tbody>'+ss.map(function(s){var acimaM=(s.horas||0)>LIM,acimaS=(s.maxSemH||0)>_ll.sem;var ok=!acimaM&&!acimaS;return '<tr><td>'+esc((s.ref.posto?s.ref.posto+" ":"")+s.ref.nome)+'</td><td>'+s.trabalhados+'</td><td>'+s.folgasTotal+'</td><td>'+(s.horas||0).toFixed(1).replace(".",",")+'h</td><td>'+(s.maxSemH||0).toFixed(1).replace(".",",")+'h'+(acimaS?' <span style="color:#b91c1c">⚠</span>':'')+'</td><td>'+(ok?'<span style="color:#15803d">ok</span>':'<span style="color:#b91c1c;font-weight:700">acima</span>')+'</td><td>'+(s.sunday?"✓":'<span style="color:#b45309">—</span>')+'</td></tr>';}).join("")+'</tbody></table><div class="tiny" style="margin-top:8px;color:var(--mut)">Limite legal para esta compet\u00eancia: at\u00e9 <b>'+_ll.sem+'h/semana</b> (~'+_ll.mes+'h/m\u00eas) \u2014 '+_ll.nota+'. A <b>EC 141/2026</b> estabelece <b>42h</b> (a partir de 16/12/2026) e depois <b>40h</b> (a partir de 16/12/2027), com escala <b>5x2</b>. Quando algu\u00e9m ficar <b>acima</b>: aumente os <b>dias de folga permitidos</b> ou o <b>m\u00e1ximo de folgas/semana</b>, ou <b>pague hora extra</b>. Alerta de refer\u00eancia \u2014 jornada, extras, banco de horas, intervalos e acordos coletivos dependem do controle de ponto e do seu contador.</div>';var su=document.getElementById("statsummary");if(su)su.innerHTML="";}
 function renderStats(){
   if(state.schedule&&state.schedule.result&&state.schedule.result.tipo==="folga"){document.getElementById("statcard").style.display="";return renderStatsFolga();}
   if(!state.schedule)return;
