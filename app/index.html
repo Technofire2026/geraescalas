@@ -442,6 +442,7 @@
         <h3 style="margin:0 0 8px;font-size:15px">Administração (dono)</h3>
         <p class="tiny" style="margin:0 0 8px">Ferramentas exclusivas do proprietário da plataforma.</p>
         <div style="display:flex;gap:8px;flex-wrap:wrap">
+          <button class="btn dark" onclick="closeConfig();openAfiliados()">🤝 Afiliados</button>
           <button class="btn dark" onclick="closeConfig();openPainel()">📊 Painel do dono</button>
           <button class="btn ghost" onclick="window.open('/curso.html','_blank','noopener')">🎓 Curso de treinamento</button>
         </div>
@@ -564,14 +565,14 @@
     </div>
   </section>
 
-  <footer><span class="noprint">Confira a escala antes de publicar.<br>© 2026 <b>Gera Escalas</b> · <span class="lnk" onclick="openAbout()">Sobre &amp; Política de Privacidade</span> · <span style="color:var(--mut2)">v12.7</span></span></footer>
+  <footer><span class="noprint">Confira a escala antes de publicar.<br>© 2026 <b>Gera Escalas</b> · <span class="lnk" onclick="openAbout()">Sobre &amp; Política de Privacidade</span> · <span style="color:var(--mut2)">v12.8</span></span></footer>
 </main>
 
 <div id="aboutmodal" class="modal" style="display:none" onclick="if(event.target===this)closeAbout()">
   <div class="mbox">
     <button class="xbtn" onclick="closeAbout()">Fechar ✕</button>
     <h2>Gera Escalas</h2>
-    <p class="muted">Escalas de plantão, turno e giro · Versão 12.7 · 2026</p>
+    <p class="muted">Escalas de plantão, turno e giro · Versão 12.8 · 2026</p>
 
     <h3>Autoria e direitos autorais</h3>
     <p>© 2026 <b>Gera Escalas</b> — desenvolvido por Luís Cesar. Todos os direitos reservados.</p>
@@ -612,6 +613,15 @@
     <h2>👥 Clientes</h2>
     <p class="muted">Painel do dono — organizações, planos, período de teste e pagamentos.</p>
     <div id="clientesbody" style="margin-top:12px"></div>
+  </div>
+</div>
+
+<div id="afilmodal" class="modal" style="display:none" onclick="if(event.target===this)closeAfiliados()">
+  <div class="mbox" style="max-width:920px">
+    <button class="xbtn" onclick="closeAfiliados()">Fechar ✕</button>
+    <h2>🤝 Afiliados</h2>
+    <p class="muted">Aprove os cadastros. Ao aprovar, o sistema cria a <b>subconta Asaas</b> do afiliado e libera o link de vendas dele.</p>
+    <div id="afilbody" style="margin-top:12px"></div>
   </div>
 </div>
 
@@ -3387,6 +3397,50 @@ function exportarEmailsClientes(){
 /* ================== PAINEL DO DONO (métricas SaaS) ================== */
 function openPainel(){var m=document.getElementById("paineldonomodal");if(!m)return;m.style.display="flex";renderPainel();}
 function closePainel(){var m=document.getElementById("paineldonomodal");if(m)m.style.display="none";}
+function openAfiliados(){var m=document.getElementById("afilmodal");if(!m)return;m.style.display="flex";renderAfiliados();}
+function closeAfiliados(){var m=document.getElementById("afilmodal");if(m)m.style.display="none";}
+async function renderAfiliados(){
+  var box=document.getElementById("afilbody");if(!box)return;
+  box.innerHTML='<p class="muted">Carregando…</p>';
+  if(!window.db){box.innerHTML='<p style="color:#b91c1c">Sem conexão com a nuvem.</p>';return;}
+  var r;try{r=await db.from("afiliados").select("*").order("created_at",{ascending:false});}catch(e){r={error:{message:String(e)}};}
+  if(r.error){box.innerHTML='<p style="color:#b91c1c">Não foi possível listar: '+esc(r.error.message)+'.<br><span class="tiny">Confirme que você rodou o SQL de afiliados com as <b>policies do dono</b> no Supabase.</span></p>';return;}
+  var arr=r.data||[];
+  if(!arr.length){box.innerHTML='<p class="muted">Nenhum afiliado cadastrado ainda. Divulgue <b>geraescalas.com.br/afiliados</b> para contadores, influenciadores e parceiros.</p>';return;}
+  var pend=arr.filter(function(a){return a.status==="pendente";}).length;
+  var h='';
+  if(pend)h+='<div class="tip" style="margin-bottom:10px">⏳ <b>'+pend+'</b> aguardando aprovação.</div>';
+  h+='<div style="overflow:auto"><table class="esc" style="width:100%;font-size:13px"><thead><tr><th style="text-align:left">Afiliado</th><th>Tipo</th><th>Status</th><th>Ação</th></tr></thead><tbody>';
+  arr.forEach(function(a){
+    var badge=a.status==="aprovado"?'<span style="color:#16a34a;font-weight:700">✓ aprovado</span>':(a.status==="pendente"?'<span style="color:#b45309;font-weight:700">⏳ pendente</span>':'<span style="color:#b91c1c;font-weight:700">'+esc(a.status)+'</span>');
+    var doc=a.cpf_cnpj?('<br><span class="tiny" style="color:#94a3b8">'+esc(a.cpf_cnpj)+'</span>'):'';
+    var acao='';
+    if(a.status==="pendente")acao='<button class="btn primary" style="padding:6px 10px;min-height:34px" onclick="aprovarAfil(\''+a.id+'\')">Aprovar</button> <button class="btn ghost" style="padding:6px 10px;min-height:34px" onclick="recusarAfil(\''+a.id+'\')">Recusar</button>';
+    else if(a.status==="aprovado")acao='<span class="tiny">código: <b>'+esc(a.codigo||"")+'</b>'+(a.asaas_wallet_id?' · <span style="color:#16a34a">subconta ok</span>':' · <span style="color:#b45309">sem subconta</span>')+'</span>';
+    else acao='<button class="btn ghost" style="padding:6px 10px;min-height:34px" onclick="aprovarAfil(\''+a.id+'\')">Reativar</button>';
+    h+='<tr><td style="text-align:left"><b>'+esc(a.nome||"")+'</b>'+doc+'<br><span class="tiny" style="color:#64748b">'+esc(a.email||"")+'</span></td><td style="text-align:center">'+esc(a.tipo||"")+'</td><td style="text-align:center">'+badge+'</td><td style="text-align:center">'+acao+'</td></tr>';
+  });
+  h+='</tbody></table></div>';
+  box.innerHTML=h;
+}
+async function aprovarAfil(id){
+  if(!window.db)return;
+  var box=document.getElementById("afilbody");if(box)box.innerHTML='<div class="tip">Criando a subconta Asaas e aprovando… aguarde alguns segundos.</div>';
+  var r;try{r=await db.functions.invoke("aprovar-afiliado",{body:{afiliado_id:id}});}catch(e){r={error:{message:String(e)}};}
+  var em=null;
+  if(r&&r.error){try{var ctx=r.error.context;if(ctx&&typeof ctx.json==="function"){var j=await ctx.json();em=j&&j.error;}}catch(e){}if(!em)em=r.error.message;}
+  else if(r&&r.data&&r.data.error)em=r.data.error;
+  await renderAfiliados();
+  var b2=document.getElementById("afilbody");
+  if(b2){var note=em?('<div class="pb warn" style="margin-bottom:10px;color:#b91c1c">Não aprovou: '+esc(em)+'</div>'):'<div class="tip" style="margin-bottom:10px;color:#166534">✓ Aprovado! Subconta criada e link liberado para o afiliado.</div>';b2.insertAdjacentHTML("afterbegin",note);}
+}
+function recusarAfil(id){
+  confirmModal({title:"Recusar afiliado",message:"Recusar este cadastro de afiliado? Ele não poderá usar o link.",okLabel:"Recusar",okTone:"danger",onOk:async function(){
+    var r;try{r=await db.from("afiliados").update({status:"recusado"}).eq("id",id);}catch(e){r={error:{message:String(e)}};}
+    if(r&&r.error){var b=document.getElementById("afilbody");if(b)b.insertAdjacentHTML("afterbegin",'<div class="pb warn" style="margin-bottom:10px;color:#b91c1c">Erro ao recusar: '+esc(r.error.message)+'</div>');return;}
+    renderAfiliados();
+  }});
+}
 function _fmtBR(v){v=Number(v)||0;return "R$ "+v.toLocaleString("pt-BR",{minimumFractionDigits:2,maximumFractionDigits:2});}
 function _fmtBR0(v){v=Number(v)||0;return "R$ "+v.toLocaleString("pt-BR",{maximumFractionDigits:0});}
 function _mesLabel(ym){var p=String(ym).split("-");var M=["jan","fev","mar","abr","mai","jun","jul","ago","set","out","nov","dez"];return (M[(+p[1]-1)]||"")+"/"+String(p[0]).slice(2);}
