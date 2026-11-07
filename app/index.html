@@ -565,14 +565,14 @@
     </div>
   </section>
 
-  <footer><span class="noprint">Confira a escala antes de publicar.<br>© 2026 <b>Gera Escalas</b> · <span class="lnk" onclick="openAbout()">Sobre &amp; Política de Privacidade</span> · <span style="color:var(--mut2)">v12.8</span></span></footer>
+  <footer><span class="noprint">Confira a escala antes de publicar.<br>© 2026 <b>Gera Escalas</b> · <span class="lnk" onclick="openAbout()">Sobre &amp; Política de Privacidade</span> · <span style="color:var(--mut2)">v12.9</span></span></footer>
 </main>
 
 <div id="aboutmodal" class="modal" style="display:none" onclick="if(event.target===this)closeAbout()">
   <div class="mbox">
     <button class="xbtn" onclick="closeAbout()">Fechar ✕</button>
     <h2>Gera Escalas</h2>
-    <p class="muted">Escalas de plantão, turno e giro · Versão 12.8 · 2026</p>
+    <p class="muted">Escalas de plantão, turno e giro · Versão 12.9 · 2026</p>
 
     <h3>Autoria e direitos autorais</h3>
     <p>© 2026 <b>Gera Escalas</b> — desenvolvido por Luís Cesar. Todos os direitos reservados.</p>
@@ -3402,7 +3402,7 @@ function closeAfiliados(){var m=document.getElementById("afilmodal");if(m)m.styl
 async function renderAfiliados(){
   var box=document.getElementById("afilbody");if(!box)return;
   box.innerHTML='<p class="muted">Carregando…</p>';
-  if(!window.db){box.innerHTML='<p style="color:#b91c1c">Sem conexão com a nuvem.</p>';return;}
+  if(!cloudReady()){box.innerHTML='<p style="color:#b91c1c">Sem conexão com a nuvem. Entre com seu login de dono.</p>';return;}
   var r;try{r=await db.from("afiliados").select("*").order("created_at",{ascending:false});}catch(e){r={error:{message:String(e)}};}
   if(r.error){box.innerHTML='<p style="color:#b91c1c">Não foi possível listar: '+esc(r.error.message)+'.<br><span class="tiny">Confirme que você rodou o SQL de afiliados com as <b>policies do dono</b> no Supabase.</span></p>';return;}
   var arr=r.data||[];
@@ -3424,7 +3424,7 @@ async function renderAfiliados(){
   box.innerHTML=h;
 }
 async function aprovarAfil(id){
-  if(!window.db)return;
+  if(!cloudReady())return;
   var box=document.getElementById("afilbody");if(box)box.innerHTML='<div class="tip">Criando a subconta Asaas e aprovando… aguarde alguns segundos.</div>';
   var r;try{r=await db.functions.invoke("aprovar-afiliado",{body:{afiliado_id:id}});}catch(e){r={error:{message:String(e)}};}
   var em=null;
@@ -3435,6 +3435,7 @@ async function aprovarAfil(id){
   if(b2){var note=em?('<div class="pb warn" style="margin-bottom:10px;color:#b91c1c">Não aprovou: '+esc(em)+'</div>'):'<div class="tip" style="margin-bottom:10px;color:#166534">✓ Aprovado! Subconta criada e link liberado para o afiliado.</div>';b2.insertAdjacentHTML("afterbegin",note);}
 }
 function recusarAfil(id){
+  if(!cloudReady())return;
   confirmModal({title:"Recusar afiliado",message:"Recusar este cadastro de afiliado? Ele não poderá usar o link.",okLabel:"Recusar",okTone:"danger",onOk:async function(){
     var r;try{r=await db.from("afiliados").update({status:"recusado"}).eq("id",id);}catch(e){r={error:{message:String(e)}};}
     if(r&&r.error){var b=document.getElementById("afilbody");if(b)b.insertAdjacentHTML("afterbegin",'<div class="pb warn" style="margin-bottom:10px;color:#b91c1c">Erro ao recusar: '+esc(r.error.message)+'</div>');return;}
