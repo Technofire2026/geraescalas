@@ -565,14 +565,14 @@
     </div>
   </section>
 
-  <footer><span class="noprint">Confira a escala antes de publicar.<br>© 2026 <b>Gera Escalas</b> · <span class="lnk" onclick="openAbout()">Sobre &amp; Política de Privacidade</span> · <span style="color:var(--mut2)">v13.0</span></span></footer>
+  <footer><span class="noprint">Confira a escala antes de publicar.<br>© 2026 <b>Gera Escalas</b> · <span class="lnk" onclick="openAbout()">Sobre &amp; Política de Privacidade</span> · <span style="color:var(--mut2)">v13.1</span></span></footer>
 </main>
 
 <div id="aboutmodal" class="modal" style="display:none" onclick="if(event.target===this)closeAbout()">
   <div class="mbox">
     <button class="xbtn" onclick="closeAbout()">Fechar ✕</button>
     <h2>Gera Escalas</h2>
-    <p class="muted">Escalas de plantão, turno e giro · Versão 13.0 · 2026</p>
+    <p class="muted">Escalas de plantão, turno e giro · Versão 13.1 · 2026</p>
 
     <h3>Autoria e direitos autorais</h3>
     <p>© 2026 <b>Gera Escalas</b> — desenvolvido por Luís Cesar. Todos os direitos reservados.</p>
@@ -1185,6 +1185,7 @@ function _proAtivo(){
   if(u.trialEnds&&new Date(u.trialEnds).getTime()>now)return {ativo:true,motivo:"trial",ate:u.trialEnds};
   return {ativo:false};
 }
+function _podeMultiSetor(){var st=_proAtivo();if(!st.ativo)return false;if(st.motivo==="trial")return true;return (state.user&&state.user.planoTier)==="profissional";}
 function _dias(dtISO){try{return Math.max(0,Math.ceil((new Date(dtISO).getTime()-Date.now())/86400000));}catch(e){return 0;}}
 function _br(dtISO){try{var d=new Date(dtISO);return ("0"+d.getDate()).slice(-2)+"/"+("0"+(d.getMonth()+1)).slice(-2)+"/"+d.getFullYear();}catch(e){return "";}}
 function irParaAssinatura(){try{openConfig();}catch(e){}var el=document.getElementById("assin_box");if(el&&el.scrollIntoView)setTimeout(function(){el.scrollIntoView({behavior:"smooth"});},80);}
@@ -1227,36 +1228,53 @@ function renderAssinatura(){
     html='<div style="background:#fff7ed;border:1px solid #fed7aa;color:#9a3412;border-radius:8px;padding:10px 12px;font-size:13px">⚠ <b>Sem assinatura ativa.</b> Assine o Pro para continuar usando na nuvem.</div>';
   }
   if(owner){
-    html+='<div style="display:grid;gap:8px;margin-top:12px;grid-template-columns:1fr 1fr">'+
-      '<button class="btn primary" onclick="assinarMensal()">💳 Mensal (cartão)<br><span style="font-weight:500;font-size:12px">R$ 99/mês · automático</span></button>'+
-      '<button class="btn primary" style="background:var(--teal)" onclick="assinarPro()">📱 Anual (Pix)<br><span style="font-weight:500;font-size:12px">R$ 990/ano · economize 2 meses</span></button>'+
-      '</div><div style="margin-top:8px"><button class="btn ghost" onclick="atualizarAssinatura()">↻ Já paguei / Atualizar status</button></div>'+'<div class="tiny" style="margin-top:8px;color:var(--mut)">Plano <b>Essencial</b>. Precisa do <b>Profissional</b> (vários setores) ou é <b>órgão público</b>? <a href="https://wa.me/5598970171130?text=Ol%C3%A1!%20Quero%20falar%20sobre%20o%20plano%20Profissional%2For%C3%A3o%20p%C3%BAblico%20do%20Gera%20Escalas" target="_blank" rel="noopener">Fale com a gente</a>.</div>'+'<div class="tiny" style="margin-top:6px;color:var(--mut)">🕒 <b>Controle de ponto</b> (biometria e ponto legal REP-P) disponível <b>sob consulta</b>. <a href="https://wa.me/5598970171130?text=Ol%C3%A1!%20Quero%20saber%20sobre%20o%20controle%20de%20ponto%20do%20Gera%20Escalas" target="_blank" rel="noopener">Fale com a gente</a>.</div>'+'<div id="assin_msg" class="tiny" style="margin-top:8px"></div>';
+    var _at=(state.user&&state.user.planoTier)||"";
+    var _badge=function(t){return _at===t?' <span style="background:#dcfce7;color:#15803d;border-radius:999px;padding:1px 8px;font-size:11px;font-weight:700">plano atual</span>':'';};
+    html+='<div style="margin-top:12px;display:grid;gap:10px">'+
+      '<div style="border:1px solid var(--line2);border-radius:12px;padding:12px">'+
+        '<div style="font-weight:800">Essencial'+_badge("essencial")+'</div>'+
+        '<div class="tiny" style="color:var(--mut);margin:2px 0 8px">Tudo para montar e girar as escalas · <b>1 setor</b>.</div>'+
+        '<div style="display:grid;gap:8px;grid-template-columns:1fr 1fr">'+
+          '<button class="btn primary" onclick="assinarMensal(\'essencial\')">💳 Mensal<br><span style="font-weight:500;font-size:12px">R$ 99/mês</span></button>'+
+          '<button class="btn primary" style="background:var(--teal)" onclick="assinarPro(\'essencial\')">📱 Anual (Pix)<br><span style="font-weight:500;font-size:12px">R$ 990/ano · 2 meses grátis</span></button>'+
+        '</div>'+
+      '</div>'+
+      '<div style="border:2px solid var(--cbm);border-radius:12px;padding:12px;background:#f5f3ff">'+
+        '<div style="font-weight:800;color:var(--cbm)">Profissional'+_badge("profissional")+' <span style="font-size:11px;background:var(--cbm);color:#fff;border-radius:999px;padding:1px 8px;vertical-align:middle">vários setores</span></div>'+
+        '<div class="tiny" style="color:var(--mut);margin:2px 0 8px">Tudo do Essencial + <b>vários setores</b> e suporte prioritário.</div>'+
+        '<div style="display:grid;gap:8px;grid-template-columns:1fr 1fr">'+
+          '<button class="btn primary" onclick="assinarMensal(\'profissional\')">💳 Mensal<br><span style="font-weight:500;font-size:12px">R$ 199/mês</span></button>'+
+          '<button class="btn primary" style="background:var(--teal)" onclick="assinarPro(\'profissional\')">📱 Anual (Pix)<br><span style="font-weight:500;font-size:12px">R$ 2.388/ano</span></button>'+
+        '</div>'+
+      '</div>'+
+    '</div>'+
+    '<div style="margin-top:8px"><button class="btn ghost" onclick="atualizarAssinatura()">↻ Já paguei / Atualizar status</button></div>'+'<div class="tiny" style="margin-top:8px;color:var(--mut)">É <b>órgão público</b> ou grande operação? <a href="https://wa.me/5598970171130?text=Ol%C3%A1!%20Quero%20falar%20sobre%20planos%20do%20Gera%20Escalas%20para%20minha%20opera%C3%A7%C3%A3o" target="_blank" rel="noopener">Fale com a gente</a>.</div>'+'<div class="tiny" style="margin-top:6px;color:var(--mut)">🕒 <b>Controle de ponto</b> (biometria e ponto legal REP-P) disponível <b>sob consulta</b>. <a href="https://wa.me/5598970171130?text=Ol%C3%A1!%20Quero%20saber%20sobre%20o%20controle%20de%20ponto%20do%20Gera%20Escalas" target="_blank" rel="noopener">Fale com a gente</a>.</div>'+'<div id="assin_msg" class="tiny" style="margin-top:8px"></div>';
   }else{
     html+='<p class="tiny" style="margin-top:8px">Somente o Proprietário pode assinar.</p>';
   }
   box.innerHTML=html;
 }
-async function assinarMensal(){
+async function assinarMensal(tier){
   if(!isOwner()||!db)return;
   var _doc=(state.user&&state.user.orgCnpj||"").replace(/\D/g,"");
   var mm=document.getElementById("assin_msg");
   if(_doc.length!==11&&_doc.length!==14){if(mm){mm.textContent="Antes de assinar, informe o CNPJ/CPF da organização (campo abaixo) e salve.";mm.style.color="#b91c1c";}var el=document.getElementById("cfg_doc");if(el&&el.scrollIntoView)el.scrollIntoView({behavior:"smooth"});return;}
   if(mm){mm.textContent="Abrindo o pagamento seguro do cartão...";mm.style.color="var(--mut)";}
   try{
-    var r=await db.functions.invoke("criar-cobranca",{body:{plano:"mensal"}});
+    var r=await db.functions.invoke("criar-cobranca",{body:{plano:"mensal",tier:tier||"essencial"}});
     if(r.error){if(mm){mm.textContent="Falha: "+(r.error.message||r.error);mm.style.color="#b91c1c";}return;}
     var d=r.data||{};
     if(d.checkoutUrl){window.open(d.checkoutUrl,"_blank");if(mm){mm.textContent="Abrimos a página segura do cartão em outra aba. Após concluir, volte e clique em “Já paguei / Atualizar status”.";mm.style.color="#1d4ed8";}}
     else{if(mm){mm.textContent="Não recebi o link do cartão: "+JSON.stringify(d);mm.style.color="#b91c1c";}}
   }catch(e){if(mm){mm.textContent="Erro: "+e;mm.style.color="#b91c1c";}}
 }
-async function assinarPro(){
+async function assinarPro(tier){
   if(!isOwner()||!db)return;
   var _doc=(state.user&&state.user.orgCnpj||"").replace(/\D/g,"");if(_doc.length!==11&&_doc.length!==14){var mm=document.getElementById("assin_msg");if(mm){mm.textContent="Antes de assinar, informe o CNPJ/CPF da organiza\u00e7\u00e3o (campo abaixo) e salve.";mm.style.color="#b91c1c";}var el=document.getElementById("cfg_doc");if(el&&el.scrollIntoView)el.scrollIntoView({behavior:"smooth"});return;}
   var m=document.getElementById("assin_msg");if(m){m.textContent="Gerando cobrança Pix...";m.style.color="var(--mut)";}
   var pix=document.getElementById("assin_pix");if(pix)pix.style.display="none";
   try{
-    var r=await db.functions.invoke("criar-cobranca",{body:{}});
+    var r=await db.functions.invoke("criar-cobranca",{body:{tier:tier||"essencial"}});
     if(r.error){if(m){m.textContent="Falha: "+(r.error.message||r.error);m.style.color="#b91c1c";}return;}
     var d=r.data||{};
     if(!d.payload){if(m){m.textContent="Não recebi o Pix: "+JSON.stringify(d);m.style.color="#b91c1c";}return;}
@@ -1274,8 +1292,8 @@ async function atualizarAssinatura(){
   if(!db||!state.user)return;
   var m=document.getElementById("assin_msg");if(m)m.textContent="Atualizando...";
   try{
-    var q=await db.from("organizations").select("status,trial_ends_at,assinatura_expira_em").eq("id",state.user.orgId).single();
-    if(q.data){state.user.orgStatus=q.data.status;state.user.trialEnds=q.data.trial_ends_at;state.user.assinaturaExpira=q.data.assinatura_expira_em;}
+    var q=await db.from("organizations").select("status,trial_ends_at,assinatura_expira_em,plano_tier").eq("id",state.user.orgId).single();
+    if(q.data){state.user.orgStatus=q.data.status;state.user.trialEnds=q.data.trial_ends_at;state.user.assinaturaExpira=q.data.assinatura_expira_em;state.user.planoTier=q.data.plano_tier||"";}
   }catch(e){}
   renderAssinatura();renderProBanner();
   var pix=document.getElementById("assin_pix");if(pix&&_proAtivo().motivo==="assinatura"){pix.style.display="none";}
@@ -4005,7 +4023,7 @@ async function cloudCreateOrg(){
 }
 async function cloudEnter(){
   var u=(await db.auth.getUser()).data.user;
-  var q=await db.from("members").select("role, org_id, nome, posto, email, pessoa_nome, setor, organizations(nome,cnpj,status,trial_ends_at,assinatura_expira_em)").eq("user_id",u.id);
+  var q=await db.from("members").select("role, org_id, nome, posto, email, pessoa_nome, setor, organizations(nome,cnpj,status,trial_ends_at,assinatura_expira_em,plano_tier)").eq("user_id",u.id);
   if(q.error){cgmsg("Erro ao ler seus dados: "+q.error.message,"#b91c1c");return;}
   if(!q.data||!q.data.length){
     var box=document.getElementById("authbox");
@@ -4013,7 +4031,7 @@ async function cloudEnter(){
     return;
   }
   var m=q.data[0];
-  var _o=m.organizations||{};state.user={login:u.email,uid:u.id,nome:m.nome||u.email,posto:m.posto||"",role:m.role||"view",pessoa:m.pessoa_nome||"",setor:m.setor||"",orgId:m.org_id,orgNome:_o.nome||"",orgCnpj:_o.cnpj||"",orgStatus:_o.status||"trial",trialEnds:_o.trial_ends_at||null,assinaturaExpira:_o.assinatura_expira_em||null};
+  var _o=m.organizations||{};state.user={login:u.email,uid:u.id,nome:m.nome||u.email,posto:m.posto||"",role:m.role||"view",pessoa:m.pessoa_nome||"",setor:m.setor||"",orgId:m.org_id,orgNome:_o.nome||"",orgCnpj:_o.cnpj||"",orgStatus:_o.status||"trial",trialEnds:_o.trial_ends_at||null,assinaturaExpira:_o.assinatura_expira_em||null,planoTier:_o.plano_tier||""};
   try{if(!m.email){await db.from("members").update({email:u.email}).eq("org_id",m.org_id).eq("user_id",u.id);}}catch(e){}
   await cloudPullAll();
   loadConfig();loadLog();load();if(typeof restoreSchedule==="function")restoreSchedule();
@@ -4119,7 +4137,7 @@ function renderSetoresList(){
 }
 async function addSetor(){
   if(!isOwner())return;var m=document.getElementById("setor_msg");
-  if(!_proAtivo().ativo){if(m){m.textContent="Múltiplos setores é um recurso Pro. Assine para liberar.";m.style.color="#b91c1c";}if(typeof irParaAssinatura==="function")irParaAssinatura();return;}
+  if(!_podeMultiSetor()){if(m){m.textContent="Vários setores é um recurso do plano Profissional. Faça upgrade para liberar.";m.style.color="#b91c1c";}if(typeof irParaAssinatura==="function")irParaAssinatura();return;}
   var nome=(val("novo_setor")||"").trim();if(!nome){return;}
   var lista=state.setores||[];lista.push({id:_uidSetor(),nome:nome});state.setores=lista;
   try{localStorage.setItem("ciops:setores",JSON.stringify(lista));}catch(e){}
@@ -4137,7 +4155,7 @@ function toggleNovoSetor(){
 }
 async function addSetorFlow(){
   if(!isOwner())return;var m=document.getElementById("setor_msg_f");
-  if(!_proAtivo().ativo){if(m){m.textContent="Múltiplos setores é um recurso Pro. Assine para liberar.";m.style.color="#b91c1c";}if(typeof irParaAssinatura==="function")irParaAssinatura();return;}
+  if(!_podeMultiSetor()){if(m){m.textContent="Vários setores é um recurso do plano Profissional. Faça upgrade para liberar.";m.style.color="#b91c1c";}if(typeof irParaAssinatura==="function")irParaAssinatura();return;}
   var nome=(val("novo_setor_f")||"").trim();if(!nome){return;}
   var lista=state.setores||[];lista.push({id:_uidSetor(),nome:nome});state.setores=lista;
   try{localStorage.setItem("ciops:setores",JSON.stringify(lista));}catch(e){}
