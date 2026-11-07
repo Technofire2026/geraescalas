@@ -351,5 +351,23 @@
   document.querySelectorAll(".reveal").forEach(function(el,i){el.style.transitionDelay=(Math.min(i%3,2)*70)+"ms";io.observe(el);});
 </script>
 <a href="https://wa.me/5598970171130?text=Ol%C3%A1!%20Quero%20saber%20mais%20sobre%20o%20Gera%20Escalas" target="_blank" rel="noopener" aria-label="Falar no WhatsApp" style="position:fixed;right:18px;bottom:18px;z-index:60;width:58px;height:58px;border-radius:50%;background:#25D366;display:flex;align-items:center;justify-content:center;box-shadow:0 6px 20px rgba(0,0,0,.25)"><svg viewBox="0 0 32 32" width="32" height="32" fill="#fff"><path d="M16 3C9.4 3 4 8.4 4 15c0 2.1.6 4.1 1.6 5.9L4 29l8.3-1.6c1.7.9 3.6 1.4 5.7 1.4 6.6 0 12-5.4 12-12S22.6 3 16 3zm0 21.8c-1.8 0-3.5-.5-5-1.4l-.4-.2-4.9 1 1-4.8-.2-.4c-1-1.6-1.5-3.4-1.5-5.3C5 9.5 9.9 5 16 5s10 4.5 10 10-4.5 9.8-10 9.8zm5.5-7.4c-.3-.2-1.8-.9-2-1-.3-.1-.5-.2-.7.2-.2.3-.8 1-1 1.2-.2.2-.4.2-.7.1-1.8-.9-3-1.6-4.2-3.6-.3-.5.3-.5.9-1.6.1-.2 0-.4 0-.6s-.7-1.7-1-2.3c-.3-.6-.5-.5-.7-.5h-.6c-.2 0-.6.1-.9.4-.3.3-1.2 1.1-1.2 2.8s1.2 3.2 1.4 3.5c.2.2 2.4 3.7 5.9 5.2.8.4 1.5.6 2 .7.8.3 1.6.2 2.2.1.7-.1 1.8-.7 2-1.4.3-.7.3-1.3.2-1.4-.1-.2-.3-.2-.6-.3z"/></svg></a>
+<script>
+/* Afiliados: captura ?ref= (guarda 60 dias) e registra o clique */
+(function(){
+  try{
+    var ref=new URLSearchParams(location.search).get("ref");
+    if(!ref) return;
+    ref=ref.slice(0,40);
+    try{ localStorage.setItem("ge_ref",ref); localStorage.setItem("ge_ref_at",String(Date.now())); }catch(e){}
+    var s=document.createElement("script");
+    s.src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2";
+    s.onload=function(){ try{
+      var sb=window.supabase.createClient("https://ebvbjepghlzqkpbgdcbk.supabase.co","sb_publishable_7tOgGEsmgJxts_-YpUGWuA_JAzvWRCM");
+      sb.from("afiliado_cliques").insert({codigo:ref, ua_hash:(navigator.userAgent||"").slice(0,40)});
+    }catch(e){} };
+    document.body.appendChild(s);
+  }catch(e){}
+})();
+</script>
 </body>
 </html>
