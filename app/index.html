@@ -438,6 +438,15 @@
   <section class="card" id="configcard" style="display:none">
     <div class="hd"><span class="ico">⚙</span> Configurações <button class="btn ghost" style="margin-left:auto" onclick="closeConfig()">Fechar</button></div>
     <div class="bd">
+      <div id="cfg_dono" style="display:none">
+        <h3 style="margin:0 0 8px;font-size:15px">Administração (dono)</h3>
+        <p class="tiny" style="margin:0 0 8px">Ferramentas exclusivas do proprietário da plataforma.</p>
+        <div style="display:flex;gap:8px;flex-wrap:wrap">
+          <button class="btn dark" onclick="closeConfig();openPainel()">📊 Painel do dono</button>
+          <button class="btn ghost" onclick="window.open('/curso.html','_blank','noopener')">🎓 Curso de treinamento</button>
+        </div>
+        <hr style="border:none;border-top:1px solid var(--line);margin:18px 0">
+      </div>
       <h3 style="margin:0 0 8px;font-size:15px">Assinatura</h3>
       <div id="assin_box"><span class="tiny">—</span></div>
       <div id="assin_pix" style="display:none;margin-top:10px;text-align:center"></div>
@@ -555,14 +564,14 @@
     </div>
   </section>
 
-  <footer><span class="noprint">Confira a escala antes de publicar.<br>© 2026 <b>Gera Escalas</b> · <span class="lnk" onclick="openAbout()">Sobre &amp; Política de Privacidade</span> · <span style="color:var(--mut2)">v12.6</span></span></footer>
+  <footer><span class="noprint">Confira a escala antes de publicar.<br>© 2026 <b>Gera Escalas</b> · <span class="lnk" onclick="openAbout()">Sobre &amp; Política de Privacidade</span> · <span style="color:var(--mut2)">v12.7</span></span></footer>
 </main>
 
 <div id="aboutmodal" class="modal" style="display:none" onclick="if(event.target===this)closeAbout()">
   <div class="mbox">
     <button class="xbtn" onclick="closeAbout()">Fechar ✕</button>
     <h2>Gera Escalas</h2>
-    <p class="muted">Escalas de plantão, turno e giro · Versão 12.6 · 2026</p>
+    <p class="muted">Escalas de plantão, turno e giro · Versão 12.7 · 2026</p>
 
     <h3>Autoria e direitos autorais</h3>
     <p>© 2026 <b>Gera Escalas</b> — desenvolvido por Luís Cesar. Todos os direitos reservados.</p>
@@ -952,7 +961,7 @@ function applyPerms(){var admin=isAdmin();var cc=document.getElementById("config
 function _syncCadastroUI(){var admin=(typeof isAdmin==="function")&&isAdmin();var aa=document.getElementById("addActions");var fw=document.getElementById("addFormWrap");var aberto=!!(state&&state._cadAberto)&&admin;if(fw)fw.style.display=aberto?"":"none";if(aa)aa.style.display=(admin&&!aberto)?"":"none";}
 function abrirCadastro(){if(typeof isAdmin==="function"&&!isAdmin())return;state._cadAberto=true;_syncCadastroUI();var i=document.getElementById("nome");if(i)setTimeout(function(){try{i.focus();}catch(e){}},30);}
 function fecharCadastro(){state._cadAberto=false;_syncCadastroUI();}
-function renderUserbar(){var u=state.user;if(!u)return;var admin=(u.role==="admin"||u.role==="owner");var tag=(u.role==="owner")?' <span class="rotag" style="background:rgba(231,199,102,.25);color:#ffe9a8">Proprietário</span>':(admin?'':(u.role==="membro"?' <span class="rotag">Funcionário</span>':' <span class="rotag">somente leitura</span>'));document.getElementById("userbar").innerHTML='<span class="who">'+esc((u.posto?u.posto+" ":"")+u.nome)+tag+'</span>'+'<button class="ubtn" title="Manual de uso" aria-label="Manual" onclick="openHelp()">📖 Manual</button>'+'<button class="ubtn" title="Avisos" onclick="openNotif()">🔔'+(state.notifCount?(' <b style="color:#b91c1c">'+state.notifCount+'</b>'):'')+'</button>'+'<button class="ubtn" title="Permutas de serviço" onclick="openPermuta()">🔁 Permutas</button>'+(admin?'<button class="ubtn" title="Controle de ponto (quiosque facial)" onclick="openPonto()">🕒 Ponto</button>':'')+((isPlatformAdmin()&&admin)?'<button class="ubtn" title="Painel do dono (métricas)" onclick="openPainel()">📊 Painel</button>':'')+((isPlatformAdmin()&&admin)?'<button class="ubtn" title="Painel de clientes (dono)" onclick="openClientes()">👥 Clientes</button>':'')+((isPlatformAdmin()&&admin)?'<button class="ubtn" title="Curso de treinamento (dono)" onclick="window.open(\'/curso.html\',\'_blank\',\'noopener\')">🎓 Curso</button>':'')+(admin?'<button class="ubtn ico-only" title="Configurações" aria-label="Configurações" onclick="openConfig()">⚙</button>':'')+'<button class="ubtn ico-only" title="Sair" aria-label="Sair" onclick="logout()">⎋</button>';}
+function renderUserbar(){var u=state.user;if(!u)return;var admin=(u.role==="admin"||u.role==="owner");var tag=(u.role==="owner")?' <span class="rotag" style="background:rgba(231,199,102,.25);color:#ffe9a8">Proprietário</span>':(admin?'':(u.role==="membro"?' <span class="rotag">Funcionário</span>':' <span class="rotag">somente leitura</span>'));document.getElementById("userbar").innerHTML='<span class="who">'+esc((u.posto?u.posto+" ":"")+u.nome)+tag+'</span>'+'<button class="ubtn" title="Manual de uso" aria-label="Manual" onclick="openHelp()">📖 Manual</button>'+'<button class="ubtn" title="Avisos" onclick="openNotif()">🔔'+(state.notifCount?(' <b style="color:#b91c1c">'+state.notifCount+'</b>'):'')+'</button>'+'<button class="ubtn" title="Permutas de serviço" onclick="openPermuta()">🔁 Permutas</button>'+(admin?'<button class="ubtn" title="Controle de ponto (quiosque facial)" onclick="openPonto()">🕒 Ponto</button>':'')+((isPlatformAdmin()&&admin)?'<button class="ubtn" title="Painel de clientes (dono)" onclick="openClientes()">👥 Clientes</button>':'')+(admin?'<button class="ubtn ico-only" title="Configurações" aria-label="Configurações" onclick="openConfig()">⚙</button>':'')+'<button class="ubtn ico-only" title="Sair" aria-label="Sair" onclick="logout()">⎋</button>';}
 
 /* ===== REGISTRO / AUDITORIA ===== */
 function loadLog(){try{var l=localStorage.getItem("ciops:log");state.logArr=l?JSON.parse(l):[];}catch(e){state.logArr=[];}}
@@ -962,7 +971,7 @@ function fmtTs(iso){var d=new Date(iso);return pad(d.getDate())+"/"+pad(d.getMon
 function _shareText(){var url=location.href.split("#")[0].split("?")[0];return "Gera Escalas — monte escalas de servi\u00e7o (plant\u00f5es, turnos, giros) em minutos.\nCrie sua conta e comece com 14 dias gr\u00e1tis:\n"+url;}
 function shareApp(){var url=location.href.split("#")[0].split("?")[0];var txt=_shareText();if(navigator.share){navigator.share({title:"Gera Escalas",text:txt,url:url}).catch(function(){});}else{copiarLink();}}
 function copiarLink(){var txt=_shareText();var m=document.getElementById("sharemsg");function ok(){if(m){m.textContent="Mensagem copiada!";setTimeout(function(){m.textContent="";},2500);}}try{if(navigator.clipboard&&navigator.clipboard.writeText){navigator.clipboard.writeText(txt).then(ok,function(){prompt("Copie a mensagem:",txt);});}else{prompt("Copie a mensagem:",txt);}}catch(e){prompt("Copie a mensagem:",txt);}}
-function openConfig(){if(!isAdmin())return;document.getElementById("configcard").style.display="";renderConfigForm();renderAudit();var _c=document.getElementById("configcard");if(_c.scrollIntoView)_c.scrollIntoView({behavior:"smooth"});}
+function openConfig(){if(!isAdmin())return;document.getElementById("configcard").style.display="";var _cd=document.getElementById("cfg_dono");if(_cd)_cd.style.display=(typeof isPlatformAdmin==="function"&&isPlatformAdmin())?"":"none";renderConfigForm();renderAudit();var _c=document.getElementById("configcard");if(_c.scrollIntoView)_c.scrollIntoView({behavior:"smooth"});}
 function closeConfig(){document.getElementById("configcard").style.display="none";}
 function openAudit(){openConfig();var _a=document.getElementById("auditbody");if(_a&&_a.scrollIntoView)_a.scrollIntoView({behavior:"smooth"});}
 function closeAudit(){document.getElementById("auditcard").style.display="none";}
