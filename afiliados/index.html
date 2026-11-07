@@ -115,7 +115,7 @@
     <!-- CADASTRO -->
     <div id="paneCad">
       <h2>Cadastro de afiliado</h2>
-      <p class="muted" style="font-size:13.5px;margin:4px 0 0">Seus dados são usados para criar sua <b>subconta Asaas</b> (onde você recebe). Cadastro sujeito a aprovação.</p>
+      <p class="muted" style="font-size:13.5px;margin:4px 0 0">Seus dados são usados para criar sua <b>subconta Asaas</b> (onde você recebe). Cadastro sujeito a aprovação. Para <b>sacar</b>, o Asaas pede a validação da conta (envio de documentos).</p>
       <div class="two">
         <label class="fld">Nome completo<input id="c_nome" autocomplete="name" placeholder="Seu nome"></label>
         <label class="fld">WhatsApp<input id="c_tel" inputmode="tel" placeholder="(DDD) 9...."></label>
@@ -173,7 +173,7 @@
     <div style="font-size:13.5px;color:var(--graf);line-height:1.6;margin-top:6px">
       <p><b>1. Quem pode participar.</b> Maiores de 18 anos com CPF ou CNPJ regular. O cadastro passa por aprovação e pode ser recusado ou encerrado a qualquer tempo.</p>
       <p><b>2. Comissão.</b> Você recebe <b>100% da primeira mensalidade</b> do plano que o cliente assinar: <b>R$ 99 no Essencial</b> e <b>R$ 199 no Profissional</b>. No plano anual, a comissão equivale a <b>1 mensalidade</b> do plano escolhido. É paga <b>uma única vez por cliente</b> (o primeiro pagamento que ativa a assinatura); renovações não geram nova comissão.</p>
-      <p><b>3. Como recebe.</b> A comissão é paga por <b>split automático do Asaas</b> na sua subconta, quando o pagamento do cliente é <b>confirmado</b>. Saques e prazos seguem as regras do Asaas.</p>
+      <p><b>3. Como recebe.</b> A comissão cai na sua <b>subconta Asaas</b> quando o pagamento do cliente é <b>confirmado</b>. Para <b>sacar</b> o valor para seu banco, o Asaas exige a <b>validação da sua conta</b> (envio de documentos de identificação) — isso é uma exigência do Asaas, não do Gera Escalas. O Asaas envia as instruções de acesso e validação por e-mail. Enquanto a conta não for validada, o valor fica disponível na subconta, mas não pode ser transferido. Saques e prazos seguem as regras do Asaas.</p>
       <p><b>4. Atribuição.</b> O cliente é vinculado a você quando <b>cria a conta</b> pelo seu link. Vale mesmo que ele assine depois do período de teste.</p>
       <p><b>5. Regras.</b> É proibido autoindicação (assinar para si mesmo), spam, anúncios pagos usando a marca sem autorização e qualquer promessa falsa. Comissão de pagamento estornado/cancelado é cancelada.</p>
       <p><b>6. Dados (LGPD).</b> Usamos seus dados apenas para operar o programa e criar sua subconta de pagamento. Você pode pedir correção ou exclusão.</p>
@@ -309,6 +309,7 @@ async function boot(){
     +'<div class="kpi"><div class="v" id="k_pend">—</div><div class="k">Comissão pendente</div></div>'
     +'<div class="kpi"><div class="v" id="k_paga">—</div><div class="k">Comissão paga</div></div>'
     +'</div>'
+    +'<div class="note" style="background:#eff6ff;border-color:#bfdbfe;color:#1e40af">🏦 <b>Para sacar suas comissões:</b> o dinheiro cai na sua subconta Asaas, mas para transferir para o seu banco é preciso <b>validar a conta no Asaas</b> (envio de documentos). O Asaas manda o acesso e as instruções por e-mail. Faça essa validação assim que puder.</div>'
     +'<div class="note">💡 Dica: fixe o link na bio do Instagram e mande no WhatsApp para a sua carteira de clientes. A comissão — a 1ª mensalidade do plano (R$ 99 no Essencial, R$ 199 no Profissional) — cai na sua subconta Asaas quando o cliente paga.</div>';
   $("p_corpo").innerHTML=corpo;
 
