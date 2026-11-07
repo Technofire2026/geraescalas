@@ -104,6 +104,10 @@
   .leg{display:flex;gap:14px;font-size:12px;margin-left:auto;color:var(--mut);flex-wrap:wrap}
   .leg span{display:inline-flex;align-items:center;gap:5px}
   .sw{width:12px;height:12px;border-radius:3px;display:inline-block}
+  #escHd{flex-wrap:wrap}
+  .esc-hd-tit{display:flex;align-items:center;gap:8px;flex-wrap:wrap;min-width:0;flex:1 1 auto}
+  #escHd .leg{margin-left:auto}
+  @media(max-width:640px){#escHd .leg{flex:1 1 100%;margin-left:0;margin-top:6px}}
   .tblwrap{overflow-x:auto;-webkit-overflow-scrolling:touch;max-width:100%}
   table{width:100%;border-collapse:collapse;font-size:14px}
   .esc thead tr th{background:var(--graf2);color:#fff;text-align:left;font-weight:600;padding:8px 10px}
@@ -395,9 +399,8 @@
       <div class="panebar"><button class="btn ghost adminonly" id="btntroca" onclick="openTroca()" title="Substituir alguém num dia ou permutar (trocar) entre dois dias">🔁 Trocar / Substituir</button><button class="btn ghost adminonly" id="btnhe" onclick="openHoraExtra()" title="Lançar hora extra para um funcionário num dia">➕ Hora extra</button><button class="btn dark adminonly" id="btncsv" onclick="exportCSV()" title="Exportar a escala em CSV">⬇ CSV</button><button class="btn ghost" id="btnprint" onclick="imprimir()" title="Imprimir / salvar em PDF a escala">🖨 Imprimir</button></div>
       <div id="avisos"></div>
       <section class="card">
-        <div class="hd">
-          <span id="tituloEsc">Escala — aguardando geração</span>
-          <span id="contChip"></span>
+        <div class="hd" id="escHd">
+          <div class="esc-hd-tit"><span id="tituloEsc">Escala — aguardando geração</span><span id="contChip"></span></div>
           <span class="leg">
             <span><i class="sw" style="background:var(--fds-l)"></i> Fim de semana</span>
             <span><i class="sw" style="background:var(--ret)"></i> Retorno</span>
@@ -552,14 +555,14 @@
     </div>
   </section>
 
-  <footer><span class="noprint">Confira a escala antes de publicar.<br>© 2026 <b>Gera Escalas</b> · <span class="lnk" onclick="openAbout()">Sobre &amp; Política de Privacidade</span> · <span style="color:var(--mut2)">v12.5</span></span></footer>
+  <footer><span class="noprint">Confira a escala antes de publicar.<br>© 2026 <b>Gera Escalas</b> · <span class="lnk" onclick="openAbout()">Sobre &amp; Política de Privacidade</span> · <span style="color:var(--mut2)">v12.6</span></span></footer>
 </main>
 
 <div id="aboutmodal" class="modal" style="display:none" onclick="if(event.target===this)closeAbout()">
   <div class="mbox">
     <button class="xbtn" onclick="closeAbout()">Fechar ✕</button>
     <h2>Gera Escalas</h2>
-    <p class="muted">Escalas de plantão, turno e giro · Versão 12.5 · 2026</p>
+    <p class="muted">Escalas de plantão, turno e giro · Versão 12.6 · 2026</p>
 
     <h3>Autoria e direitos autorais</h3>
     <p>© 2026 <b>Gera Escalas</b> — desenvolvido por Luís Cesar. Todos os direitos reservados.</p>
@@ -2382,6 +2385,50 @@ function renderSchedule(){
   document.getElementById("escala").innerHTML=h;
 }
 function setFolgaView(v){state._folgaView=v;renderFolga();}
+function _gradeFolgaTabela(fs){
+  if(!state.schedule||!state.schedule.result)return "";
+  var res=state.schedule.result,year=state.schedule.year,month=state.schedule.month;
+  var AB=["Dom","Seg","Ter","Qua","Qui","Sex","Sáb"];var mils=(state.militares||[]).slice();
+  var _fs=fs||12,_em=Math.round(_fs*1.05),_sm=Math.max(8,Math.round(_fs*0.62));
+  var gh='<div class="tblwrap"><table class="esc gradef" style="font-size:'+_fs+'px"><thead><tr><th style="text-align:left;position:sticky;left:0;background:#312e81">Pessoa</th>';
+  for(var gd=1;gd<=res.N;gd++){var _wd=new Date(year,month,gd).getDay();gh+='<th style="padding:4px 5px'+((_wd===0||_wd===6)?';background:#4338ca':'')+'">'+pad(gd)+'<br><span style="font-weight:400;font-size:'+_sm+'px">'+AB[_wd][0]+'</span></th>';}
+  gh+='</tr></thead><tbody>';
+  mils.forEach(function(m){
+    gh+='<tr><td style="text-align:left;font-weight:600;position:sticky;left:0;background:#fff;white-space:nowrap">'+esc((m.posto?m.posto+" ":"")+m.nome)+'</td>';
+    for(var gd2=1;gd2<=res.N;gd2++){
+      var _dt=new Date(year,month,gd2);
+      var _fer=onVacation(m,_dt),_ate=onAtestado(m,_dt);
+      var _fol=(res.folga[gd2]||[]).some(function(x){return x.id===m.id;});
+      var cell=_fer?'<span title="Férias" style="font-size:'+_em+'px">🏖️</span>':(_ate?'<span title="Atestado/afastado" style="font-size:'+_em+'px">🩹</span>':(_fol?'<b title="Folga" style="color:#2563eb">F</b>':'<b title="Em serviço" style="color:#16a34a">S</b>'));
+      var _wd2=new Date(year,month,gd2).getDay();
+      var _exc=((res.extras&&res.extras[gd2])||[]).filter(function(e){return String(e.id)===String(m.id);});
+      var _exh=_exc.reduce(function(a,e){return a+(+e.horas||0);},0);
+      var _mk=_exh>0?'<br><span title="Hora extra: '+_exh+'h" style="font-size:'+Math.max(7,Math.round(_fs*0.6))+'px;color:#ea580c;font-weight:700">+'+_exh+'h</span>':'';
+      var _bg=((_wd2===0||_wd2===6)?';background:#eef2ff':'');
+      if(isAdmin())gh+='<td onclick="openHoraExtra(\''+m.id+'\','+gd2+')" title="Clique para lançar hora extra" style="cursor:pointer;text-align:center;padding:3px 5px'+_bg+'">'+cell+_mk+'</td>';
+      else gh+='<td style="text-align:center;padding:3px 5px'+_bg+'">'+cell+_mk+'</td>';
+    }
+    gh+='</tr>';
+  });
+  gh+='</tbody></table></div>';return gh;
+}
+function _gradeFolgaLegenda(){return '<div class="tiny" style="margin-top:6px;color:var(--mut)"><b style="color:#16a34a">S</b> serviço · <b style="color:#2563eb">F</b> folga · 🏖️ férias · 🩹 atestado · <b style="color:#ea580c">+Xh</b> hora extra'+(isAdmin()?' · <span class="noprint">clique numa célula para lançar hora extra</span>':'')+'</div>';}
+function abrirGradeFull(){
+  if(!state.schedule||!state.schedule.result||state.schedule.result.tipo!=="folga"){alert("Gere a escala primeiro.");return;}
+  var old=document.getElementById("gradeFullModal");if(old)old.remove();
+  var tit=MESES[state.schedule.month]+" de "+state.schedule.year;
+  var ov=document.createElement("div");ov.id="gradeFullModal";
+  ov.style.cssText="position:fixed;inset:0;z-index:9999;background:#fff;display:flex;flex-direction:column";
+  ov.innerHTML='<div style="display:flex;align-items:center;gap:8px;padding:10px 14px;background:#312e81;color:#fff;flex:0 0 auto">'
+    +'<b style="flex:1;min-width:0;font-size:15px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis">Grade mensal — '+esc(tit)+'</b>'
+    +'<button class="btn" onclick="fecharGradeFull()" style="background:#fff;color:#312e81;padding:6px 14px;white-space:nowrap">✕ Fechar</button></div>'
+    +'<div id="gradeFullBody" style="flex:1;overflow:auto;padding:12px;-webkit-overflow-scrolling:touch"></div>'
+    +'<div class="tiny" style="padding:8px 14px;color:var(--mut);border-top:1px solid var(--line);flex:0 0 auto">Role para os lados para ver todos os dias · gire o celular na horizontal ou use dois dedos para aproximar (zoom).</div>';
+  document.body.appendChild(ov);
+  document.getElementById("gradeFullBody").innerHTML=_gradeFolgaTabela(16)+_gradeFolgaLegenda();
+  try{document.body.style.overflow="hidden";}catch(e){}
+}
+function fecharGradeFull(){var m=document.getElementById("gradeFullModal");if(m)m.remove();try{document.body.style.overflow="";}catch(e){}}
 function renderFolga(){
   var res=state.schedule.result,year=state.schedule.year,month=state.schedule.month;
   document.getElementById("tituloEsc").textContent="Escala — "+MESES[month]+" de "+year;
@@ -2446,31 +2493,10 @@ function renderFolga(){
   }
   if(!isAdmin())av=""; // avisos de gestão não aparecem para o funcionário
   var AB=["Dom","Seg","Ter","Qua","Qui","Sex","Sáb"];
-  var _vw=state._folgaView||"dia";
-  var toggle='<div class="noprint" style="display:flex;gap:6px;margin:6px 0"><button class="btn ghost" style="padding:5px 10px;font-size:13px'+(_vw==="dia"?';background:var(--cbm);color:#fff':'')+'" onclick="setFolgaView(\'dia\')">Por dia</button><button class="btn ghost" style="padding:5px 10px;font-size:13px'+(_vw==="grade"?';background:var(--cbm);color:#fff':'')+'" onclick="setFolgaView(\'grade\')">Grade mensal</button></div>';
+  var _vw=state._folgaView||"grade";
+  var toggle='<div class="noprint" style="display:flex;gap:6px;margin:6px 0;flex-wrap:wrap;align-items:center"><button class="btn ghost" style="padding:5px 10px;font-size:13px'+(_vw==="dia"?';background:var(--cbm);color:#fff':'')+'" onclick="setFolgaView(\'dia\')">Por dia</button><button class="btn ghost" style="padding:5px 10px;font-size:13px'+(_vw==="grade"?';background:var(--cbm);color:#fff':'')+'" onclick="setFolgaView(\'grade\')">Grade mensal</button><button class="btn primary" style="padding:5px 12px;font-size:13px;margin-left:auto" onclick="abrirGradeFull()" title="Abrir a grade ampliada na tela inteira">🔍 Visualizar</button></div>';
   if(_vw==="grade"){
-    var mils=(state.militares||[]).slice();
-    var gh='<div class="tblwrap"><table class="esc gradef" style="font-size:12px"><thead><tr><th style="text-align:left;position:sticky;left:0;background:#312e81">Pessoa</th>';
-    for(var gd=1;gd<=res.N;gd++){var _wd=new Date(year,month,gd).getDay();gh+='<th style="padding:4px 5px'+((_wd===0||_wd===6)?';background:#4338ca':'')+'">'+pad(gd)+'<br><span style="font-weight:400;font-size:9px">'+AB[_wd][0]+'</span></th>';}
-    gh+='</tr></thead><tbody>';
-    mils.forEach(function(m){
-      gh+='<tr><td style="text-align:left;font-weight:600;position:sticky;left:0;background:#fff;white-space:nowrap">'+esc((m.posto?m.posto+" ":"")+m.nome)+'</td>';
-      for(var gd2=1;gd2<=res.N;gd2++){
-        var _dt=new Date(year,month,gd2);
-        var _fer=onVacation(m,_dt),_ate=onAtestado(m,_dt);
-        var _fol=(res.folga[gd2]||[]).some(function(x){return x.id===m.id;});
-        var cell=_fer?'<span title="Férias" style="font-size:13px">🏖️</span>':(_ate?'<span title="Atestado/afastado" style="font-size:13px">🩹</span>':(_fol?'<b title="Folga" style="color:#2563eb">F</b>':'<b title="Em serviço" style="color:#16a34a">S</b>'));
-        var _wd2=new Date(year,month,gd2).getDay();
-        var _exc=((res.extras&&res.extras[gd2])||[]).filter(function(e){return String(e.id)===String(m.id);});
-        var _exh=_exc.reduce(function(a,e){return a+(+e.horas||0);},0);
-        var _mk=_exh>0?'<br><span title="Hora extra: '+_exh+'h" style="font-size:8px;color:#ea580c;font-weight:700">+'+_exh+'h</span>':'';
-        var _bg=((_wd2===0||_wd2===6)?';background:#eef2ff':'');
-        if(isAdmin())gh+='<td onclick="openHoraExtra(\''+m.id+'\','+gd2+')" title="Clique para lançar hora extra" style="cursor:pointer;text-align:center;padding:3px 5px'+_bg+'">'+cell+_mk+'</td>';
-        else gh+='<td style="text-align:center;padding:3px 5px'+_bg+'">'+cell+_mk+'</td>';
-      }
-      gh+='</tr>';
-    });
-    gh+='</tbody></table></div><div class="tiny" style="margin-top:6px;color:var(--mut)"><b style="color:#16a34a">S</b> serviço · <b style="color:#2563eb">F</b> folga · 🏖️ férias · 🩹 atestado · <b style="color:#ea580c">+Xh</b> hora extra'+(isAdmin()?' · <span class="noprint">clique numa célula para lançar hora extra</span>':'')+'</div>';
+    var gh=_gradeFolgaTabela(12)+_gradeFolgaLegenda();
     var _heTip=isAdmin()?'<div class="noprint" style="display:flex;align-items:center;gap:8px;background:#fff7ed;border:1px solid #fed7aa;color:#9a3412;border-radius:8px;padding:8px 10px;margin:6px 0;font-size:13px">💡 <span><b>Hora extra na grade:</b> clique em qualquer dia da grade (na linha da pessoa) para lançar a hora extra dela naquele dia.</span></div>':'';
     document.getElementById("escala").innerHTML=head+av+toggle+_heTip+gh+signatureBlockHTML();
     var tlg=document.getElementById("turmasLegend");if(tlg)tlg.style.display="none";
