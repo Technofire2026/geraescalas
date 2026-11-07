@@ -322,11 +322,17 @@
   </section>
 
   <!-- PASSO 2 · FUNCIONÁRIOS -->
-  <div class="panebar"><button class="btn dark adminonly" onclick="exportEfetivoCSV()" title="Exportar a equipe em CSV">⬇ CSV</button><button class="btn ghost" onclick="_imprimirEquipe()" title="Imprimir / salvar em PDF a equipe">🖨 Imprimir</button></div>
   <section class="card" id="efetivo">
     <div class="hd"><span class="passo-n">2</span> Funcionários <span class="tiny" id="qtd" style="margin-left:auto"></span></div>
     <div class="bd">
-      <div class="addform">
+      <div id="addActions">
+        <div style="display:flex;gap:8px;flex-wrap:wrap">
+          <button class="btn dark" onclick="abrirCadastro()" style="flex:1 1 220px;justify-content:center">➕ Cadastrar funcionário</button>
+          <button class="btn ghost" onclick="openImport()" style="flex:1 1 200px;justify-content:center">⬆ Importar CSV</button>
+        </div>
+        <div class="tiny" style="color:var(--mut);margin-top:8px">Cadastre um a um ou <b>importe vários de uma vez por CSV</b> (colunas: <i>nome; cargo; cpf; telefone; email; endereço; férias</i>). Dentro do importador há um <b>modelo pronto para baixar</b>; no Excel, salve como <b>“CSV UTF-8”</b> para os acentos saírem certos.</div>
+      </div>
+      <div class="addform" id="addFormWrap" style="display:none;margin-top:12px;border-top:1px solid var(--line);padding-top:12px">
         <label class="fld" id="add_setor_wrap" style="margin-bottom:6px"><span>Cadastrando no setor:</span><select id="add_setor" onchange="mudarSetorCadastro(this.value)" style="width:100%;font:inherit;padding:8px;border:1px solid var(--line2);border-radius:8px;font-weight:600"></select></label>
         <input id="nome" placeholder="Nome da pessoa" onkeydown="if(event.key==='Enter')addMilitar()">
         <div class="two">
@@ -336,13 +342,11 @@
         <label class="fld" id="add_time_wrap" style="display:none;margin-top:2px"><span>Time (escala por ciclo)</span><select id="add_time" style="width:100%;font:inherit;padding:8px;border:1px solid var(--line2);border-radius:8px"></select></label>
         <div class="two"><input id="email" placeholder="E-mail (para dar acesso ao app)" type="email" onkeydown="if(event.key==='Enter')addMilitar()"><input id="tel" placeholder="Telefone (opcional)" inputmode="tel"></div>
         <div class="two"><input id="cpf" placeholder="CPF (opcional)" inputmode="numeric"><input id="endereco" placeholder="Endereço (opcional)"></div>
-        <button class="btn dark" style="width:100%;justify-content:center;margin-top:6px" onclick="addMilitar()">➕ Adicionar pessoa</button>
-        <button class="btn primary" style="width:100%;justify-content:center;margin-top:6px" onclick="addMilitarComAcesso()">✉️ Adicionar e enviar acesso</button>
-        <div class="tiny" style="color:var(--mut);margin-top:4px">O botão <b>✉️ Adicionar e enviar acesso</b> cadastra a pessoa e já envia o e-mail de login (acesso de <b>Funcionário</b>: vê a escala, pede e recebe permuta). Precisa do e-mail preenchido.</div>
-        <button class="btn ghost" style="width:100%;justify-content:center;margin-top:8px" onclick="openImport()">⬆ Importar por CSV</button>
+        <button class="btn primary" style="width:100%;justify-content:center;margin-top:6px" onclick="addMilitarComAcesso()">✉️ Adicionar e enviar por e-mail</button>
+        <div class="tiny" style="color:var(--mut);margin-top:4px">Cadastra a pessoa e já envia o e-mail de login (acesso de <b>Funcionário</b>: vê a escala, pede e recebe permuta). Precisa do e-mail preenchido e de estar logado na nuvem.</div>
+        <button class="btn ghost" style="width:100%;justify-content:center;margin-top:8px" onclick="addMilitar()">➕ Adicionar sem enviar e-mail</button>
+        <div style="text-align:center;margin-top:8px"><a class="lnk" onclick="fecharCadastro()" style="cursor:pointer;font-size:13px;color:var(--mut)">▲ Fechar cadastro</a></div>
       </div>
-      <div id="lista"></div>
-      <p class="tiny" style="margin-top:12px">ℹ Setas = ordem inicial da rotação. Férias e atestado: informe as datas por pessoa (nº de dias ajustável). Atestado = nº de dias informado. Afastamento no meio de um mês já gerado: registre o atestado e clique em <b>Aplicar afastamento</b> — o sucessor assume e a folga do efetivo é reduzida no período (dias já cumpridos ficam intactos).</p>
     </div>
   </section>
 
@@ -371,12 +375,23 @@
   </section>
 
   <div class="tabs" id="maintabs">
-    <button class="tab active" id="tab-escala" onclick="showTab('escala')">📅 Escala</button>
+    <button class="tab active" id="tab-equipe" onclick="showTab('equipe')">👥 Equipe</button>
+    <button class="tab" id="tab-escala" onclick="showTab('escala')">📅 Escala</button>
     <button class="tab" id="tab-stat" onclick="showTab('stat')">📊 Estatística</button>
     <button class="tab" id="tab-mapa" onclick="showTab('mapa')">🗺️ Mapa do dia</button>
     <button class="tab adminonly" id="tab-rel" onclick="openRelatorios()" title="Relatórios por funcionário (semanal, mensal e anual) para a folha de pagamento">📄 Relatórios</button>
   </div>
-  <div class="tabpane" id="pane-escala">
+  <div class="tabpane" id="pane-equipe">
+    <div class="panebar"><button class="btn dark adminonly" onclick="exportEfetivoCSV()" title="Exportar a equipe em CSV">⬇ CSV</button><button class="btn ghost" onclick="_imprimirEquipe()" title="Imprimir / salvar em PDF a equipe">🖨 Imprimir</button></div>
+    <section class="card">
+      <div class="hd"><span class="ico">👥</span> Equipe do setor</div>
+      <div class="bd">
+        <div id="lista"></div>
+        <p class="tiny" style="margin-top:12px">ℹ Setas = ordem inicial da rotação. Férias e atestado: informe as datas por pessoa (nº de dias ajustável). Atestado = nº de dias informado. Afastamento no meio de um mês já gerado: registre o atestado e clique em <b>Aplicar afastamento</b> (no Passo 5) — o sucessor assume e a folga do efetivo é reduzida no período (dias já cumpridos ficam intactos).</p>
+      </div>
+    </section>
+  </div>
+  <div class="tabpane" id="pane-escala" style="display:none">
       <div class="panebar"><button class="btn ghost adminonly" id="btntroca" onclick="openTroca()" title="Substituir alguém num dia ou permutar (trocar) entre dois dias">🔁 Trocar / Substituir</button><button class="btn ghost adminonly" id="btnhe" onclick="openHoraExtra()" title="Lançar hora extra para um funcionário num dia">➕ Hora extra</button><button class="btn dark adminonly" id="btncsv" onclick="exportCSV()" title="Exportar a escala em CSV">⬇ CSV</button><button class="btn ghost" id="btnprint" onclick="imprimir()" title="Imprimir / salvar em PDF a escala">🖨 Imprimir</button></div>
       <div id="avisos"></div>
       <section class="card">
@@ -537,14 +552,14 @@
     </div>
   </section>
 
-  <footer><span class="noprint">Confira a escala antes de publicar.<br>© 2026 <b>Gera Escalas</b> · <span class="lnk" onclick="openAbout()">Sobre &amp; Política de Privacidade</span> · <span style="color:var(--mut2)">v12.4</span></span></footer>
+  <footer><span class="noprint">Confira a escala antes de publicar.<br>© 2026 <b>Gera Escalas</b> · <span class="lnk" onclick="openAbout()">Sobre &amp; Política de Privacidade</span> · <span style="color:var(--mut2)">v12.5</span></span></footer>
 </main>
 
 <div id="aboutmodal" class="modal" style="display:none" onclick="if(event.target===this)closeAbout()">
   <div class="mbox">
     <button class="xbtn" onclick="closeAbout()">Fechar ✕</button>
     <h2>Gera Escalas</h2>
-    <p class="muted">Escalas de plantão, turno e giro · Versão 12.4 · 2026</p>
+    <p class="muted">Escalas de plantão, turno e giro · Versão 12.5 · 2026</p>
 
     <h3>Autoria e direitos autorais</h3>
     <p>© 2026 <b>Gera Escalas</b> — desenvolvido por Luís Cesar. Todos os direitos reservados.</p>
@@ -930,7 +945,10 @@ function isOwner(){return !!(state.user&&state.user.role==="owner");}
 function isAdmin(){return !!(state.user&&(state.user.role==="admin"||state.user.role==="owner"));}
 var ADMIN_EMAILS=["lcsmbm@gmail.com","geraescalas@gmail.com"];
 function isPlatformAdmin(){return !!(state.user&&ADMIN_EMAILS.indexOf(((state.user.login)||"").toLowerCase())>=0);}
-function applyPerms(){var admin=isAdmin();var cc=document.getElementById("configcard");if(cc&&!admin)cc.style.display="none";var g=document.getElementById("btngerar");if(g)g.style.display=admin?"":"none";var c=document.getElementById("btncob");if(c)c.style.display=admin?"":"none";try{document.querySelectorAll(".adminonly").forEach(function(b){b.style.display=admin?"":"none";});}catch(e){}var _tst=document.getElementById("tab-stat");if(_tst)_tst.style.display=admin?"":"none";if(!admin&&state._tab==="stat"){try{showTab("escala");}catch(e){}}var cont=document.querySelector(".card .cont");if(cont)cont.style.display=admin?"":"none";var af=document.querySelector("#efetivo .addform");if(af)af.style.display=admin?"":"none";}
+function applyPerms(){var admin=isAdmin();var cc=document.getElementById("configcard");if(cc&&!admin)cc.style.display="none";var g=document.getElementById("btngerar");if(g)g.style.display=admin?"":"none";var c=document.getElementById("btncob");if(c)c.style.display=admin?"":"none";try{document.querySelectorAll(".adminonly").forEach(function(b){b.style.display=admin?"":"none";});}catch(e){}var _tst=document.getElementById("tab-stat");if(_tst)_tst.style.display=admin?"":"none";if(!admin&&state._tab==="stat"){try{showTab("escala");}catch(e){}}var cont=document.querySelector(".card .cont");if(cont)cont.style.display=admin?"":"none";try{_syncCadastroUI();}catch(e){}}
+function _syncCadastroUI(){var admin=(typeof isAdmin==="function")&&isAdmin();var aa=document.getElementById("addActions");var fw=document.getElementById("addFormWrap");var aberto=!!(state&&state._cadAberto)&&admin;if(fw)fw.style.display=aberto?"":"none";if(aa)aa.style.display=(admin&&!aberto)?"":"none";}
+function abrirCadastro(){if(typeof isAdmin==="function"&&!isAdmin())return;state._cadAberto=true;_syncCadastroUI();var i=document.getElementById("nome");if(i)setTimeout(function(){try{i.focus();}catch(e){}},30);}
+function fecharCadastro(){state._cadAberto=false;_syncCadastroUI();}
 function renderUserbar(){var u=state.user;if(!u)return;var admin=(u.role==="admin"||u.role==="owner");var tag=(u.role==="owner")?' <span class="rotag" style="background:rgba(231,199,102,.25);color:#ffe9a8">Proprietário</span>':(admin?'':(u.role==="membro"?' <span class="rotag">Funcionário</span>':' <span class="rotag">somente leitura</span>'));document.getElementById("userbar").innerHTML='<span class="who">'+esc((u.posto?u.posto+" ":"")+u.nome)+tag+'</span>'+'<button class="ubtn" title="Manual de uso" aria-label="Manual" onclick="openHelp()">📖 Manual</button>'+'<button class="ubtn" title="Avisos" onclick="openNotif()">🔔'+(state.notifCount?(' <b style="color:#b91c1c">'+state.notifCount+'</b>'):'')+'</button>'+'<button class="ubtn" title="Permutas de serviço" onclick="openPermuta()">🔁 Permutas</button>'+(admin?'<button class="ubtn" title="Controle de ponto (quiosque facial)" onclick="openPonto()">🕒 Ponto</button>':'')+((isPlatformAdmin()&&admin)?'<button class="ubtn" title="Painel do dono (métricas)" onclick="openPainel()">📊 Painel</button>':'')+((isPlatformAdmin()&&admin)?'<button class="ubtn" title="Painel de clientes (dono)" onclick="openClientes()">👥 Clientes</button>':'')+((isPlatformAdmin()&&admin)?'<button class="ubtn" title="Curso de treinamento (dono)" onclick="window.open(\'/curso.html\',\'_blank\',\'noopener\')">🎓 Curso</button>':'')+(admin?'<button class="ubtn ico-only" title="Configurações" aria-label="Configurações" onclick="openConfig()">⚙</button>':'')+'<button class="ubtn ico-only" title="Sair" aria-label="Sair" onclick="logout()">⎋</button>';}
 
 /* ===== REGISTRO / AUDITORIA ===== */
@@ -3186,7 +3204,7 @@ function _mapaCard(s,sched,mils,Y,Mo,Dy){
   }
   return '<div class="mapa-card"><div class="mc-head">'+esc(s.nome)+'</div><div class="mc-body">'+inner+'</div></div>';
 }
-function showTab(t){["escala","stat","mapa"].forEach(function(n){var p=document.getElementById("pane-"+n);if(p)p.style.display=(n===t)?"":"none";var b=document.getElementById("tab-"+n);if(b)b.classList.toggle("active",n===t);});if(t==="stat"){var se=document.getElementById("statempty");if(se)se.style.display=state.schedule?"none":"";}if(t==="mapa"){renderMapa();}state._tab=t;}
+function showTab(t){["equipe","escala","stat","mapa"].forEach(function(n){var p=document.getElementById("pane-"+n);if(p)p.style.display=(n===t)?"":"none";var b=document.getElementById("tab-"+n);if(b)b.classList.toggle("active",n===t);});if(t==="equipe"){try{renderRoster();}catch(e){}}if(t==="stat"){var se=document.getElementById("statempty");if(se)se.style.display=state.schedule?"none":"";}if(t==="mapa"){renderMapa();}state._tab=t;}
 function openAbout(){var m=document.getElementById("aboutmodal");if(m)m.style.display="flex";}
 function openHelp(){window.open("/manual.html","_blank","noopener");}
 function closeHelp(){var m=document.getElementById("helpmodal");if(m)m.style.display="none";}
@@ -3977,7 +3995,7 @@ function _refreshUI(){
   var _sf=document.getElementById("satfolga");if(_sf)_sf.checked=!!state.config.satFolga2c;
   var _ts=document.getElementById("turnosel");if(_ts&&state.config.hor&&state.config.hor.turno)_ts.value=state.config.hor.turno.sel||"dia";
   if(typeof setTipo==="function")setTipo();
-  if(state.schedule){var _ms=document.getElementById("mes");if(_ms)_ms.value=state.schedule.month;var _an=document.getElementById("ano");if(_an)_an.value=state.schedule.year;renderSchedule();renderStats();showTab("escala");}else{showTab("escala");}
+  if(state.schedule){var _ms=document.getElementById("mes");if(_ms)_ms.value=state.schedule.month;var _an=document.getElementById("ano");if(_an)_an.value=state.schedule.year;renderSchedule();renderStats();showTab("escala");}else{showTab("equipe");}
 }
 async function switchSetor(id){
   if(!id||id===setorAtual())return;
