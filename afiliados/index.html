@@ -93,7 +93,7 @@
     <a class="back" href="https://geraescalas.com.br">← voltar ao site</a>
     <div class="hero" id="hero">
       <h1>Indique o Gera Escalas e <span class="hl">ganhe por cliente</span></h1>
-      <div class="sub">Seja parceiro do Gera Escalas — contadores, parceiros e revendas. Divulgue o aplicativo que <b>gera automaticamente a nova escala 5x2</b> (lei 2026) e, quando alguém assinar pelo seu link, <b>você recebe a 1ª mensalidade do cliente (R$ 99 a R$ 199)</b> direto na sua subconta Asaas.</div>
+      <div class="sub">Seja parceiro do Gera Escalas — contadores, parceiros e revendas. Divulgue o aplicativo que <b>gera automaticamente a nova escala 5x2</b> (lei 2026) e, quando alguém assinar pelo seu link, <b>você recebe a 1ª mensalidade do cliente (R$ 99 a R$ 199)</b> por PIX na sua chave.</div>
       <div class="steps">
         <div class="step"><span class="n">1</span><b>Crie sua conta</b><span>Cadastro rápido. Aprovamos e liberamos seu painel.</span></div>
         <div class="step"><span class="n">2</span><b>Divulgue seu link</b><span>Um link só seu para WhatsApp, e-mail e redes.</span></div>
@@ -115,7 +115,7 @@
     <!-- CADASTRO -->
     <div id="paneCad">
       <h2>Cadastro de afiliado</h2>
-      <p class="muted" style="font-size:13.5px;margin:4px 0 0">Seus dados são usados para criar sua <b>subconta Asaas</b> (onde você recebe). Cadastro sujeito a aprovação. Para <b>sacar</b>, o Asaas pede a validação da conta (envio de documentos).</p>
+      <p class="muted" style="font-size:13.5px;margin:4px 0 0">Informe sua <b>chave PIX</b> para receber. Cadastro sujeito a aprovação. A comissão é <b>paga por PIX</b> quando um cliente assina pelo seu link — sem precisar validar conta nem acessar painel.</p>
       <div class="two">
         <label class="fld">Nome completo<input id="c_nome" autocomplete="name" placeholder="Seu nome"></label>
         <label class="fld">WhatsApp<input id="c_tel" inputmode="tel" placeholder="(DDD) 9...."></label>
@@ -125,16 +125,11 @@
         <label class="fld">CPF ou CNPJ<input id="c_doc" inputmode="numeric" placeholder="somente números"></label>
         <label class="fld">Você é<select id="c_tipo"><option value="contador">Contador(a)</option><option value="parceiro">Parceiro / revenda</option><option value="outro">Outro</option></select></label>
       </div>
-      <div class="note" style="background:#eef2ff;border-color:#c7d2fe;color:#3730a3">Os campos abaixo são exigidos pelo <b>Asaas</b> para criar sua subconta (onde você recebe a comissão).</div>
+      <div class="note" style="background:#eef2ff;border-color:#c7d2fe;color:#3730a3">Informe a <b>chave PIX</b> onde você quer receber suas comissões.</div>
       <div class="two">
-        <label class="fld">Data de nascimento<input id="c_nasc" type="date"></label>
-        <label class="fld">CEP<input id="c_cep" inputmode="numeric" placeholder="só números"></label>
+        <label class="fld" style="flex:0 1 150px;min-width:130px">Tipo da chave<select id="c_pixtipo"><option value="CPF">CPF</option><option value="CNPJ">CNPJ</option><option value="EMAIL">E-mail</option><option value="PHONE">Celular</option><option value="EVP">Aleatória</option></select></label>
+        <label class="fld" style="flex:2 1 200px">Chave PIX<input id="c_pix" placeholder="sua chave PIX"></label>
       </div>
-      <div class="two">
-        <label class="fld" style="flex:2 1 220px">Endereço<input id="c_end" placeholder="Rua / Avenida"></label>
-        <label class="fld" style="flex:0 1 90px;min-width:70px">Número<input id="c_num" inputmode="numeric" placeholder="123"></label>
-      </div>
-      <label class="fld">Bairro<input id="c_bairro" placeholder="Seu bairro"></label>
       <label class="fld">Crie uma senha<input id="c_senha" type="password" autocomplete="new-password" placeholder="mínimo 6 caracteres"></label>
       <label class="chk"><input type="checkbox" id="c_aceite"> <span>Li e aceito o <a onclick="abrirReg()">regulamento do programa</a> e autorizo o uso dos meus dados para criação da subconta de pagamento (Asaas).</span></label>
       <button class="btn primary block" style="margin-top:16px" onclick="cadastrar()">Criar minha conta de afiliado</button>
@@ -173,7 +168,7 @@
     <div style="font-size:13.5px;color:var(--graf);line-height:1.6;margin-top:6px">
       <p><b>1. Quem pode participar.</b> Maiores de 18 anos com CPF ou CNPJ regular. O cadastro passa por aprovação e pode ser recusado ou encerrado a qualquer tempo.</p>
       <p><b>2. Comissão.</b> Você recebe <b>100% da primeira mensalidade</b> do plano que o cliente assinar: <b>R$ 99 no Essencial</b> e <b>R$ 199 no Profissional</b>. No plano anual, a comissão equivale a <b>1 mensalidade</b> do plano escolhido. É paga <b>uma única vez por cliente</b> (o primeiro pagamento que ativa a assinatura); renovações não geram nova comissão.</p>
-      <p><b>3. Como recebe.</b> A comissão cai na sua <b>subconta Asaas</b> quando o pagamento do cliente é <b>confirmado</b>. Para <b>sacar</b> o valor para seu banco, o Asaas exige a <b>validação da sua conta</b> (envio de documentos de identificação) — isso é uma exigência do Asaas, não do Gera Escalas. O Asaas envia as instruções de acesso e validação por e-mail. Enquanto a conta não for validada, o valor fica disponível na subconta, mas não pode ser transferido. Saques e prazos seguem as regras do Asaas.</p>
+      <p><b>3. Como recebe.</b> A comissão é paga por <b>PIX</b> na chave que você cadastrou, quando o pagamento do cliente é <b>confirmado</b>. Não é preciso validar conta nem acessar nenhum painel — o valor cai direto na sua chave PIX. Mantenha sua chave PIX correta e ativa no cadastro.</p>
       <p><b>4. Atribuição.</b> O cliente é vinculado a você quando <b>cria a conta</b> pelo seu link. Vale mesmo que ele assine depois do período de teste.</p>
       <p><b>5. Regras.</b> É proibido autoindicação (assinar para si mesmo), spam, anúncios pagos usando a marca sem autorização e qualquer promessa falsa. Comissão de pagamento estornado/cancelado é cancelada.</p>
       <p><b>6. Dados (LGPD).</b> Usamos seus dados apenas para operar o programa e criar sua subconta de pagamento. Você pode pedir correção ou exclusão.</p>
@@ -193,6 +188,7 @@ function $(id){return document.getElementById(id);}
 function esc(s){return String(s==null?"":s).replace(/[&<>"]/g,function(c){return {"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;"}[c];});}
 function digits(s){return (s||"").replace(/\D/g,"");}
 function setMsg(id,t,c){var e=$(id);if(e){e.innerHTML=t||"";e.style.color=c||"var(--mut)";}}
+function _agendarPoll(){ try{clearTimeout(window._afPoll);}catch(e){} window._afPoll=setTimeout(function(){ try{boot();}catch(e){} },20000); }
 
 function setTab(t){
   $("tabCad").classList.toggle("on",t==="cad");
@@ -207,20 +203,18 @@ function fecharReg(){$("regmodal").classList.add("hide");}
 async function cadastrar(){
   var nome=$("c_nome").value.trim(), email=$("c_email").value.trim().toLowerCase(), tel=$("c_tel").value.trim();
   var doc=digits($("c_doc").value), tipo=$("c_tipo").value, senha=$("c_senha").value;
-  var nasc=$("c_nasc").value, cep=digits($("c_cep").value), endereco=$("c_end").value.trim(), numero=$("c_num").value.trim(), bairro=$("c_bairro").value.trim();
+  var pixTipo=$("c_pixtipo").value, pixKey=$("c_pix").value.trim();
   if(!nome){return setMsg("c_msg","Informe seu nome.","var(--err)");}
   if(!/^[^@]+@[^@]+\.[^@]+$/.test(email)){return setMsg("c_msg","E-mail inválido.","var(--err)");}
   if(doc.length!==11&&doc.length!==14){return setMsg("c_msg","CPF (11) ou CNPJ (14) — só números.","var(--err)");}
   if(!tel||digits(tel).length<10){return setMsg("c_msg","Informe um WhatsApp com DDD.","var(--err)");}
-  if(doc.length===11&&!nasc){return setMsg("c_msg","Informe a data de nascimento.","var(--err)");}
-  if(cep.length!==8){return setMsg("c_msg","CEP inválido (8 dígitos).","var(--err)");}
-  if(!endereco||!numero||!bairro){return setMsg("c_msg","Preencha endereço, número e bairro.","var(--err)");}
+  if(!pixKey){return setMsg("c_msg","Informe sua chave PIX para receber as comissões.","var(--err)");}
   if(senha.length<6){return setMsg("c_msg","Senha de pelo menos 6 caracteres.","var(--err)");}
   if(!$("c_aceite").checked){return setMsg("c_msg","É preciso aceitar o regulamento.","var(--err)");}
   if(!sb){return setMsg("c_msg","Falha ao conectar. Recarregue a página.","var(--err)");}
   setMsg("c_msg","Criando sua conta…","var(--ind)");
   try{
-    var r=await sb.functions.invoke("criar-afiliado",{body:{nome:nome,email:email,telefone:tel,cpf_cnpj:doc,tipo:tipo,senha:senha,nascimento:nasc||null,cep:cep,endereco:endereco,numero:numero,bairro:bairro}});
+    var r=await sb.functions.invoke("criar-afiliado",{body:{nome:nome,email:email,telefone:tel,cpf_cnpj:doc,tipo:tipo,senha:senha,pix_key:pixKey,pix_tipo:pixTipo}});
     var em=null;
     if(r.error){
       try{ var ctx=r.error.context; if(ctx&&typeof ctx.json==="function"){ var j=await ctx.json(); em=j&&j.error; } }catch(e){}
@@ -266,7 +260,8 @@ async function boot(){
   if(!af){
     $("p_ola").textContent="Olá!";
     $("p_status").innerHTML='<span class="pill wait">⏳ em análise</span>';
-    $("p_corpo").innerHTML='<p class="muted">Seu cadastro foi recebido e está em análise. Assim que for aprovado, seu link e suas comissões aparecem aqui.</p><div class="note">Se você acabou de se cadastrar, isso é normal. Você receberá um e-mail quando for aprovado.</div>';
+    $("p_corpo").innerHTML='<p class="muted">Seu cadastro foi recebido e está em análise. Assim que for aprovado, seu link aparece aqui — a página atualiza sozinha.</p><button class="btn ghost" onclick="boot()" style="margin-top:10px">↻ Já fui aprovado? Atualizar</button>';
+    _agendarPoll();
     return;
   }
   $("p_ola").textContent="Olá, "+(af.nome||"").split(" ")[0]+"!";
@@ -276,11 +271,15 @@ async function boot(){
   else $("p_status").innerHTML='<span class="pill wait">⏳ em análise</span>';
 
   if(st!=="aprovado"){
-    $("p_corpo").innerHTML = (st==="recusado"||st==="bloqueado")
-      ? '<p class="muted">Sua conta de afiliado está '+esc(st)+'. Fale com a gente pelo Instagram <b>@geraescalas</b> se tiver dúvidas.</p>'
-      : '<p class="muted">Seu cadastro está em análise. Você receberá um e-mail quando for aprovado e seu link ficará disponível aqui.</p>';
+    if(st==="recusado"||st==="bloqueado"){
+      $("p_corpo").innerHTML='<p class="muted">Sua conta de afiliado está '+esc(st)+'. Fale com a gente pelo Instagram <b>@geraescalas</b> se tiver dúvidas.</p>';
+    }else{
+      $("p_corpo").innerHTML='<p class="muted">Seu cadastro está em análise. Assim que for aprovado, seu link e suas comissões aparecem aqui — a página atualiza sozinha.</p><button class="btn ghost" onclick="boot()" style="margin-top:10px">↻ Já fui aprovado? Atualizar</button>';
+      _agendarPoll();
+    }
     return;
   }
+  try{ clearTimeout(window._afPoll); }catch(e){}
 
   // aprovado → link + métricas
   var codigo=af.codigo||"";
@@ -309,8 +308,8 @@ async function boot(){
     +'<div class="kpi"><div class="v" id="k_pend">—</div><div class="k">Comissão pendente</div></div>'
     +'<div class="kpi"><div class="v" id="k_paga">—</div><div class="k">Comissão paga</div></div>'
     +'</div>'
-    +'<div class="note" style="background:#eff6ff;border-color:#bfdbfe;color:#1e40af">🏦 <b>Para sacar suas comissões:</b> o dinheiro cai na sua subconta Asaas, mas para transferir para o seu banco é preciso <b>validar a conta no Asaas</b> (envio de documentos). O Asaas manda o acesso e as instruções por e-mail. Faça essa validação assim que puder.</div>'
-    +'<div class="note">💡 Dica: fixe o link na bio do Instagram e mande no WhatsApp para a sua carteira de clientes. A comissão — a 1ª mensalidade do plano (R$ 99 no Essencial, R$ 199 no Profissional) — cai na sua subconta Asaas quando o cliente paga.</div>';
+    +'<div class="note" style="background:#f0fdf4;border-color:#bbf7d0;color:#166534">💸 <b>Pagamento automático por PIX:</b> quando um cliente assina pelo seu link e o pagamento confirma, a comissão cai <b>na sua chave PIX</b>. Sem validação, sem painel, sem burocracia. Mantenha sua chave PIX correta no cadastro.</div>'
+    +'<div class="note">💡 Dica: fixe o link na bio do Instagram e mande no WhatsApp para a sua carteira de clientes. A comissão — a 1ª mensalidade do plano (R$ 99 no Essencial, R$ 199 no Profissional) — é paga por PIX quando o cliente paga.</div>';
   $("p_corpo").innerHTML=corpo;
 
   // métricas (não quebrar se as tabelas ainda não existirem)
