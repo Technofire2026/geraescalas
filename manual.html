@@ -80,6 +80,7 @@
       <li><a href="#relatorios">18. Relatórios</a></li>
       <li><a href="#ponto">19. Controle de ponto (biometria)</a></li>
       <li><a href="#rep">20. AFD, assinatura e termo</a></li>
+      <li><a href="#medico">21. Escala de plantão médico (hospital)</a></li>
       <li><a href="#faq">Dúvidas frequentes</a></li>
     </ol>
   </nav>
@@ -121,6 +122,10 @@
       <p>Um turno fixo por dia, para quem funciona só em um período.</p>
       <h3>Ciclo por times</h3>
       <p>Equipes fixas que se revezam por dia. No <b>regime 24h</b>: 3 times = 24×48, 4 times = 24×72. No <b>regime 12h</b>: times de dia e de noite. Você cria os times e distribui as pessoas.</p>
+      <h3>Ciclo individual <span class="pill">novo</span></h3>
+      <p>Igual ao ciclo por times, mas revezando <b>cada pessoa</b> (sem precisar montar times). Escolha o <b>plantão</b> (24h ou 12h dia/noite) e o <b>descanso</b> — há atalhos prontos: <b>24×48, 24×72, 12×36, 12×48</b>. As pessoas entram em rodízio na ordem do efetivo; quem está de férias/atestado é pulado. Para o ciclo fechar certinho, o nº de pessoas deve bater com o ciclo (ex.: 24×48 → 3 pessoas; 24×72 → 4; 12×36 → 4).</p>
+      <h3>Plantão médico <span class="pill">hospital</span></h3>
+      <p>Para <b>hospitais e clínicas</b>, onde <b>vários médicos</b> trabalham no mesmo turno, com papéis diferentes (plantonista, diarista, sobreaviso, residente), feriados e valor por plantão. Tem uma seção só dele: <a href="#medico">Escala de plantão médico</a>.</p>
       <h3>Folga rotativa (5x2, 6x1) <span class="pill">nova lei</span></h3>
       <p>Todos trabalham e o app define <b>quem folga</b> a cada dia. Opções:</p>
       <ul>
@@ -154,7 +159,7 @@
     <section id="ajustar">
       <h2>4. Ajustar uma escala já pronta</h2>
       <ul>
-        <li><b>Trocar / permutar:</b> o botão <b>Trocar</b> permite substituir alguém num dia ou permutar (trocar) entre dois dias.</li>
+        <li><b>Permuta / Substituição:</b> o botão <b>🔁 Permuta / Substituição</b> permite substituir alguém num dia ou permutar (trocar) entre dois dias. Funciona em todos os tipos, inclusive no plantão médico.</li>
         <li><b>🩺 Aplicar afastamento</b> (giro, 24h e turno): quando a escala já está pronta e alguém pega atestado <b>depois</b>, recalcula só a partir daquele dia — o sucessor assume e os dias já cumpridos ficam intactos.</li>
         <li><b>Folga rotativa:</b> aqui não precisa do botão — marque o afastamento e <b>gere a escala de novo</b>; o app tira a pessoa dos dias afastados e redistribui.</li>
       </ul>
@@ -317,6 +322,72 @@
       <h3>Termo de responsabilidade</h3>
       <p>Ainda em <b>🔏 Certificado</b>, o botão <b>📄 Gerar termo (PDF)</b> cria o Termo de Responsabilidade já preenchido com os dados da empresa. Ele abre com <b>campos editáveis</b> para completar (nome do representante, CPF, testemunhas) e o botão <b>Salvar em PDF</b>.</p>
       <div class="tip">O termo é um <b>modelo</b> e não substitui a revisão por um advogado, principalmente por envolver a guarda do certificado digital.</div>
+    </section>
+
+    <section id="medico">
+      <h2>21. Escala de plantão médico (hospital)</h2>
+      <p class="lead">Esse tipo foi feito para <b>hospitais, clínicas, UTIs e prontos-socorros</b>, onde <b>vários médicos</b> trabalham ao mesmo tempo, com funções diferentes. Diferente das outras escalas (uma pessoa por turno), aqui você diz <b>quantos médicos por turno</b> e o app monta tudo, de forma justa.</p>
+
+      <h3>Passo a passo (do começo ao fim)</h3>
+      <ul>
+        <li><b>1. Escolha o tipo:</b> em “Tipo de escala”, selecione <b>Plantão médico (vários por turno)</b>.</li>
+        <li><b>2. Cadastre os médicos</b> na aba <b>Efetivo</b> (como qualquer pessoa — só o nome é obrigatório).</li>
+        <li><b>3. Defina o plantão:</b> em “Editar regras”, escolha <b>12h</b> (dia e noite) ou <b>24h</b>, e diga <b>quantos médicos por turno</b> (ex.: 2 de dia, 2 de noite).</li>
+        <li><b>4. (Opcional) Dimensione pelos leitos:</b> digite o nº de <b>🛏 leitos</b> e clique em <b>calcular vagas</b> — o app usa a regra de <b>1 médico a cada 10 leitos</b> (referência da RDC da UTI) e preenche as vagas sozinho.</li>
+        <li><b>5. Defina o papel e a disponibilidade de cada médico</b> (explicado abaixo).</li>
+        <li><b>6. (Opcional) Marque feriados e valores</b> para ter o faturamento (explicado abaixo).</li>
+        <li><b>7. Escolha mês/ano e clique em Gerar escala.</b></li>
+      </ul>
+
+      <h3>Os papéis (o que cada médico faz)</h3>
+      <p>No efetivo, cada médico tem um botão <b>“🗓 Papel e disponibilidade → editar”</b>. Ali você escolhe o <b>papel</b>:</p>
+      <ul>
+        <li><b>Plantonista</b> (padrão): entra no rodízio dos plantões (dia/noite ou 24h).</li>
+        <li><b>Diarista</b>: faz a <b>rotina de dia, nos dias úteis</b> (segunda a sexta). Não entra nos plantões e <b>folga nos fins de semana e feriados</b>.</li>
+        <li><b>Sobreaviso</b>: fica de <b>prontidão</b> (pode ser chamado), em rodízio próprio, <b>separado</b> dos plantões presenciais. Você pode ter <b>mais de um por dia</b>.</li>
+        <li><b>Residente</b>: entra nos plantões como o plantonista, mas identificado como residente.</li>
+      </ul>
+
+      <h3>Revezar dia e noite</h3>
+      <p>Na configuração do plantão de 12h há a opção <b>“revezar dia/noite”</b> (ligada por padrão). Com ela, cada médico <b>alterna</b> entre dia e noite, em vez de ficar sempre num turno. Se o hospital tiver médicos <b>fixos</b> de dia e de noite, é só <b>desmarcar</b>.</p>
+
+      <h3>Disponibilidade de cada médico</h3>
+      <p>Muitos médicos têm outros empregos e só podem em certos dias ou turnos. No mesmo editor <b>“Papel e disponibilidade”</b> você marca:</p>
+      <ul>
+        <li><b>Dias da semana</b> em que ele pode (ex.: só segunda, quarta e sexta). Nenhum marcado = todos os dias.</li>
+        <li><b>Turno</b>: dia e noite, só dia, ou só noite.</li>
+      </ul>
+      <p>A escala <b>respeita</b> isso automaticamente: um médico “só noite” nunca cai no dia; um que só pode terça e quinta só entra nesses dias. Quem não tem restrição entra normalmente em qualquer dia.</p>
+
+      <h3>Ver os buracos antes de gerar</h3>
+      <p>O botão <b>“👁 Disponibilidade da equipe”</b> abre uma tabela de <b>dias da semana × turno</b> mostrando <b>quantos médicos podem</b> em cada combinação. Onde ficar <b>abaixo das vagas necessárias</b>, a célula fica <b>vermelha com ⚠️</b> — assim você enxerga a falta de gente <b>antes</b> de gerar e já ajusta.</p>
+
+      <h3>Como ler a escala pronta</h3>
+      <p>O plantão médico tem <b>Grade mensal</b> e <b>Por dia</b> (botões no topo), mais um <b>Resumo por médico</b> embaixo. Na grade, cada médico é uma linha e cada dia uma coluna:</p>
+      <ul>
+        <li><span class="key s">D</span> plantão de dia · <span class="key s">N</span> plantão de noite · <span class="key s">P</span> plantão de 24h</li>
+        <li><span class="key" style="color:#0ea5e9">R</span> diarista (rotina) · <span class="key" style="color:#d97706">A</span> sobreaviso</li>
+        <li><span class="key f">·</span> folga · 🏖️ férias · 🩹 atestado · <b style="color:#ea580c">+Xh</b> hora extra · <b style="color:#b45309">★</b> feriado</li>
+      </ul>
+      <p>Na <b>visão por dia</b>, cada turno mostra a <b>lista de médicos</b> daquele dia, com uma coluna de <b>sobreaviso</b> e uma nota com os <b>diaristas</b> da rotina. O <b>Resumo por médico</b> conta plantões, noites, fins de semana e horas de cada um.</p>
+
+      <h3>Falta de médico (vaga descoberta)</h3>
+      <p>Se não houver médicos suficientes para preencher todas as vagas de um turno, o app mostra um <b>aviso em vermelho</b> com quantas vagas ficaram descobertas. Aí é só <b>cadastrar mais médicos</b> ou <b>reduzir as vagas por turno</b>.</p>
+
+      <h3>Hora extra, permuta e substituição</h3>
+      <ul>
+        <li><b>Hora extra:</b> clique na célula do médico (no dia) para lançar. No plantão de times/ciclo você escolhe a pessoa.</li>
+        <li><b>Permuta / Substituição:</b> o botão <b>🔁 Permuta / Substituição</b> troca um médico por outro num dia, deixa a vaga aberta, ou permuta dois médicos entre dias/turnos. As mudanças aparecem na hora e recalculam o resumo.</li>
+      </ul>
+
+      <h3>Feriados, valores e faturamento</h3>
+      <p>No botão <b>“💰 Valores e faturamento”</b> você:</p>
+      <ul>
+        <li><b>Marca os feriados:</b> um a um (data + nome), ou clique em <b>“+ feriados nacionais”</b> para adicionar todos os nacionais do ano (inclui os móveis: Carnaval, Sexta-feira Santa e Corpus Christi). Feriados aparecem com <b>★</b> na escala, e o <b>diarista folga</b> neles.</li>
+        <li><b>Define o valor de cada plantão:</b> dia, noite, 24h, <b>feriado</b>, sobreaviso (por dia) e diarista (por dia).</li>
+        <li><b>Vê o faturamento por médico:</b> uma tabela com a quantidade de cada tipo de plantão e o <b>valor total</b> de cada médico, mais o <b>total do mês</b>. Dá para <b>exportar em CSV</b> — pronto para o médico PJ emitir a nota e para o gestor conferir.</li>
+      </ul>
+      <div class="tip">💡 Exemplo rápido: UTI de 20 leitos, plantão 12h. Digite 20 leitos → o app sugere 2 médicos por turno. Marque os médicos “só noite” que forem fixos da noite, ligue o revezamento para os demais, marque os feriados, ponha os valores e gere. Em segundos você tem a escala e o faturamento de todos.</div>
     </section>
 
     <section id="faq">
