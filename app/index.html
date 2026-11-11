@@ -565,14 +565,14 @@
     </div>
   </section>
 
-  <footer><span class="noprint">Confira a escala antes de publicar.<br>© 2026 <b>Gera Escalas</b> · <span class="lnk" onclick="openAbout()">Sobre &amp; Política de Privacidade</span> · <span style="color:var(--mut2)">v13.2</span></span></footer>
+  <footer><span class="noprint">Confira a escala antes de publicar.<br>© 2026 <b>Gera Escalas</b> · <span class="lnk" onclick="openAbout()">Sobre &amp; Política de Privacidade</span> · <span style="color:var(--mut2)">v13.3</span></span></footer>
 </main>
 
 <div id="aboutmodal" class="modal" style="display:none" onclick="if(event.target===this)closeAbout()">
   <div class="mbox">
     <button class="xbtn" onclick="closeAbout()">Fechar ✕</button>
     <h2>Gera Escalas</h2>
-    <p class="muted">Escalas de plantão, turno e giro · Versão 13.2 · 2026</p>
+    <p class="muted">Escalas de plantão, turno e giro · Versão 13.3 · 2026</p>
 
     <h3>Autoria e direitos autorais</h3>
     <p>© 2026 <b>Gera Escalas</b> — desenvolvido por Luís Cesar. Todos os direitos reservados.</p>
@@ -865,6 +865,7 @@ function restoreSchedule(){
   try{
     var raw=localStorage.getItem("ciops:schedule");if(!raw){state.schedule=null;return;}var o=JSON.parse(raw);if(!o||!o.N){state.schedule=null;return;}
     var byId={};state.militares.forEach(function(m){byId[m.id]=m;});
+    if(o.tipo==="ciclo"&&o.turmas){o.turmas.forEach(function(t){if(!byId[t.id])byId[t.id]={id:t.id,nome:t.nome,posto:""};});}
     var ref=function(id){return (id!=null&&byId[id])?byId[id]:null;};
     var g1={},g2={},g3={};for(var d=1;d<=o.N;d++){g1[d]=ref(o.g1[d]);g2[d]=ref(o.g2?o.g2[d]:null);g3[d]=ref(o.g3?o.g3[d]:null);}
     var cover={};for(var k in (o.cover||{})){var c=o.cover[k];cover[k]={};for(var gi in c){cover[k][gi]={was:ref(c[gi].was),sub:ref(c[gi].sub)};}}
@@ -2028,6 +2029,7 @@ function _gerarCore(forcar){
   const modoSel=(document.querySelector('input[name="modo"]:checked')||{}).value||state.config.modo||"auto";state.config.modo=modoSel;saveConfig();
   const modo=(tipo==="giro")?modoEfetivo():"fixa";
   const seed=cont?state.carry[mkey(year,month)]:null;
+  var _keepExtras=(state.schedule&&state.schedule.result&&state.schedule.year===year&&state.schedule.month===month&&state.schedule.result.extras)?state.schedule.result.extras:{};
   if(tipo==="folga"){
     var cfgF=state.config.folgaCfg||{trab:6,folga:1,maxDia:1,domingo:true};
     // AVISO PRÉVIO: confere se o descanso dominical cabe na configuração ANTES de montar a escala
@@ -2041,6 +2043,7 @@ function _gerarCore(forcar){
       }
     }
     var rF=gerarFolga(state.militares,year,month,cfgF,seed);
+    rF.extras=_keepExtras;
     computeStatsFolga(rF,state.militares,year,month);
     state.schedule={result:rF,year:year,month:month};
     var pmF=prevMonth(year,month);state.contInfo={applied:!!seed,source:MESES[pmF.m]+"/"+pmF.y,enabled:cont};
@@ -2059,6 +2062,7 @@ function _gerarCore(forcar){
   if(_ciclo12){result=gerarCiclo12(_entidades,year,month,(seed&&seed.ciclo12Phase)||0);}
   else{result=gerarEscala(_entidades,year,month,seed,_modo,_tipoGer);}
   result.tipo=tipo;
+  result.extras=_keepExtras;
   const _sch=schemaFor(tipo);result.cols=_sch.cols;result.durs=_sch.durs;
   computeStats(result,(tipo==="ciclo"?_entidades:state.militares),year,month);
   if(tipo==="ciclo"){result.turmas=(state.config.turmas||[]).slice();result.turmasMembros={};state.militares.forEach(function(m){if(m.turmaId){(result.turmasMembros[m.turmaId]=result.turmasMembros[m.turmaId]||[]).push((m.posto?m.posto+" ":"")+m.nome);}});}
@@ -2396,6 +2400,13 @@ function renderSchedule(){
   state.militares.forEach(m=>feriasPeriods(m).forEach(p=>{if(p.ret.getFullYear()===year&&p.ret.getMonth()===month){(retDay[p.ret.getDate()]=retDay[p.ret.getDate()]||[]).push(m.nome);}}));
   state.militares.forEach(m=>atestadoPeriods(m).forEach(p=>{if(p.ret.getFullYear()===year&&p.ret.getMonth()===month){(retDay[p.ret.getDate()]=retDay[p.ret.getDate()]||[]).push(m.nome);}}));
   const _gm=[res.g1,res.g2,res.g3];
+  var _vw=state._escView||"grade";
+  var _tgl='<div class="noprint" style="display:flex;gap:6px;margin:6px 0;flex-wrap:wrap;align-items:center"><button class="btn ghost" style="padding:5px 10px;font-size:13px'+(_vw==="dia"?';background:var(--cbm);color:#fff':'')+'" onclick="setEscView(\'dia\')">Por dia</button><button class="btn ghost" style="padding:5px 10px;font-size:13px'+(_vw==="grade"?';background:var(--cbm);color:#fff':'')+'" onclick="setEscView(\'grade\')">Grade mensal</button><button class="btn primary" style="padding:5px 12px;font-size:13px;margin-left:auto" onclick="abrirGradeFull()" title="Abrir a grade ampliada na tela inteira">🔍 Visualizar</button></div>';
+  if(_vw==="grade"){
+    var _heTip=(isAdmin()&&res.tipo!=="ciclo")?'<div class="noprint" style="display:flex;align-items:center;gap:8px;background:#fff7ed;border:1px solid #fed7aa;color:#9a3412;border-radius:8px;padding:8px 10px;margin:6px 0;font-size:13px">💡 <span><b>Hora extra na grade:</b> clique em qualquer dia da grade (na linha da pessoa) para lançar a hora extra dela naquele dia.</span></div>':'';
+    document.getElementById("escala").innerHTML=_tgl+_heTip+_gradeServicoTabela(12)+_gradeServicoLegenda(res)+signatureBlockHTML();
+    return;
+  }
   let h='<div class="tblwrap esc-table"><table class="esc"><thead><tr><th>Dia</th><th>Semana</th>'+_cols.map(function(c){return '<th>'+esc(c.lab)+(c.hhmm?' <small>'+esc(c.hhmm)+'</small>':'')+'</th>';}).join('')+'</tr></thead><tbody>';
   for(let d=1;d<=res.N;d++){
     const date=new Date(year,month,d),wd=date.getDay(),we=isWknd(date);
@@ -2420,7 +2431,7 @@ function renderSchedule(){
   hc+='</div>';
   h+=hc;
   h+=signatureBlockHTML();
-  document.getElementById("escala").innerHTML=h;
+  document.getElementById("escala").innerHTML=_tgl+h;
 }
 function setFolgaView(v){state._folgaView=v;renderFolga();}
 function _gradeFolgaTabela(fs){
@@ -2451,8 +2462,50 @@ function _gradeFolgaTabela(fs){
   gh+='</tbody></table></div>';return gh;
 }
 function _gradeFolgaLegenda(){return '<div class="tiny" style="margin-top:6px;color:var(--mut)"><b style="color:#16a34a">S</b> serviço · <b style="color:#2563eb">F</b> folga · 🏖️ férias · 🩹 atestado · <b style="color:#ea580c">+Xh</b> hora extra'+(isAdmin()?' · <span class="noprint">clique numa célula para lançar hora extra</span>':'')+'</div>';}
+function setEscView(v){state._escView=v;renderSchedule();}
+function _gradeServicoTabela(fs){
+  if(!state.schedule||!state.schedule.result)return "";
+  var res=state.schedule.result,year=state.schedule.year,month=state.schedule.month;
+  if(res.tipo==="folga")return _gradeFolgaTabela(fs);
+  var AB=["Dom","Seg","Ter","Qua","Qui","Sex","Sáb"];
+  var cols=_colsOf(res),isCiclo=(res.tipo==="ciclo");
+  var rows=isCiclo?((res.turmas||[]).map(function(t){return {id:t.id,nome:t.nome,posto:""};})):(state.militares||[]).slice();
+  var gm=[res.g1,res.g2,res.g3];
+  function colTag(ci){return cols.length===1?"S":String(ci+1);}
+  var _fs=fs||12,_em=Math.round(_fs*1.05),_sm=Math.max(8,Math.round(_fs*0.62));
+  var gh='<div class="tblwrap"><table class="esc gradef" style="font-size:'+_fs+'px"><thead><tr><th style="text-align:left;position:sticky;left:0;background:#312e81">'+(isCiclo?"Time":"Pessoa")+'</th>';
+  for(var gd=1;gd<=res.N;gd++){var _wd=new Date(year,month,gd).getDay();gh+='<th style="padding:4px 5px'+((_wd===0||_wd===6)?';background:#4338ca':'')+'">'+pad(gd)+'<br><span style="font-weight:400;font-size:'+_sm+'px">'+AB[_wd][0]+'</span></th>';}
+  gh+='</tr></thead><tbody>';
+  rows.forEach(function(m){
+    gh+='<tr><td style="text-align:left;font-weight:600;position:sticky;left:0;background:#fff;white-space:nowrap">'+esc((m.posto?m.posto+" ":"")+m.nome)+'</td>';
+    for(var gd2=1;gd2<=res.N;gd2++){
+      var _dt=new Date(year,month,gd2);
+      var _fer=!isCiclo&&onVacation(m,_dt),_ate=!isCiclo&&onAtestado(m,_dt);
+      var colIdx=-1;for(var ci=0;ci<cols.length;ci++){var x=gm[ci]?gm[ci][gd2]:null;if(x&&String(x.id)===String(m.id)){colIdx=ci;break;}}
+      var cell=_fer?'<span title="Férias" style="font-size:'+_em+'px">🏖️</span>':(_ate?'<span title="Atestado/afastado" style="font-size:'+_em+'px">🩹</span>':(colIdx>=0?('<b title="Em serviço — '+esc(cols[colIdx].lab)+'" style="color:#16a34a">'+colTag(colIdx)+'</b>'):'<span title="Folga" style="color:#2563eb">·</span>'));
+      var _wd2=_dt.getDay();
+      var _exc=((res.extras&&res.extras[gd2])||[]).filter(function(e){return String(e.id)===String(m.id);});
+      var _exh=_exc.reduce(function(a,e){return a+(+e.horas||0);},0);
+      var _mk=_exh>0?'<br><span title="Hora extra: '+_exh+'h" style="font-size:'+Math.max(7,Math.round(_fs*0.6))+'px;color:#ea580c;font-weight:700">+'+_exh+'h</span>':'';
+      var _bg=((_wd2===0||_wd2===6)?';background:#eef2ff':'');
+      if(isAdmin()&&!isCiclo)gh+='<td onclick="openHoraExtra(\''+m.id+'\','+gd2+')" title="Clique para lançar hora extra" style="cursor:pointer;text-align:center;padding:3px 5px'+_bg+'">'+cell+_mk+'</td>';
+      else gh+='<td style="text-align:center;padding:3px 5px'+_bg+'">'+cell+_mk+'</td>';
+    }
+    gh+='</tr>';
+  });
+  gh+='</tbody></table></div>';return gh;
+}
+function _gradeServicoLegenda(res){
+  res=res||(state.schedule&&state.schedule.result);if(!res)return "";
+  var cols=_colsOf(res),parts=[];
+  if(cols.length===1)parts.push('<b style="color:#16a34a">S</b> em serviço');
+  else cols.forEach(function(c,i){parts.push('<b style="color:#16a34a">'+(i+1)+'</b> '+esc(c.lab));});
+  parts.push('<b style="color:#2563eb">·</b> folga');parts.push('🏖️ férias');parts.push('🩹 atestado');parts.push('<b style="color:#ea580c">+Xh</b> hora extra');
+  return '<div class="tiny" style="margin-top:6px;color:var(--mut)">'+parts.join(" · ")+((isAdmin()&&res.tipo!=="ciclo")?' · <span class="noprint">clique numa célula para lançar hora extra</span>':'')+'</div>';
+}
 function abrirGradeFull(){
-  if(!state.schedule||!state.schedule.result||state.schedule.result.tipo!=="folga"){alert("Gere a escala primeiro.");return;}
+  if(!state.schedule||!state.schedule.result){alert("Gere a escala primeiro.");return;}
+  var _ehFolga=(state.schedule.result.tipo==="folga");
   var old=document.getElementById("gradeFullModal");if(old)old.remove();
   var tit=MESES[state.schedule.month]+" de "+state.schedule.year;
   var ov=document.createElement("div");ov.id="gradeFullModal";
@@ -2463,7 +2516,7 @@ function abrirGradeFull(){
     +'<div id="gradeFullBody" style="flex:1;overflow:auto;padding:12px;-webkit-overflow-scrolling:touch"></div>'
     +'<div class="tiny" style="padding:8px 14px;color:var(--mut);border-top:1px solid var(--line);flex:0 0 auto">Role para os lados para ver todos os dias · gire o celular na horizontal ou use dois dedos para aproximar (zoom).</div>';
   document.body.appendChild(ov);
-  document.getElementById("gradeFullBody").innerHTML=_gradeFolgaTabela(16)+_gradeFolgaLegenda();
+  document.getElementById("gradeFullBody").innerHTML=_ehFolga?(_gradeFolgaTabela(16)+_gradeFolgaLegenda()):(_gradeServicoTabela(16)+_gradeServicoLegenda());
   try{document.body.style.overflow="hidden";}catch(e){}
 }
 function fecharGradeFull(){var m=document.getElementById("gradeFullModal");if(m)m.remove();try{document.body.style.overflow="";}catch(e){}}
