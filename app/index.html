@@ -565,14 +565,14 @@
     </div>
   </section>
 
-  <footer><span class="noprint">Confira a escala antes de publicar.<br>© 2026 <b>Gera Escalas</b> · <span class="lnk" onclick="openAbout()">Sobre &amp; Política de Privacidade</span> · <span style="color:var(--mut2)">v13.3</span></span></footer>
+  <footer><span class="noprint">Confira a escala antes de publicar.<br>© 2026 <b>Gera Escalas</b> · <span class="lnk" onclick="openAbout()">Sobre &amp; Política de Privacidade</span> · <span style="color:var(--mut2)">v13.4</span></span></footer>
 </main>
 
 <div id="aboutmodal" class="modal" style="display:none" onclick="if(event.target===this)closeAbout()">
   <div class="mbox">
     <button class="xbtn" onclick="closeAbout()">Fechar ✕</button>
     <h2>Gera Escalas</h2>
-    <p class="muted">Escalas de plantão, turno e giro · Versão 13.3 · 2026</p>
+    <p class="muted">Escalas de plantão, turno e giro · Versão 13.4 · 2026</p>
 
     <h3>Autoria e direitos autorais</h3>
     <p>© 2026 <b>Gera Escalas</b> — desenvolvido por Luís Cesar. Todos os direitos reservados.</p>
@@ -4148,7 +4148,7 @@ async function cloudPullAll(){
     if(v!==undefined&&v!==null){try{localStorage.setItem(ls,JSON.stringify(v));}catch(e){}}
     else{
       var local=localStorage.getItem(ls);
-      if(local&&sa==="principal"&&isAdmin()){try{await db.from("app_state").upsert({org_id:state.user.orgId,chave:b+"@principal",dados:JSON.parse(local),atualizado_em:new Date().toISOString()},{onConflict:"org_id,chave"});}catch(e){}}
+      if(local&&sa==="principal"&&isAdmin()&&setores.length<=1){try{await db.from("app_state").upsert({org_id:state.user.orgId,chave:b+"@principal",dados:JSON.parse(local),atualizado_em:new Date().toISOString()},{onConflict:"org_id,chave"});}catch(e){}}
       else{try{localStorage.removeItem(ls);}catch(e){}}
     }
   }
