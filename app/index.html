@@ -570,14 +570,14 @@
     </div>
   </section>
 
-  <footer><span class="noprint">Confira a escala antes de publicar.<br>© 2026 <b>Gera Escalas</b> · <span class="lnk" onclick="openAbout()">Sobre &amp; Política de Privacidade</span> · <span style="color:var(--mut2)">v13.19</span></span></footer>
+  <footer><span class="noprint">Confira a escala antes de publicar.<br>© 2026 <b>Gera Escalas</b> · <span class="lnk" onclick="openAbout()">Sobre &amp; Política de Privacidade</span> · <span style="color:var(--mut2)">v13.20</span></span></footer>
 </main>
 
 <div id="aboutmodal" class="modal" style="display:none" onclick="if(event.target===this)closeAbout()">
   <div class="mbox">
     <button class="xbtn" onclick="closeAbout()">Fechar ✕</button>
     <h2>Gera Escalas</h2>
-    <p class="muted">Escalas de plantão, turno e giro · Versão 13.19 · 2026</p>
+    <p class="muted">Escalas de plantão, turno e giro · Versão 13.20 · 2026</p>
 
     <h3>Autoria e direitos autorais</h3>
     <p>© 2026 <b>Gera Escalas</b> — desenvolvido por Luís Cesar. Todos os direitos reservados.</p>
@@ -3809,9 +3809,10 @@ function baixarModeloCSV(){
 }
 function _brd(s){if(!s)return "—";var p=String(s).slice(0,10).split("-");return p.length===3?(p[2]+"/"+p[1]+"/"+p[0]):String(s);}
 function _waDigits(t){var d=String(t||"").replace(/\D/g,"");if(!d)return "";if(d.length<=11)d="55"+d;return d;}
+function _waWelcome(c){var org=(c&&c.organizacao)?String(c.organizacao).trim():"";var ola=org?("Olá, "+org+"!"):"Olá!";var msg=ola+" Aqui é o Cesar Martins, do Gera Escalas. 👋\n\nSeja muito bem-vindo(a)! Vou te ajudar a montar a sua primeira escala — é rápido e simples.\n\nPara começarmos: qual tipo de escala você precisa (giro, plantão 24h, folga 5x2, plantão médico…)? Me conta um pouco sobre a sua equipe e eu te oriento passo a passo. 🙂";return encodeURIComponent(msg);}
 function _contatoHTML(c){
   var nm=(c.organizacao||"").replace(/['"\\<>]/g," ");
-  if(c.telefone){var d=_waDigits(c.telefone);return '<span class="tiny">📱 <a href="https://wa.me/'+d+'" target="_blank" rel="noopener" style="color:#16a34a;font-weight:700">'+esc(c.telefone)+'</a> <span style="color:#94a3b8;cursor:pointer" title="Editar" onclick="editarTel(\''+c.org_id+'\',\''+nm+'\')">✎</span></span>';}
+  if(c.telefone){var d=_waDigits(c.telefone);return '<span class="tiny">📱 <a href="https://wa.me/'+d+'?text='+_waWelcome(c)+'" target="_blank" rel="noopener" style="color:#16a34a;font-weight:700">'+esc(c.telefone)+'</a> <span style="color:#94a3b8;cursor:pointer" title="Editar" onclick="editarTel(\''+c.org_id+'\',\''+nm+'\')">✎</span></span>';}
   return '<button class="ubtn" style="background:#ecfdf5;color:#047857;padding:2px 8px;font-size:11px;margin-top:2px" onclick="editarTel(\''+c.org_id+'\',\''+nm+'\')">+ WhatsApp</button>';
 }
 async function editarTel(orgId,nome){
