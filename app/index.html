@@ -565,14 +565,14 @@
     </div>
   </section>
 
-  <footer><span class="noprint">Confira a escala antes de publicar.<br>© 2026 <b>Gera Escalas</b> · <span class="lnk" onclick="openAbout()">Sobre &amp; Política de Privacidade</span> · <span style="color:var(--mut2)">v13.15</span></span></footer>
+  <footer><span class="noprint">Confira a escala antes de publicar.<br>© 2026 <b>Gera Escalas</b> · <span class="lnk" onclick="openAbout()">Sobre &amp; Política de Privacidade</span> · <span style="color:var(--mut2)">v13.16</span></span></footer>
 </main>
 
 <div id="aboutmodal" class="modal" style="display:none" onclick="if(event.target===this)closeAbout()">
   <div class="mbox">
     <button class="xbtn" onclick="closeAbout()">Fechar ✕</button>
     <h2>Gera Escalas</h2>
-    <p class="muted">Escalas de plantão, turno e giro · Versão 13.15 · 2026</p>
+    <p class="muted">Escalas de plantão, turno e giro · Versão 13.16 · 2026</p>
 
     <h3>Autoria e direitos autorais</h3>
     <p>© 2026 <b>Gera Escalas</b> — desenvolvido por Luís Cesar. Todos os direitos reservados.</p>
@@ -1264,7 +1264,7 @@ function renderAssinatura(){
         '<div style="font-weight:800">Essencial'+_badge("essencial")+'</div>'+
         '<div class="tiny" style="color:var(--mut);margin:2px 0 8px">Tudo para montar e girar as escalas · <b>1 setor</b>.</div>'+
         '<div style="display:grid;gap:8px;grid-template-columns:1fr 1fr">'+
-          '<button class="btn primary" onclick="assinarMensal(\'essencial\')">💳 Mensal<br><span style="font-weight:500;font-size:12px">R$ 99/mês</span></button>'+
+          '<button class="btn primary" onclick="assinarMensal(\'essencial\')">⚡ Mensal (Pix)<br><span style="font-weight:500;font-size:12px">R$ 99/mês</span></button>'+
           '<button class="btn primary" style="background:var(--teal)" onclick="assinarPro(\'essencial\')">📱 Anual (Pix)<br><span style="font-weight:500;font-size:12px">R$ 990/ano · 2 meses grátis</span></button>'+
         '</div>'+
       '</div>'+
@@ -1272,7 +1272,7 @@ function renderAssinatura(){
         '<div style="font-weight:800;color:var(--cbm)">Profissional'+_badge("profissional")+' <span style="font-size:11px;background:var(--cbm);color:#fff;border-radius:999px;padding:1px 8px;vertical-align:middle">vários setores</span></div>'+
         '<div class="tiny" style="color:var(--mut);margin:2px 0 8px">Tudo do Essencial + <b>vários setores</b> e suporte prioritário.</div>'+
         '<div style="display:grid;gap:8px;grid-template-columns:1fr 1fr">'+
-          '<button class="btn primary" onclick="assinarMensal(\'profissional\')">💳 Mensal<br><span style="font-weight:500;font-size:12px">R$ 199/mês</span></button>'+
+          '<button class="btn primary" onclick="assinarMensal(\'profissional\')">⚡ Mensal (Pix)<br><span style="font-weight:500;font-size:12px">R$ 199/mês</span></button>'+
           '<button class="btn primary" style="background:var(--teal)" onclick="assinarPro(\'profissional\')">📱 Anual (Pix)<br><span style="font-weight:500;font-size:12px">R$ 2.388/ano</span></button>'+
         '</div>'+
       '</div>'+
@@ -1289,13 +1289,21 @@ async function assinarMensal(tier){
   var _doc=(state.user&&state.user.orgCnpj||"").replace(/\D/g,"");
   var mm=document.getElementById("assin_msg");
   if(_doc.length!==11&&_doc.length!==14){if(mm){mm.textContent="Antes de assinar, informe o CNPJ/CPF da organização (campo abaixo) e salve.";mm.style.color="#b91c1c";}var el=document.getElementById("cfg_doc");if(el&&el.scrollIntoView)el.scrollIntoView({behavior:"smooth"});return;}
-  if(mm){mm.textContent="Abrindo o pagamento seguro do cartão...";mm.style.color="var(--mut)";}
+  if(mm){mm.textContent="Gerando cobrança Pix mensal...";mm.style.color="var(--mut)";}
+  var pix=document.getElementById("assin_pix");if(pix)pix.style.display="none";
   try{
     var r=await db.functions.invoke("criar-cobranca",{body:{plano:"mensal",tier:tier||"essencial"}});
     if(r.error){var em=await _fnErr(r);if(mm){mm.textContent="Falha: "+em;mm.style.color="#b91c1c";}return;}
     var d=r.data||{};
-    if(d.checkoutUrl){window.open(d.checkoutUrl,"_blank");if(mm){mm.textContent="Abrimos a página segura do cartão em outra aba. Após concluir, volte e clique em “Já paguei / Atualizar status”.";mm.style.color="#1d4ed8";}}
-    else{if(mm){mm.textContent="Não recebi o link do cartão: "+JSON.stringify(d);mm.style.color="#b91c1c";}}
+    if(!d.payload){if(mm){mm.textContent="Não recebi o Pix: "+JSON.stringify(d);mm.style.color="#b91c1c";}return;}
+    if(mm)mm.textContent="";
+    if(pix){
+      pix.style.display="";
+      pix.innerHTML='<div style="max-width:320px;margin:0 auto"><p class="tiny">Assinatura <b>mensal por Pix</b> (R$ '+(d.valor||"99").toString().replace(".",",")+'/mês). Pague o Pix abaixo para ativar; a cada mês o Asaas gera um novo Pix para renovar. Após pagar, clique em <b>Já paguei / Atualizar</b>.</p>'+
+        (d.qrcode?'<img src="data:image/png;base64,'+d.qrcode+'" alt="QR Pix" style="width:220px;height:220px;border:1px solid var(--line);border-radius:8px">':'')+
+        '<label class="fld" style="margin-top:8px"><span>Pix copia e cola</span><textarea readonly style="width:100%;height:70px;font:12px monospace">'+d.payload+'</textarea></label>'+
+        '<button class="btn ghost" onclick="(function(){try{navigator.clipboard.writeText('+JSON.stringify(d.payload)+');}catch(e){}})()">📋 Copiar código Pix</button></div>';
+    }
   }catch(e){if(mm){mm.textContent="Erro: "+e;mm.style.color="#b91c1c";}}
 }
 async function assinarPro(tier){
