@@ -570,14 +570,14 @@
     </div>
   </section>
 
-  <footer><span class="noprint">Confira a escala antes de publicar.<br>© 2026 <b>Gera Escalas</b> · <span class="lnk" onclick="openAbout()">Sobre &amp; Política de Privacidade</span> · <span style="color:var(--mut2)">v13.18</span></span></footer>
+  <footer><span class="noprint">Confira a escala antes de publicar.<br>© 2026 <b>Gera Escalas</b> · <span class="lnk" onclick="openAbout()">Sobre &amp; Política de Privacidade</span> · <span style="color:var(--mut2)">v13.19</span></span></footer>
 </main>
 
 <div id="aboutmodal" class="modal" style="display:none" onclick="if(event.target===this)closeAbout()">
   <div class="mbox">
     <button class="xbtn" onclick="closeAbout()">Fechar ✕</button>
     <h2>Gera Escalas</h2>
-    <p class="muted">Escalas de plantão, turno e giro · Versão 13.18 · 2026</p>
+    <p class="muted">Escalas de plantão, turno e giro · Versão 13.19 · 2026</p>
 
     <h3>Autoria e direitos autorais</h3>
     <p>© 2026 <b>Gera Escalas</b> — desenvolvido por Luís Cesar. Todos os direitos reservados.</p>
@@ -866,6 +866,7 @@ function inAny(periods,date){const t=date.getTime();return periods.some(p=>t>=p.
 function onVacation(m,date){return inAny(feriasPeriods(m),date);}
 function onAtestado(m,date){return inAny(atestadoPeriods(m),date);}
 function isUnavailable(m,date){return onVacation(m,date)||onAtestado(m,date);}
+function _diasOk(m,dow){var dd=(m&&m.dispMed&&m.dispMed.dias)||[];return !dd.length||dd.indexOf(dow)>=0;}
 function weekendSatKey(date){const wd=date.getDay();return ymd(wd===0?addDays(date,-1):date);}
 const wkMinus=(k,n)=>ymd(addDays(parseYmd(k),-7*n));
 function trailingRun(wkHist,wk){let n=0,cur=wkMinus(wk,1);while(wkHist.includes(cur)){n++;cur=wkMinus(cur,1);}return n;}
@@ -1848,7 +1849,7 @@ function gerarMulti3(militares,year,month,seed){
   var g1={},g2={},g3={},cover={},maps=[g1,g2,g3];
   for(var D=1;D<=N;D++){var dt=dateOf(D);var we=(dt.getDay()===0||dt.getDay()===6);var pickedToday=[];
     for(var k=0;k<3;k++){
-      var avail=st.filter(function(z){return !isUnavailable(z.ref,dt)&&pickedToday.indexOf(z.ref.id)<0;});
+      var avail=st.filter(function(z){return !isUnavailable(z.ref,dt)&&_diasOk(z.ref,dt.getDay())&&pickedToday.indexOf(z.ref.id)<0;});
       var ch;
       if(we&&fdsOn){var base=avail.filter(function(s){return (D-s.lastSatDay)>=8;});if(!base.length)base=avail;
         ch=base.sort(function(a,b){return a.lastSatDay-b.lastSatDay||a.lastEnter-b.lastEnter||a.order-b.order;})[0]||null;}
@@ -1870,7 +1871,7 @@ function recalc3(res0,militares,year,month){
     if(D<start){for(var k=0;k<3;k++){var r=old[k][D];maps[k][D]=r;var s=r?byId(r.id):null;if(s)s.lastEnter=D+k/3;}continue;}
     var pickedToday=[];
     for(var k=0;k<3;k++){
-      var avail=st.filter(function(z){return !isUnavailable(z.ref,dt)&&pickedToday.indexOf(z.ref.id)<0;});
+      var avail=st.filter(function(z){return !isUnavailable(z.ref,dt)&&_diasOk(z.ref,dt.getDay())&&pickedToday.indexOf(z.ref.id)<0;});
       var ch=avail.sort(function(a,b){return a.lastEnter-b.lastEnter||a.order-b.order;})[0]||null;
       maps[k][D]=ch?ch.ref:null;if(ch){ch.lastEnter=D+k/3;pickedToday.push(ch.ref.id);}
       var ov=old[k][D];if((ov&&ch&&ov.id!==ch.ref.id)||(!!ov!==!!ch)){changed[D]=changed[D]||{};changed[D][k+1]=true;}
@@ -1888,7 +1889,7 @@ function gerarEscala(militares,year,month,seed,modo,tipo){
   const enter={};
   function choose(D){
     const date=dateOf(D),dateNext=dateOf(D+1);
-    const avail=st.filter(s=>!isUnavailable(s.ref,date)&&!isUnavailable(s.ref,dateNext));
+    const avail=st.filter(s=>!isUnavailable(s.ref,date)&&!isUnavailable(s.ref,dateNext)&&_diasOk(s.ref,date.getDay()));
     let pool=[];for(const gap of[3,2]){pool=avail.filter(s=>D-s.lastEnter>=gap);if(pool.length)break;}
     if(!pool.length)pool=avail.filter(s=>D-s.lastEnter>=2);
     if(!pool.length)return null;
@@ -2518,7 +2519,7 @@ function renderRoster(){
     ats.forEach(a=>{let info="";if(a.start&&a.dias>0){info='<span class="info">retorna '+brDate(addDays(parseYmd(a.start),a.dias))+'</span>';}
       h+='<div class="per"><input type="date" value="'+(a.start||"")+'" onchange="setAtestadoStart('+m.id+','+a.id+',this.value)"><input type="number" class="dias" min="1" placeholder="dias" value="'+(a.dias||"")+'" onchange="setAtestadoDias('+m.id+','+a.id+',this.value)">'+info+'<button onclick="removeAtestado('+m.id+','+a.id+')">✕</button></div>';});
     h+='<button class="addper" onclick="addAtestado('+m.id+')">＋ atestado</button></div>';
-    h+='<div class="fer"><div class="lbl">🗓 Papel e disponibilidade (plantão médico)</div><span class="tiny" style="color:var(--mut)">'+esc(_dispResumo(m))+'</span> &nbsp;<button class="addper" onclick="openDisp('+m.id+')">editar</button></div>';
+    if(['medico','giro','3giros','24h','turno'].indexOf(state.config.tipo)>=0){var _dlbl=(state.config.tipo==='medico')?'🗓 Papel e disponibilidade (plantão médico)':'🗓 Disponibilidade (dias da semana)';h+='<div class="fer"><div class="lbl">'+_dlbl+'</div><span class="tiny" style="color:var(--mut)">'+esc(_dispResumo(m))+'</span> &nbsp;<button class="addper" onclick="openDisp('+m.id+')">editar</button></div>';}
     h+='</div><button class="del" onclick="removeMilitar('+m.id+')">🗑</button></li>';
   });
   h+='</ul>';box.innerHTML=h;updateModoHint();
@@ -2902,16 +2903,16 @@ function openHoraExtra(preId,preDia){if(!isAdmin())return;if(!state.schedule||!s
 function closeHoraExtra(){var m=document.getElementById("hemodal");if(m)m.style.display="none";}
 function _medDisp(m){return {dias:(m&&m.dispMed&&m.dispMed.dias)||[],turno:(m&&m.dispMed&&m.dispMed.turno)||"ambos"};}
 function _medAvail(m,dow,shift,is12){var d=_medDisp(m);if(d.dias.length&&d.dias.indexOf(dow)<0)return false;if(is12&&d.turno!=="ambos"&&d.turno!==shift)return false;return true;}
-function _dispResumo(m){var d=_medDisp(m);var WD=["Dom","Seg","Ter","Qua","Qui","Sex","Sáb"];var ds=d.dias.length?d.dias.slice().sort(function(a,b){return a-b;}).map(function(x){return WD[x];}).join(", "):"Todos os dias";var tn=d.turno==="dia"?"só dia":(d.turno==="noite"?"só noite":"dia e noite");var pap=(m&&m.papel&&m.papel!=="plantonista")?(({diarista:"Diarista",sobreaviso:"Sobreaviso",residente:"Residente"}[m.papel]||m.papel)+" · "):"";return pap+ds+" · "+tn;}
+function _dispResumo(m){var d=_medDisp(m);var WD=["Dom","Seg","Ter","Qua","Qui","Sex","Sáb"];var ds=d.dias.length?d.dias.slice().sort(function(a,b){return a-b;}).map(function(x){return WD[x];}).join(", "):"Todos os dias";var tn=d.turno==="dia"?"só dia":(d.turno==="noite"?"só noite":"dia e noite");var pap=(m&&m.papel&&m.papel!=="plantonista")?(({diarista:"Diarista",sobreaviso:"Sobreaviso",residente:"Residente"}[m.papel]||m.papel)+" · "):"";var ehMed=(state.config.tipo==="medico");return ehMed?(pap+ds+" · "+tn):ds;}
 function openDisp(id){if(!isAdmin())return;var m=byMil(id);if(!m)return;state._dispTmp=_medDisp(m).dias.slice();_dispBuild(id);var mo=document.getElementById("dispmodal");if(mo)mo.style.display="flex";}
 function closeDisp(){var mo=document.getElementById("dispmodal");if(mo)mo.style.display="none";}
-function _dispBuild(id){var m=byMil(id);if(!m)return;var d=_medDisp(m);var WD=["Dom","Seg","Ter","Qua","Qui","Sex","Sáb"];
+function _dispBuild(id){var m=byMil(id);if(!m)return;var d=_medDisp(m);var ehMed=(state.config.tipo==="medico");var WD=["Dom","Seg","Ter","Qua","Qui","Sex","Sáb"];
   var dias=WD.map(function(w,i){var on=state._dispTmp.indexOf(i)>=0;return '<button type="button" id="disp_d'+i+'" onclick="_dispToggleDia('+i+')" class="btn ghost" style="padding:5px 9px;font-size:13px'+(on?';background:var(--cbm);color:#fff':'')+'">'+w+'</button>';}).join("");
-  var html='<p class="muted" style="margin:0 0 8px">Marque os dias da semana e o turno em que <b>'+esc((m.posto?m.posto+" ":"")+m.nome)+'</b> pode entrar de plantão. Usado na escala de <b>Plantão médico</b>.</p>'
-   +'<div class="tiny" style="font-weight:700;margin-bottom:4px">Papel</div><div class="row" style="margin-bottom:12px"><select id="disp_papel" style="font:inherit;padding:5px 7px;border:1px solid var(--line2);border-radius:6px"><option value="plantonista"'+((m.papel||"plantonista")==="plantonista"?" selected":"")+'>Plantonista — entra nos plantões</option><option value="diarista"'+(m.papel==="diarista"?" selected":"")+'>Diarista — rotina (dias úteis, de dia)</option><option value="sobreaviso"'+(m.papel==="sobreaviso"?" selected":"")+'>Sobreaviso — prontidão (1 por dia)</option><option value="residente"'+(m.papel==="residente"?" selected":"")+'>Residente — entra nos plantões</option></select></div>'
-   +'<div class="tiny" style="font-weight:700;margin-bottom:4px">Dias da semana <span style="font-weight:400;color:var(--mut)">(nenhum marcado = todos os dias)</span></div><div style="display:flex;gap:5px;flex-wrap:wrap;margin-bottom:12px">'+dias+'</div>'
-   +'<div class="tiny" style="font-weight:700;margin-bottom:4px">Turno</div><div class="row" style="gap:14px;flex-wrap:wrap"><label><input type="radio" name="disp_turno" value="ambos"'+(d.turno==="ambos"?" checked":"")+'> Dia e noite</label><label><input type="radio" name="disp_turno" value="dia"'+(d.turno==="dia"?" checked":"")+'> Só dia</label><label><input type="radio" name="disp_turno" value="noite"'+(d.turno==="noite"?" checked":"")+'> Só noite</label></div>'
-   +'<div style="margin-top:12px;display:flex;gap:8px;flex-wrap:wrap"><button class="btn primary" onclick="salvarDisp('+id+')">Salvar</button><button class="btn ghost" onclick="_dispLimpar('+id+')">Sem restrição</button></div>';
+  var nome=esc((m.posto?m.posto+" ":"")+m.nome);
+  var intro=ehMed?('Marque os dias da semana e o turno em que <b>'+nome+'</b> pode entrar de plantão. Usado na escala de <b>Plantão médico</b>.'):('Marque os dias da semana em que <b>'+nome+'</b> pode entrar na escala. Nos dias não marcados ela não será escalada; se ninguém couber no dia, esse dia pode ficar sem ninguém escalado.');
+  var papelHtml=ehMed?('<div class="tiny" style="font-weight:700;margin-bottom:4px">Papel</div><div class="row" style="margin-bottom:12px"><select id="disp_papel" style="font:inherit;padding:5px 7px;border:1px solid var(--line2);border-radius:6px"><option value="plantonista"'+((m.papel||"plantonista")==="plantonista"?" selected":"")+'>Plantonista — entra nos plantões</option><option value="diarista"'+(m.papel==="diarista"?" selected":"")+'>Diarista — rotina (dias úteis, de dia)</option><option value="sobreaviso"'+(m.papel==="sobreaviso"?" selected":"")+'>Sobreaviso — prontidão (1 por dia)</option><option value="residente"'+(m.papel==="residente"?" selected":"")+'>Residente — entra nos plantões</option></select></div>'):'';
+  var turnoHtml=ehMed?('<div class="tiny" style="font-weight:700;margin-bottom:4px">Turno</div><div class="row" style="gap:14px;flex-wrap:wrap"><label><input type="radio" name="disp_turno" value="ambos"'+(d.turno==="ambos"?" checked":"")+'> Dia e noite</label><label><input type="radio" name="disp_turno" value="dia"'+(d.turno==="dia"?" checked":"")+'> Só dia</label><label><input type="radio" name="disp_turno" value="noite"'+(d.turno==="noite"?" checked":"")+'> Só noite</label></div>'):'';
+  var html='<p class="muted" style="margin:0 0 8px">'+intro+'</p>'+papelHtml+'<div class="tiny" style="font-weight:700;margin-bottom:4px">Dias da semana <span style="font-weight:400;color:var(--mut)">(nenhum marcado = todos os dias)</span></div><div style="display:flex;gap:5px;flex-wrap:wrap;margin-bottom:12px">'+dias+'</div>'+turnoHtml+'<div style="margin-top:12px;display:flex;gap:8px;flex-wrap:wrap"><button class="btn primary" onclick="salvarDisp('+id+')">Salvar</button><button class="btn ghost" onclick="_dispLimpar('+id+')">Sem restrição</button></div>';
   var el=document.getElementById("disp_body");if(el)el.innerHTML=html;}
 function _dispToggleDia(i){state._dispTmp=state._dispTmp||[];var k=state._dispTmp.indexOf(i);if(k>=0)state._dispTmp.splice(k,1);else state._dispTmp.push(i);var b=document.getElementById("disp_d"+i);if(b){var on=state._dispTmp.indexOf(i)>=0;b.style.background=on?"var(--cbm)":"";b.style.color=on?"#fff":"";}}
 function _dispLimpar(id){var m=byMil(id);if(!m)return;delete m.dispMed;saveMil();renderRoster();closeDisp();log("Disponibilidade",((m.posto?m.posto+" ":"")+m.nome)+": sem restrição");}
