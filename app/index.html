@@ -570,14 +570,14 @@
     </div>
   </section>
 
-  <footer><span class="noprint">Confira a escala antes de publicar.<br>© 2026 <b>Gera Escalas</b> · <span class="lnk" onclick="openAbout()">Sobre &amp; Política de Privacidade</span> · <span style="color:var(--mut2)">v13.25</span></span></footer>
+  <footer><span class="noprint">Confira a escala antes de publicar.<br>© 2026 <b>Gera Escalas</b> · <span class="lnk" onclick="openAbout()">Sobre &amp; Política de Privacidade</span> · <span style="color:var(--mut2)">v13.26</span></span></footer>
 </main>
 
 <div id="aboutmodal" class="modal" style="display:none" onclick="if(event.target===this)closeAbout()">
   <div class="mbox">
     <button class="xbtn" onclick="closeAbout()">Fechar ✕</button>
     <h2>Gera Escalas</h2>
-    <p class="muted">Escalas de plantão, turno e giro · Versão 13.25 · 2026</p>
+    <p class="muted">Escalas de plantão, turno e giro · Versão 13.26 · 2026</p>
 
     <h3>Autoria e direitos autorais</h3>
     <p>© 2026 <b>Gera Escalas</b> — desenvolvido por Luís Cesar. Todos os direitos reservados.</p>
@@ -625,7 +625,7 @@
   <div class="mbox" style="max-width:920px">
     <button class="xbtn" onclick="closeAfiliados()">Fechar ✕</button>
     <h2>🤝 Afiliados</h2>
-    <p class="muted">Aprove os cadastros. Ao aprovar, o sistema cria a <b>subconta Asaas</b> do afiliado e libera o link de vendas dele.</p>
+    <p class="muted">Aprove os cadastros. Ao aprovar, o afiliado é liberado e passa a receber as comissões por <b>PIX</b> na chave dele, automaticamente a cada venda confirmada.</p>
     <div id="afilbody" style="margin-top:12px"></div>
   </div>
 </div>
@@ -3919,7 +3919,7 @@ async function renderAfiliados(){
     var doc=a.cpf_cnpj?('<br><span class="tiny" style="color:#94a3b8">'+esc(a.cpf_cnpj)+'</span>'):'';
     var acao='';
     if(a.status==="pendente")acao='<button class="btn primary" style="padding:6px 10px;min-height:34px" onclick="aprovarAfil(\''+a.id+'\')">Aprovar</button> <button class="btn ghost" style="padding:6px 10px;min-height:34px" onclick="recusarAfil(\''+a.id+'\')">Recusar</button>';
-    else if(a.status==="aprovado")acao='<span class="tiny">código: <b>'+esc(a.codigo||"")+'</b>'+(a.asaas_wallet_id?' · <span style="color:#16a34a">subconta ok</span>':' · <span style="color:#b45309">sem subconta</span>')+'</span>';
+    else if(a.status==="aprovado")acao='<span class="tiny">código: <b>'+esc(a.codigo||"")+'</b>'+(a.pix_key?' · <span style="color:#16a34a">✓ recebe por PIX</span>':' · <span style="color:#b45309">⚠ sem chave PIX</span>')+'</span>';
     else acao='<button class="btn ghost" style="padding:6px 10px;min-height:34px" onclick="aprovarAfil(\''+a.id+'\')">Reativar</button>';
     h+='<tr><td style="text-align:left"><b>'+esc(a.nome||"")+'</b>'+doc+'<br><span class="tiny" style="color:#64748b">'+esc(a.email||"")+'</span></td><td style="text-align:center">'+esc(a.tipo||"")+'</td><td style="text-align:center">'+badge+'</td><td style="text-align:center">'+acao+'</td></tr>';
   });
@@ -3928,7 +3928,7 @@ async function renderAfiliados(){
 }
 async function aprovarAfil(id){
   if(!cloudReady())return;
-  var box=document.getElementById("afilbody");if(box)box.innerHTML='<div class="tip">Criando a subconta Asaas e aprovando… aguarde alguns segundos.</div>';
+  var box=document.getElementById("afilbody");if(box)box.innerHTML='<div class="tip">Aprovando o afiliado… aguarde.</div>';
   var r;try{r=await db.functions.invoke("aprovar-afiliado",{body:{afiliado_id:id}});}catch(e){r={error:{message:String(e)}};}
   var em=null;
   if(r&&r.error){try{var ctx=r.error.context;if(ctx&&typeof ctx.json==="function"){var j=await ctx.json();em=j&&j.error;}}catch(e){}if(!em)em=r.error.message;}
