@@ -1,0 +1,16 @@
+{
+  "name": "Afiliados — Gera Escalas",
+  "short_name": "Afiliados GE",
+  "description": "Painel de afiliados do Gera Escalas: seu link, cliques e comissões.",
+  "start_url": ".",
+  "scope": ".",
+  "display": "standalone",
+  "orientation": "any",
+  "background_color": "#0f172a",
+  "theme_color": "#4338ca",
+  "icons": [
+    { "src": "https://geraescalas.com.br/geraescalas_icone_192.png", "sizes": "192x192", "type": "image/png", "purpose": "any" },
+    { "src": "https://geraescalas.com.br/geraescalas_icone_512.png", "sizes": "512x512", "type": "image/png", "purpose": "any" },
+    { "src": "https://geraescalas.com.br/geraescalas_icone_512.png", "sizes": "512x512", "type": "image/png", "purpose": "maskable" }
+  ]
+}
