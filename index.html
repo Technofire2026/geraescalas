@@ -364,7 +364,7 @@
     s.src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2";
     s.onload=function(){ try{
       var sb=window.supabase.createClient("https://ebvbjepghlzqkpbgdcbk.supabase.co","sb_publishable_7tOgGEsmgJxts_-YpUGWuA_JAzvWRCM");
-      sb.from("afiliado_cliques").insert({codigo:ref, ua_hash:(navigator.userAgent||"").slice(0,40)});
+      sb.from("afiliado_cliques").insert({codigo:ref, ua_hash:(navigator.userAgent||"").slice(0,40)}).then(function(){},function(){});
     }catch(e){} };
     document.body.appendChild(s);
   }catch(e){}
