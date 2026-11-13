@@ -570,14 +570,14 @@
     </div>
   </section>
 
-  <footer><span class="noprint">Confira a escala antes de publicar.<br>© 2026 <b>Gera Escalas</b> · <span class="lnk" onclick="openAbout()">Sobre &amp; Política de Privacidade</span> · <span style="color:var(--mut2)">v13.21</span></span></footer>
+  <footer><span class="noprint">Confira a escala antes de publicar.<br>© 2026 <b>Gera Escalas</b> · <span class="lnk" onclick="openAbout()">Sobre &amp; Política de Privacidade</span> · <span style="color:var(--mut2)">v13.22</span></span></footer>
 </main>
 
 <div id="aboutmodal" class="modal" style="display:none" onclick="if(event.target===this)closeAbout()">
   <div class="mbox">
     <button class="xbtn" onclick="closeAbout()">Fechar ✕</button>
     <h2>Gera Escalas</h2>
-    <p class="muted">Escalas de plantão, turno e giro · Versão 13.21 · 2026</p>
+    <p class="muted">Escalas de plantão, turno e giro · Versão 13.22 · 2026</p>
 
     <h3>Autoria e direitos autorais</h3>
     <p>© 2026 <b>Gera Escalas</b> — desenvolvido por Luís Cesar. Todos os direitos reservados.</p>
@@ -1015,6 +1015,7 @@ function log(acao,detalhe){if(!state.logArr)state.logArr=[];state.logArr.push({t
 function fmtTs(iso){var d=new Date(iso);return pad(d.getDate())+"/"+pad(d.getMonth()+1)+"/"+d.getFullYear()+" "+pad(d.getHours())+":"+pad(d.getMinutes());}
 function _shareText(){var url=location.href.split("#")[0].split("?")[0];return "Gera Escalas — monte escalas de servi\u00e7o (plant\u00f5es, turnos, giros) em minutos.\nCrie sua conta e comece com 14 dias gr\u00e1tis:\n"+url;}
 function shareApp(){var url=location.href.split("#")[0].split("?")[0];var txt=_shareText();if(navigator.share){navigator.share({title:"Gera Escalas",text:txt,url:url}).catch(function(){});}else{copiarLink();}}
+function _copiarPix(btn,txt){function fb(ok){if(!btn)return;var orig=btn.getAttribute("data-orig")||btn.innerHTML;btn.setAttribute("data-orig",orig);btn.innerHTML=ok?"\u2713 Copiado!":"\u26a0 Selecione o texto e copie";btn.style.transition="transform .15s, background .15s, color .15s";btn.style.background=ok?"#16a34a":"#b45309";btn.style.color="#fff";btn.style.transform="scale(1.06)";setTimeout(function(){try{btn.style.transform="scale(1)";}catch(e){}},170);setTimeout(function(){try{btn.innerHTML=orig;btn.style.background="";btn.style.color="";}catch(e){}},1800);}function fallback(){try{var ta=document.createElement("textarea");ta.value=txt;ta.setAttribute("readonly","");ta.style.position="fixed";ta.style.left="-9999px";ta.style.top="0";document.body.appendChild(ta);ta.focus();ta.select();try{ta.setSelectionRange(0,ta.value.length);}catch(e){}var ok=false;try{ok=document.execCommand("copy");}catch(e){ok=false;}document.body.removeChild(ta);fb(ok);}catch(e){fb(false);}}try{if(navigator.clipboard&&navigator.clipboard.writeText){navigator.clipboard.writeText(txt).then(function(){fb(true);},fallback);}else{fallback();}}catch(e){fallback();}}
 function copiarLink(){var txt=_shareText();var m=document.getElementById("sharemsg");function ok(){if(m){m.textContent="Mensagem copiada!";setTimeout(function(){m.textContent="";},2500);}}try{if(navigator.clipboard&&navigator.clipboard.writeText){navigator.clipboard.writeText(txt).then(ok,function(){prompt("Copie a mensagem:",txt);});}else{prompt("Copie a mensagem:",txt);}}catch(e){prompt("Copie a mensagem:",txt);}}
 function openConfig(){if(!isAdmin())return;document.getElementById("configcard").style.display="";var _cd=document.getElementById("cfg_dono");if(_cd)_cd.style.display=(typeof isPlatformAdmin==="function"&&isPlatformAdmin())?"":"none";renderConfigForm();renderAudit();var _c=document.getElementById("configcard");if(_c.scrollIntoView)_c.scrollIntoView({behavior:"smooth"});}
 function closeConfig(){document.getElementById("configcard").style.display="none";}
@@ -1312,7 +1313,7 @@ async function assinarMensal(tier){
       pix.innerHTML='<div style="max-width:320px;margin:0 auto"><p class="tiny">Assinatura <b>mensal por Pix</b> (R$ '+(d.valor||"99").toString().replace(".",",")+'/mês). Pague o Pix abaixo para ativar; a cada mês o Asaas gera um novo Pix para renovar. Após pagar, clique em <b>Já paguei / Atualizar</b>.</p>'+
         (d.qrcode?'<img src="data:image/png;base64,'+d.qrcode+'" alt="QR Pix" style="width:220px;height:220px;border:1px solid var(--line);border-radius:8px">':'')+
         '<label class="fld" style="margin-top:8px"><span>Pix copia e cola</span><textarea readonly style="width:100%;height:70px;font:12px monospace">'+d.payload+'</textarea></label>'+
-        '<button class="btn ghost" onclick="(function(){try{navigator.clipboard.writeText('+JSON.stringify(d.payload)+');}catch(e){}})()">📋 Copiar código Pix</button></div>';
+        '<button class="btn ghost" onclick="_copiarPix(this,'+JSON.stringify(d.payload)+')">📋 Copiar código Pix</button></div>';
     }
   }catch(e){if(mm){mm.textContent="Erro: "+e;mm.style.color="#b91c1c";}}
 }
@@ -1332,7 +1333,7 @@ async function assinarPro(tier){
       pix.innerHTML='<div style="max-width:320px;margin:0 auto"><p class="tiny">Pague com o Pix abaixo (valor R$ '+(d.valor||"69,90").toString().replace(".",",")+'). Após pagar, clique em <b>Já paguei / Atualizar</b>.</p>'+
         (d.qrcode?'<img src="data:image/png;base64,'+d.qrcode+'" alt="QR Pix" style="width:220px;height:220px;border:1px solid var(--line);border-radius:8px">':'')+
         '<label class="fld" style="margin-top:8px"><span>Pix copia e cola</span><textarea readonly style="width:100%;height:70px;font:12px monospace">'+d.payload+'</textarea></label>'+
-        '<button class="btn ghost" onclick="(function(){try{navigator.clipboard.writeText('+JSON.stringify(d.payload)+');}catch(e){}})()">📋 Copiar código Pix</button></div>';
+        '<button class="btn ghost" onclick="_copiarPix(this,'+JSON.stringify(d.payload)+')">📋 Copiar código Pix</button></div>';
     }
   }catch(e){if(m){m.textContent="Erro: "+e;m.style.color="#b91c1c";}}
 }
