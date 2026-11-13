@@ -570,14 +570,14 @@
     </div>
   </section>
 
-  <footer><span class="noprint">Confira a escala antes de publicar.<br>© 2026 <b>Gera Escalas</b> · <span class="lnk" onclick="openAbout()">Sobre &amp; Política de Privacidade</span> · <span style="color:var(--mut2)">v13.22</span></span></footer>
+  <footer><span class="noprint">Confira a escala antes de publicar.<br>© 2026 <b>Gera Escalas</b> · <span class="lnk" onclick="openAbout()">Sobre &amp; Política de Privacidade</span> · <span style="color:var(--mut2)">v13.23</span></span></footer>
 </main>
 
 <div id="aboutmodal" class="modal" style="display:none" onclick="if(event.target===this)closeAbout()">
   <div class="mbox">
     <button class="xbtn" onclick="closeAbout()">Fechar ✕</button>
     <h2>Gera Escalas</h2>
-    <p class="muted">Escalas de plantão, turno e giro · Versão 13.22 · 2026</p>
+    <p class="muted">Escalas de plantão, turno e giro · Versão 13.23 · 2026</p>
 
     <h3>Autoria e direitos autorais</h3>
     <p>© 2026 <b>Gera Escalas</b> — desenvolvido por Luís Cesar. Todos os direitos reservados.</p>
@@ -996,7 +996,7 @@ function reiniciarApp(){
       try{location.reload();}catch(e){try{location.href=location.pathname;}catch(_){}}
     }});
 }
-async function logout(){try{stopNotifRealtime();}catch(e){}try{stopDataRealtime();}catch(e){}try{if(db)await db.auth.signOut();}catch(e){}try{["ciops:militares","ciops:carry","ciops:config","ciops:log","ciops:schedule"].forEach(function(k){localStorage.removeItem(k);});}catch(e){}state.user=null;state.editing=null;state.militares=[];state.schedule=null;state.carry={};document.getElementById("app").style.display="none";document.getElementById("authgate").style.display="flex";renderCloudGate("entrar");}
+async function logout(){try{stopNotifRealtime();}catch(e){}try{stopDataRealtime();}catch(e){}try{if(db)await db.auth.signOut();}catch(e){}try{["ciops:militares","ciops:carry","ciops:config","ciops:log","ciops:schedule","ciops:relhist","ciops:setores","ciops:setorAtivo","ciops:orgId"].forEach(function(k){localStorage.removeItem(k);});}catch(e){}state.user=null;state.editing=null;state.militares=[];state.schedule=null;state.carry={};document.getElementById("app").style.display="none";document.getElementById("authgate").style.display="flex";renderCloudGate("entrar");}
 function showApp(){document.getElementById("authgate").style.display="none";document.getElementById("app").style.display="";var _cc=document.getElementById("configcard");if(_cc)_cc.style.display="none";renderUserbar();renderSetorSel();renderAddSetor();renderRoster();renderContControls();applyPerms();renderProBanner();var _m=state.config.modo||"auto";var _r=document.querySelector('input[name="modo"][value="'+_m+'"]');if(_r)_r.checked=true;var _sf=document.getElementById("satfolga");if(_sf)_sf.checked=!!state.config.satFolga2c;var _tp=document.getElementById("tipo");if(_tp)_tp.value=(state.schedule&&state.schedule.result&&state.schedule.result.tipo)||state.config.tipo||"giro";var _ts=document.getElementById("turnosel");if(_ts&&state.config.hor&&state.config.hor.turno)_ts.value=state.config.hor.turno.sel||"dia";setTipo();if(state.schedule){var _ms=document.getElementById("mes");if(_ms)_ms.value=state.schedule.month;var _an=document.getElementById("ano");if(_an)_an.value=state.schedule.year;renderSchedule();renderStats();}showTab(state.schedule?"escala":"efetivo");try{state._somOff=localStorage.getItem("ge_som")==="off";}catch(e){}try{refreshNotifCount();}catch(e){}try{startNotifRealtime();}catch(e){}try{startDataRealtime();}catch(e){}try{if(!state._audioHooked){state._audioHooked=true;document.addEventListener("click",_unlockAudio);document.addEventListener("touchstart",_unlockAudio);document.addEventListener("visibilitychange",function(){if(!document.hidden){_unlockAudio();try{startDataRealtime();}catch(e){}try{_remotePeek();}catch(e){}}});}}catch(e){}try{checkNovidades();}catch(e){}}
 function isOwner(){return !!(state.user&&state.user.role==="owner");}
 function isAdmin(){return !!(state.user&&(state.user.role==="admin"||state.user.role==="owner"));}
@@ -4539,6 +4539,18 @@ async function cloudPush(base){
 }
 async function cloudPullAll(){
   if(!db||!state.user||!state.user.orgId)return;
+  // ISOLAMENTO ENTRE CLIENTES: se o cache local (navegador) pertence a OUTRA
+  // organização — ex.: dados de teste de outra conta usados no mesmo navegador —
+  // ele é DESCARTADO antes de ler/gravar, para nunca vazar de um cliente para outro.
+  // A nuvem é a fonte da verdade; o localStorage é só espelho.
+  try{
+    var _mk="ciops:orgId",_prev=localStorage.getItem(_mk);
+    if(_prev!==state.user.orgId){
+      ["ciops:militares","ciops:config","ciops:carry","ciops:schedule","ciops:relhist","ciops:log","ciops:setores","ciops:setorAtivo"].forEach(function(k){try{localStorage.removeItem(k);}catch(e){}});
+      state.militares=[];state.schedule=null;state.carry={};
+    }
+    localStorage.setItem(_mk,state.user.orgId);
+  }catch(e){}
   var map={};
   try{var q=await db.from("app_state").select("chave,dados").eq("org_id",state.user.orgId);(q.data||[]).forEach(function(r){map[r.chave]=r.dados;});}catch(e){}
   /* setores (nível organização) */
