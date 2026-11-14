@@ -570,14 +570,14 @@
     </div>
   </section>
 
-  <footer><span class="noprint">Confira a escala antes de publicar.<br>© 2026 <b>Gera Escalas</b> · <span class="lnk" onclick="openAbout()">Sobre &amp; Política de Privacidade</span> · <span style="color:var(--mut2)">v13.27</span></span></footer>
+  <footer><span class="noprint">Confira a escala antes de publicar.<br>© 2026 <b>Gera Escalas</b> · <span class="lnk" onclick="openAbout()">Sobre &amp; Política de Privacidade</span> · <span style="color:var(--mut2)">v13.28</span></span></footer>
 </main>
 
 <div id="aboutmodal" class="modal" style="display:none" onclick="if(event.target===this)closeAbout()">
   <div class="mbox">
     <button class="xbtn" onclick="closeAbout()">Fechar ✕</button>
     <h2>Gera Escalas</h2>
-    <p class="muted">Escalas de plantão, turno e giro · Versão 13.27 · 2026</p>
+    <p class="muted">Escalas de plantão, turno e giro · Versão 13.28 · 2026</p>
 
     <h3>Autoria e direitos autorais</h3>
     <p>© 2026 <b>Gera Escalas</b> — desenvolvido por Luís Cesar. Todos os direitos reservados.</p>
@@ -1829,6 +1829,17 @@ function gerarFolga(mils,year,month,cfg,seed){
   // piso = parte inteira de (dias × folga/(trab+folga)). Paga também o que ficou devendo de
   // meses anteriores (banco de folgas). O que não couber na cobertura/dias permitidos fica como
   // "devida" e carrega para o mês seguinte (a decisão do STF: folga adiada, nunca negada).
+  // ---- REAFIRMA FERIADOS FECHADOS (empresa não funciona = TODOS de folga) ----
+  // Último passo, depois dos reparos de cota/limpeza — que poderiam ter removido a folga do
+  // feriado achando que era "excesso". Aqui garantimos: em feriado fechado ninguém trabalha.
+  for(var _fd=1;_fd<=N;_fd++){
+    if(_feriadoFechado(new Date(year,month,_fd))){
+      st.forEach(function(s){
+        if(unav(s.ref,_fd))return;
+        if(!folga[_fd].some(function(x){return x.id===s.ref.id;}))folga[_fd].push(s.ref);
+      });
+    }
+  }
   var _bancoPrev={};
   if(seed&&seed.folgaPer){for(var _bk in seed.folgaPer){_bancoPrev[_bk]=(seed.folgaPer[_bk]&&seed.folgaPer[_bk].banco)||0;}}
   var _bancoDev={};
