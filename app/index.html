@@ -349,6 +349,7 @@
           <label class="fld" style="min-width:0">1º período de férias (opcional)<input type="date" id="fer" style="width:100%;max-width:100%;box-sizing:border-box"></label>
         </div>
         <label class="fld" id="add_time_wrap" style="display:none;margin-top:2px"><span>Time (escala por ciclo)</span><select id="add_time" style="width:100%;font:inherit;padding:8px;border:1px solid var(--line2);border-radius:8px"></select></label>
+        <label class="fld" id="add_turno_wrap" style="display:none;margin-top:2px"><span>Turno</span><select id="add_turno" style="width:100%;font:inherit;padding:8px;border:1px solid var(--line2);border-radius:8px"></select></label>
         <div class="two"><input id="email" placeholder="E-mail (para dar acesso ao app)" type="email" onkeydown="if(event.key==='Enter')addMilitar()"><input id="tel" placeholder="Telefone (opcional)" inputmode="tel"></div>
         <div class="two"><input id="cpf" placeholder="CPF (opcional)" inputmode="numeric"><input id="endereco" placeholder="Endereço (opcional)"></div>
         <button class="btn primary" style="width:100%;justify-content:center;margin-top:6px" onclick="addMilitarComAcesso()">✉️ Adicionar e enviar por e-mail</button>
@@ -570,14 +571,14 @@
     </div>
   </section>
 
-  <footer><span class="noprint">Confira a escala antes de publicar.<br>© 2026 <b>Gera Escalas</b> · <span class="lnk" onclick="openAbout()">Sobre &amp; Política de Privacidade</span> · <span style="color:var(--mut2)">v13.29</span></span></footer>
+  <footer><span class="noprint">Confira a escala antes de publicar.<br>© 2026 <b>Gera Escalas</b> · <span class="lnk" onclick="openAbout()">Sobre &amp; Política de Privacidade</span> · <span style="color:var(--mut2)">v13.30</span></span></footer>
 </main>
 
 <div id="aboutmodal" class="modal" style="display:none" onclick="if(event.target===this)closeAbout()">
   <div class="mbox">
     <button class="xbtn" onclick="closeAbout()">Fechar ✕</button>
     <h2>Gera Escalas</h2>
-    <p class="muted">Escalas de plantão, turno e giro · Versão 13.29 · 2026</p>
+    <p class="muted">Escalas de plantão, turno e giro · Versão 13.30 · 2026</p>
 
     <h3>Autoria e direitos autorais</h3>
     <p>© 2026 <b>Gera Escalas</b> — desenvolvido por Luís Cesar. Todos os direitos reservados.</p>
@@ -888,6 +889,7 @@ function saveCarry(){try{localStorage.setItem("ciops:carry",JSON.stringify(state
 function _serFolga(f){var o={};for(var d in f){o[d]=(f[d]||[]).map(function(m){return m.id;});}return o;}
 function serializeSchedule(){
   if(!state.schedule||!state.schedule.result)return null;
+  if(state.schedule.multiTurno&&state.schedule.turnos){return {multiTurno:true,year:state.schedule.year,month:state.schedule.month,N:state.schedule.result.N,tipo:"folga",contInfo:state.contInfo||null,turnos:state.schedule.turnos.map(function(x){return {turno:x.turno,milIds:x.milIds,cfg:x.result.cfg||null,folga:(x.result.folga?_serFolga(x.result.folga):null),_folgaPer:x.result._folgaPer||null};})};}
   var r=state.schedule.result,idOf=function(x){return x?x.id:null;};
   var g1={},g2={},g3={};if(r.g1){for(var d=1;d<=r.N;d++){g1[d]=idOf(r.g1[d]);g2[d]=idOf(r.g2&&r.g2[d]);g3[d]=idOf(r.g3?r.g3[d]:null);}}
   var cover={};for(var k in (r.cover||{})){var c=r.cover[k];cover[k]={};for(var gi in c){cover[k][gi]={was:idOf(c[gi].was),sub:idOf(c[gi].sub)};}}
@@ -898,6 +900,18 @@ function saveSchedule(){try{var o=serializeSchedule();if(o)localStorage.setItem(
 function restoreSchedule(){
   try{
     var raw=localStorage.getItem("ciops:schedule");if(!raw){state.schedule=null;return;}var o=JSON.parse(raw);if(!o||!o.N){state.schedule=null;return;}
+    if(o.multiTurno&&o.turnos){
+      var _byIdT={};state.militares.forEach(function(m){_byIdT[m.id]=m;});
+      var _trR=[];
+      o.turnos.forEach(function(t){
+        var subset=(t.milIds||[]).map(function(id){return _byIdT[id];}).filter(Boolean);
+        var _folR={};if(t.folga){for(var fd in t.folga){_folR[fd]=(t.folga[fd]||[]).map(function(id){return _byIdT[id];}).filter(Boolean);}}
+        var _rR={N:o.N,tipo:"folga",folga:_folR,cols:[{lab:"Folga(s)"}],durs:[0],cover:{},changed:{},vacant:[],_folgaPer:t._folgaPer||null,cfg:t.cfg||null};
+        computeStatsFolga(_rR,subset,o.year,o.month);
+        _trR.push({turno:t.turno,result:_rR,milIds:t.milIds});
+      });
+      if(_trR.length){state.schedule={result:_trR[0].result,year:o.year,month:o.month,multiTurno:true,turnos:_trR};state.contInfo=o.contInfo||null;return;}
+    }
     var byId={};state.militares.forEach(function(m){byId[m.id]=m;});
     if(o.tipo==="ciclo"&&o.turmas){o.turmas.forEach(function(t){if(!byId[t.id])byId[t.id]={id:t.id,nome:t.nome,posto:""};});}
     var ref=function(id){return (id!=null&&byId[id])?byId[id]:null;};
@@ -2095,8 +2109,9 @@ function addMilitar(){if(!isAdmin())return null;if(bloqueadoPro())return null;
   const posto=val("posto").trim();const fer=val("fer");
   const cpf=(val("cpf")||"").trim(),email=(val("email")||"").trim(),tel=(val("tel")||"").trim(),endereco=(val("endereco")||"").trim();
   const _tid=((document.getElementById("add_time")||{}).value)||null;
+  const _turno=((document.getElementById("add_turno")||{}).value)||"";
   var nid=uid();
-  state.militares.push({id:nid,nome:nome,posto:posto,cpf:cpf,email:email,tel:tel,end:endereco,turmaId:_tid,ferias:fer?[{id:uid(),start:fer}]:[],atestados:[]});
+  state.militares.push({id:nid,nome:nome,posto:posto,cpf:cpf,email:email,tel:tel,end:endereco,turmaId:_tid,turno:_turno,ferias:fer?[{id:uid(),start:fer}]:[],atestados:[]});
   ["nome","posto","fer","cpf","email","tel","endereco"].forEach(function(id){var e=document.getElementById(id);if(e)e.value="";});var _md=document.getElementById("maisdados");if(_md)_md.style.display="none";
   saveMil();renderRoster();log("Cadastro de pessoa",(posto?posto+" ":"")+nome+(fer?" (férias em "+fer+")":""));document.getElementById("nome").focus();
   return nid;
@@ -2219,6 +2234,36 @@ function _gerarCore(forcar){
   const seed=cont?state.carry[mkey(year,month)]:null;
   var _keepExtras=(state.schedule&&state.schedule.result&&state.schedule.year===year&&state.schedule.month===month&&state.schedule.result.extras)?state.schedule.result.extras:{};
   if(tipo==="folga"){
+    var _turnosG=((state.config.folgaCfg||{}).multiTurno&&(state.config.folgaCfg.turnos||[]).length)?state.config.folgaCfg.turnos:[];
+    if(_turnosG.length){
+      var _cfgBase=state.config.folgaCfg||{trab:6,folga:1,maxDia:1,domingo:true};
+      var _seedT=cont?state.carry[mkey(year,month)]:null;
+      var _trG=[],_semTurno=[];
+      state.militares.forEach(function(m){if(!m.turno||!_turnosG.some(function(t){return t.id===m.turno;}))_semTurno.push(m);});
+      _turnosG.forEach(function(t){
+        var _mils=state.militares.filter(function(m){return m.turno===t.id;});
+        if(!_mils.length)return;
+        var _cfgT=Object.assign({},_cfgBase,{hIni:t.hIni,hFim:t.hFim});
+        var _sd=(_seedT&&_seedT.turnos&&_seedT.turnos[t.id])?{folgaPer:_seedT.turnos[t.id]}:null;
+        var _rT=gerarFolga(_mils,year,month,_cfgT,_sd);
+        _rT.extras=_keepExtras;
+        computeStatsFolga(_rT,_mils,year,month);
+        _trG.push({turno:t,result:_rT,milIds:_mils.map(function(m){return m.id;})});
+      });
+      if(_semTurno.length){
+        var _rS=gerarFolga(_semTurno,year,month,Object.assign({},_cfgBase),null);
+        computeStatsFolga(_rS,_semTurno,year,month);
+        _trG.push({turno:{id:"__sem__",nome:"Sem turno definido",hIni:_cfgBase.hIni||"18:00",hFim:_cfgBase.hFim||"23:00"},result:_rS,milIds:_semTurno.map(function(m){return m.id;})});
+      }
+      if(!_trG.length){showErro("Nenhum funcion\u00e1rio foi atribu\u00eddo a um turno. Em \u201cEditar regras\u201d \u2192 Turnos, atribua as pessoas ou desligue os turnos.");return;}
+      state.schedule={result:_trG[0].result,year:year,month:month,multiTurno:true,turnos:_trG};
+      var _pmT=prevMonth(year,month);state.contInfo={applied:!!_seedT,source:MESES[_pmT.m]+"/"+_pmT.y,enabled:cont};
+      var _carryT={};_trG.forEach(function(x){if(x.turno.id!=="__sem__")_carryT[x.turno.id]=x.result._folgaPer;});
+      var _nmT=nextMonth(year,month);state.carry[mkey(_nmT.y,_nmT.m)]={turnos:_carryT};saveCarry();
+      renderSchedule();renderStats();renderContControls();saveSchedule();showTab("escala");
+      log("Gera\u00e7\u00e3o de escala",MESES[month]+"/"+year+" \u00b7 folga por turnos ("+_trG.length+")");
+      return;
+    }
     var cfgF=state.config.folgaCfg||{trab:6,folga:1,maxDia:1,domingo:true};
     // AVISO PRÉVIO: confere se o descanso dominical cabe na configuração ANTES de montar a escala
     if(cfgF.domingo&&!forcar){
@@ -2514,7 +2559,7 @@ function trocaFolgaMover(){
   log("Folga movida","pessoa "+pid+": dia "+dDe+" → "+dPara);renderSchedule();saveSchedule();fecharTroca();
 }
 function renderTipoInfo(){var t=(document.getElementById("tipo")||{}).value||"giro";var el=document.getElementById("tipoInfo");if(el)el.innerHTML=(t==="folga")?"":(TIPO_INFO[t]||"");}
-function setTipo(){var t=(document.getElementById("tipo")||{}).value||"giro";state.config.tipo=t;saveConfig();renderTipoInfo();renderAddTime();var box=document.getElementById("rotacaoBox");if(box)box.style.display=(t==="giro")?"inline-flex":"none";var fxr=document.getElementById("fds_rod");if(fxr)fxr.checked=(state.config.fdsRodizio!==false);updateFdsVisibility();var tb=document.getElementById("turnoBox");if(tb)tb.style.display=(t==="turno")?"inline-flex":"none";var ab=document.getElementById("btncob");if(ab)ab.style.display=(t==="ciclo"||t==="cicloind"||t==="medico"||t==="folga")?"none":"";var cb=document.getElementById("cicloBox");if(cb)cb.style.display=(t==="ciclo")?"inline-flex":"none";var cib=document.getElementById("cicloIndBox");if(cib)cib.style.display=(t==="cicloind")?"inline-flex":"none";var mb=document.getElementById("medBox");if(mb)mb.style.display=(t==="medico")?"flex":"none";var fb=document.getElementById("folgaBox");if(fb)fb.style.display=(t==="folga")?"flex":"none";if(t==="folga"){var fc=state.config.folgaCfg||{trab:6,folga:1,maxDia:1,domingo:true};var e;if(e=document.getElementById("fg_trab"))e.value=fc.trab;if(e=document.getElementById("fg_folga"))e.value=fc.folga;if(e=document.getElementById("fg_max"))e.value=fc.maxDia;if(e=document.getElementById("fg_dom"))e.checked=fc.domingo!==false;if(e=document.getElementById("fg_dom_n"))e.value=fc.domFolgas||1;if(e=document.getElementById("fg_hini"))e.value=fc.hIni||"18:00";if(e=document.getElementById("fg_hfim"))e.value=fc.hFim||"23:00";if(e=document.getElementById("fg_maxsem"))e.value=fc.maxSem||0;if(e=document.getElementById("fg_modo"))e.value=fc.folgaModo||"bloco";renderFolgaDias();refreshFolgaBadge();var fh=document.getElementById("fg_help");if(fh)fh.innerHTML=TIPO_INFO.folga||"";}var cs=document.getElementById("ciclosel");if(cs)cs.value=state.config.cicloRegime||"24h";var cit=document.getElementById("ciind_turno");if(cit)cit.value=state.config.ciTurno||"24h";var cid=document.getElementById("ciind_desc");if(cid)cid.value=state.config.ciDescanso||48;_ciIndBadge();var _mT=state.config.medTurno||"12h";var mt=document.getElementById("med_turno");if(mt)mt.value=_mT;var mvd=document.getElementById("med_vdia");if(mvd)mvd.value=state.config.medVagasDia||1;var mvn=document.getElementById("med_vnoite");if(mvn)mvn.value=state.config.medVagasNoite||1;var mvp=document.getElementById("med_vp");if(mvp)mvp.value=state.config.medVagas||1;var mmx=document.getElementById("med_max");if(mmx)mmx.value=state.config.medMaxMes||0;var msb=document.getElementById("med_vsobre");if(msb)msb.value=state.config.medVagasSobre||1;var mlt=document.getElementById("med_leitos");if(mlt)mlt.value=state.config.medLeitos||0;var mlr=document.getElementById("med_leitosratio");if(mlr)mlr.value=state.config.medLeitosRatio||10;var mrz=document.getElementById("med_rodizio");if(mrz)mrz.checked=(state.config.medRodizio!==false);var mv12=document.getElementById("med_v12");if(mv12)mv12.style.display=(_mT==="12h")?"":"none";var mv24=document.getElementById("med_v24");if(mv24)mv24.style.display=(_mT==="24h")?"":"none";var tl=document.getElementById("turmasLegend");if(tl)tl.style.display=(t==="ciclo"&&state.schedule)?"":"none";renderTurmasLegend();updateModoHint();renderCfgResumo();}
+function setTipo(){var t=(document.getElementById("tipo")||{}).value||"giro";state.config.tipo=t;saveConfig();renderTipoInfo();renderAddTime();renderAddTurno();var box=document.getElementById("rotacaoBox");if(box)box.style.display=(t==="giro")?"inline-flex":"none";var fxr=document.getElementById("fds_rod");if(fxr)fxr.checked=(state.config.fdsRodizio!==false);updateFdsVisibility();var tb=document.getElementById("turnoBox");if(tb)tb.style.display=(t==="turno")?"inline-flex":"none";var ab=document.getElementById("btncob");if(ab)ab.style.display=(t==="ciclo"||t==="cicloind"||t==="medico"||t==="folga")?"none":"";var cb=document.getElementById("cicloBox");if(cb)cb.style.display=(t==="ciclo")?"inline-flex":"none";var cib=document.getElementById("cicloIndBox");if(cib)cib.style.display=(t==="cicloind")?"inline-flex":"none";var mb=document.getElementById("medBox");if(mb)mb.style.display=(t==="medico")?"flex":"none";var fb=document.getElementById("folgaBox");if(fb)fb.style.display=(t==="folga")?"flex":"none";if(t==="folga"){var fc=state.config.folgaCfg||{trab:6,folga:1,maxDia:1,domingo:true};var e;if(e=document.getElementById("fg_trab"))e.value=fc.trab;if(e=document.getElementById("fg_folga"))e.value=fc.folga;if(e=document.getElementById("fg_max"))e.value=fc.maxDia;if(e=document.getElementById("fg_dom"))e.checked=fc.domingo!==false;if(e=document.getElementById("fg_dom_n"))e.value=fc.domFolgas||1;if(e=document.getElementById("fg_hini"))e.value=fc.hIni||"18:00";if(e=document.getElementById("fg_hfim"))e.value=fc.hFim||"23:00";if(e=document.getElementById("fg_maxsem"))e.value=fc.maxSem||0;if(e=document.getElementById("fg_modo"))e.value=fc.folgaModo||"bloco";renderFolgaDias();refreshFolgaBadge();var fh=document.getElementById("fg_help");if(fh)fh.innerHTML=TIPO_INFO.folga||"";_ensureTurnosUI();renderTurnosEditor();}var cs=document.getElementById("ciclosel");if(cs)cs.value=state.config.cicloRegime||"24h";var cit=document.getElementById("ciind_turno");if(cit)cit.value=state.config.ciTurno||"24h";var cid=document.getElementById("ciind_desc");if(cid)cid.value=state.config.ciDescanso||48;_ciIndBadge();var _mT=state.config.medTurno||"12h";var mt=document.getElementById("med_turno");if(mt)mt.value=_mT;var mvd=document.getElementById("med_vdia");if(mvd)mvd.value=state.config.medVagasDia||1;var mvn=document.getElementById("med_vnoite");if(mvn)mvn.value=state.config.medVagasNoite||1;var mvp=document.getElementById("med_vp");if(mvp)mvp.value=state.config.medVagas||1;var mmx=document.getElementById("med_max");if(mmx)mmx.value=state.config.medMaxMes||0;var msb=document.getElementById("med_vsobre");if(msb)msb.value=state.config.medVagasSobre||1;var mlt=document.getElementById("med_leitos");if(mlt)mlt.value=state.config.medLeitos||0;var mlr=document.getElementById("med_leitosratio");if(mlr)mlr.value=state.config.medLeitosRatio||10;var mrz=document.getElementById("med_rodizio");if(mrz)mrz.checked=(state.config.medRodizio!==false);var mv12=document.getElementById("med_v12");if(mv12)mv12.style.display=(_mT==="12h")?"":"none";var mv24=document.getElementById("med_v24");if(mv24)mv24.style.display=(_mT==="24h")?"":"none";var tl=document.getElementById("turmasLegend");if(tl)tl.style.display=(t==="ciclo"&&state.schedule)?"":"none";renderTurmasLegend();updateModoHint();renderCfgResumo();}
 function setCicloRegime(){var v=(document.getElementById("ciclosel")||{}).value||"24h";state.config.cicloRegime=v;saveConfig();renderCfgResumo();}
 function _ciIndBadge(){var sh=((state.config.ciTurno||"24h")==="12h")?12:24;var d=parseInt(state.config.ciDescanso||48,10)||48;var b=document.getElementById("ciind_badge");if(b)b.textContent=sh+"×"+d;}
 function setCicloInd(){var t=(document.getElementById("ciind_turno")||{}).value||"24h";var d=Math.max(12,parseInt((document.getElementById("ciind_desc")||{}).value||48,10)||48);state.config.ciTurno=t;state.config.ciDescanso=d;saveConfig();_ciIndBadge();renderCfgResumo();}
@@ -2574,6 +2619,7 @@ function renderRoster(){
       var _ex=[_tn?("Time: "+esc(_tn)):"",m.cpf?("CPF: "+esc(m.cpf)):"",m.tel?("Tel: "+esc(m.tel)):"",m.email?("E-mail: "+esc(m.email)):"",m.end?("End.: "+esc(m.end)):""].filter(Boolean);
       var _podeAcesso=(m.email&&typeof cloudReady==="function"&&cloudReady());
       h+='<div class="mname">'+(m.posto?'<span class="pg">'+esc(m.posto)+' </span>':'')+esc(m.nome)+' <button class="mini" title="Editar" onclick="editMilitar('+m.id+')">✎</button>'+(_ex.length?' <button class="mini" title="Ver dados" onclick="toggleMil('+m.id+')">ⓘ</button>':'')+(_podeAcesso?' <button class="mini" title="Dar acesso de funcionário (pede e recebe permuta) e enviar e-mail de login" onclick="enviarAcessoFunc('+m.id+')" style="color:#4f46e5">✉ acesso</button>':'')+'</div>';
+      var _fcT=state.config.folgaCfg||{};var _tsT=(state.config.tipo==="folga"&&_fcT.multiTurno&&_fcT.turnos&&_fcT.turnos.length)?_fcT.turnos:[];if(_tsT.length){h+='<div class="tiny" style="margin:2px 0 3px"><span style="color:var(--mut)">Turno:</span> <select onchange="setMilTurno('+m.id+',this.value)" style="font:inherit;padding:2px 5px;border:1px solid var(--line2);border-radius:6px"><option value="">—</option>'+_tsT.map(function(t){return '<option value="'+t.id+'"'+((m.turno===t.id)?" selected":"")+'>'+esc(t.nome)+'</option>';}).join("")+'</select></div>';}
       if(_ex.length)h+='<div class="tiny" id="mil_dados_'+m.id+'" style="display:none;color:var(--mut);margin:2px 0 4px">'+_ex.join(" · ")+'</div>';
     }
     h+='<div class="fer"><div class="lbl">✈ Férias (dias editáveis · padrão '+feriasPadrao()+')</div>';
@@ -2642,6 +2688,7 @@ function gerarAmostraCoringa(){
 function atribuirCoringa(d){openHoraExtra(null,d);} // reaproveita o lançamento de hora extra para aquele dia
 function renderSchedule(){
   if(!state.schedule)return;
+  if(state.schedule.multiTurno&&state.schedule.turnos){return renderFolgaMulti();}
   if(state.schedule.result&&state.schedule.result.tipo==="folga"){return renderFolga();}
   if(state.schedule.result&&state.schedule.result.tipo==="medico"){return renderMedico();}
   const res=state.schedule.result,year=state.schedule.year,month=state.schedule.month;
@@ -2881,6 +2928,19 @@ function abrirGradeFull(){
   try{document.body.style.overflow="hidden";}catch(e){}
 }
 function fecharGradeFull(){var m=document.getElementById("gradeFullModal");if(m)m.remove();try{document.body.style.overflow="";}catch(e){}}
+function _uidTurno(){return "t"+Math.random().toString(36).slice(2,8);}
+function _turnosAtivos(){var fc=state.config.folgaCfg||{};return (fc.multiTurno&&fc.turnos&&fc.turnos.length)?fc.turnos:[];}
+function _ensureTurnosUI(){var fb=document.getElementById("folgaBox");if(!fb)return;if(document.getElementById("fg_turnos"))return;var d=document.createElement("div");d.id="fg_turnos";d.style.cssText="flex-basis:100%;width:100%;border:1px solid var(--line);border-radius:8px;padding:8px 10px;margin-top:4px";fb.appendChild(d);}
+function turnoToggle(){var fc=state.config.folgaCfg||(state.config.folgaCfg={});var cb=document.getElementById("fg_multiturno");fc.multiTurno=!!(cb&&cb.checked);if(fc.multiTurno&&(!fc.turnos||!fc.turnos.length)){fc.turnos=[{id:_uidTurno(),nome:"Turno A",hIni:fc.hIni||"07:00",hFim:fc.hFim||"13:00"}];}saveConfig();renderTurnosEditor();renderAddTurno();renderRoster();}
+function turnoAdd(){var fc=state.config.folgaCfg||(state.config.folgaCfg={});if(!fc.turnos)fc.turnos=[];var letra=String.fromCharCode(65+fc.turnos.length);fc.turnos.push({id:_uidTurno(),nome:"Turno "+letra,hIni:"07:00",hFim:"13:00"});saveConfig();renderTurnosEditor();renderAddTurno();}
+function turnoDel(id){var fc=state.config.folgaCfg;if(!fc||!fc.turnos)return;fc.turnos=fc.turnos.filter(function(t){return t.id!==id;});(state.militares||[]).forEach(function(m){if(m.turno===id)m.turno="";});saveConfig();saveMil();renderTurnosEditor();renderAddTurno();renderRoster();}
+function turnoSetField(id,fld,v){var fc=state.config.folgaCfg;if(!fc||!fc.turnos)return;var t=fc.turnos.filter(function(x){return x.id===id;})[0];if(!t)return;t[fld]=v;saveConfig();if(fld==="nome"){renderTurnosEditor();renderAddTurno();renderRoster();}}
+function setMilTurno(id,v){var m=byMil(id);if(!m)return;m.turno=v||"";saveMil();renderRoster();try{renderTurnosEditor();}catch(e){}}
+function renderAddTurno(){var wrap=document.getElementById("add_turno_wrap"),sel=document.getElementById("add_turno");if(!wrap||!sel)return;var fc=state.config.folgaCfg||{};var isFolga=(state.config&&state.config.tipo)==="folga";var ts=(isFolga&&fc.multiTurno&&fc.turnos&&fc.turnos.length)?fc.turnos:[];if(ts.length){wrap.style.display="";var cur=sel.value;sel.innerHTML='<option value="">— sem turno —</option>'+ts.map(function(t){return '<option value="'+t.id+'">'+esc(t.nome)+'</option>';}).join("");if(cur)sel.value=cur;}else{wrap.style.display="none";}}
+function renderTurnosEditor(){var box=document.getElementById("fg_turnos");if(!box)return;var fc=state.config.folgaCfg||{};var on=!!fc.multiTurno;var ts=fc.turnos||[];var h='<label class="tiny" style="display:flex;align-items:center;gap:6px;cursor:pointer;font-weight:800;color:var(--cbm,#4f46e5)"><input type="checkbox" id="fg_multiturno" '+(on?"checked":"")+' onchange="turnoToggle()"> Vários turnos neste setor</label>';h+='<div class="tiny" style="color:var(--mut);margin:3px 0 0;line-height:1.4">Divida a equipe em turnos (ex.: A, B, C), cada um com seu horário. O app gera <b>uma grade e uma estatística por turno</b>. No cadastro de cada pessoa, escolha o turno dela.</div>';if(on){h+='<div style="margin-top:8px;display:flex;flex-direction:column;gap:6px">';ts.forEach(function(t){h+='<div style="display:flex;align-items:center;gap:6px;flex-wrap:wrap"><input value="'+esc(t.nome||"")+'" onchange="turnoSetField(\''+t.id+'\',\'nome\',this.value)" placeholder="Nome do turno" style="flex:1 1 120px;min-width:100px;font:inherit;padding:4px 7px;border:1px solid var(--line2);border-radius:6px"><input type="time" value="'+(t.hIni||"07:00")+'" onchange="turnoSetField(\''+t.id+'\',\'hIni\',this.value)" style="font:inherit;padding:4px 6px;border:1px solid var(--line2);border-radius:6px"><span class="tiny">–</span><input type="time" value="'+(t.hFim||"13:00")+'" onchange="turnoSetField(\''+t.id+'\',\'hFim\',this.value)" style="font:inherit;padding:4px 6px;border:1px solid var(--line2);border-radius:6px"><button class="mini" title="Remover turno" onclick="turnoDel(\''+t.id+'\')">🗑</button></div>';});h+='</div><button class="btn ghost" style="margin-top:7px;padding:4px 10px;font-size:12px" onclick="turnoAdd()">＋ adicionar turno</button>';var cnt={};(state.militares||[]).forEach(function(m){if(m.turno)cnt[m.turno]=(cnt[m.turno]||0)+1;});var semT=(state.militares||[]).filter(function(m){return !m.turno||!ts.some(function(t){return t.id===m.turno;});}).length;var resumo=ts.map(function(t){return esc(t.nome)+": "+((cnt[t.id]||0))+" pessoa(s)";}).join(" · ");h+='<div class="tiny" style="color:var(--mut);margin-top:6px">'+resumo+(semT?(' · <b style="color:#b45309">'+semT+' sem turno</b>'):"")+'</div>';}box.innerHTML=h;}
+function _forEachTurnoRender(cb){var _r=state.schedule.result,_m=state.militares,orig=state.militares||[];var out="";(state.schedule.turnos||[]).forEach(function(x){var subset=(x.milIds||[]).map(function(id){return orig.filter(function(mm){return String(mm.id)===String(id);})[0];}).filter(Boolean);state.schedule.result=x.result;state.militares=subset;out+=cb(x);});state.schedule.result=_r;state.militares=_m;return out;}
+function renderFolgaMulti(){var html=_forEachTurnoRender(function(x){renderFolga();return '<section class="turno-sec" style="margin-bottom:26px"><div class="turno-hd" style="font-weight:800;font-size:15px;color:var(--cbm,#4f46e5);border-left:4px solid var(--cbm,#4f46e5);padding-left:8px;margin:6px 0 8px">'+esc(x.turno.nome)+' <span style="font-weight:600;color:var(--mut);font-size:13px">· '+horLabel(x.turno.hIni,x.turno.hFim)+'</span></div>'+document.getElementById("escala").innerHTML+'</section>';});document.getElementById("escala").innerHTML=html;document.getElementById("tituloEsc").textContent="Escala — "+MESES[state.schedule.month]+" de "+state.schedule.year+" · "+((state.schedule.turnos||[]).length)+" turnos";["btntroca","btnhe","btncsv","btncob"].forEach(function(id){var b=document.getElementById(id);if(b)b.disabled=true;});}
+function renderStatsFolgaMulti(){var card=document.getElementById("statcard");if(card)card.style.display="";var html=_forEachTurnoRender(function(x){renderStatsFolga();return '<section style="margin-bottom:18px"><div class="turno-hd" style="font-weight:800;font-size:14px;color:var(--cbm,#4f46e5);margin:4px 0 6px">'+esc(x.turno.nome)+'</div>'+document.getElementById("stats").innerHTML+'</section>';});document.getElementById("stats").innerHTML=html;var su=document.getElementById("statsummary");if(su)su.innerHTML="";}
 function renderFolga(){
   var res=state.schedule.result,year=state.schedule.year,month=state.schedule.month;
   document.getElementById("tituloEsc").textContent="Escala — "+MESES[month]+" de "+year;
@@ -3554,6 +3614,7 @@ function limiteLegal(year,month){
 }
 function renderStatsFolga(){var res=state.schedule.result,box=document.getElementById("stats");if(!box)return;var _dobro=!!(state.config&&state.config.ferDobro);var _temBanco=(res.stats||[]).some(function(s){return (s.banco||0)>0;});var _ll=limiteLegal(state.schedule.year,state.schedule.month);var LIM=_ll.mes;var ss=(res.stats||[]).slice().sort(function(a,b){return (b.horas||0)-(a.horas||0)||a.order-b.order;});box.innerHTML='<table class="stat"><thead><tr><th>Pessoa</th><th>Dias trab.</th><th>Folgas</th>'+(_dobro?'<th title="Feriados trabalhados — pagar em dobro">Feriados 2×</th>':'')+'<th>Horas/mês</th><th>Semana máx</th><th>CLT</th><th>Domingo</th>'+(_temBanco?'<th title="Folgas a compensar (banco) — adiadas, n\u00e3o negadas (decis\u00e3o do STF)">A compensar</th>':'')+'</tr></thead><tbody>'+ss.map(function(s){var acimaM=(s.horas||0)>LIM,acimaS=(s.maxSemH||0)>_ll.sem;var ok=!acimaM&&!acimaS;return '<tr><td>'+esc((s.ref.posto?s.ref.posto+" ":"")+s.ref.nome)+'</td><td>'+s.trabalhados+'</td><td>'+s.folgasTotal+'</td>'+(_dobro?'<td style="color:#b45309;font-weight:700">'+(s.feriadosTrab||0)+'</td>':'')+'<td>'+(s.horas||0).toFixed(1).replace(".",",")+'h</td><td>'+(s.maxSemH||0).toFixed(1).replace(".",",")+'h'+(acimaS?' <span style="color:#b91c1c">⚠</span>':'')+'</td><td>'+(ok?'<span style="color:#15803d">ok</span>':'<span style="color:#b91c1c;font-weight:700">acima</span>')+'</td><td>'+(s.sunday?"✓":'<span style="color:#b45309">—</span>')+'</td>'+(_temBanco?'<td style="color:#b45309;font-weight:700">'+((s.banco||0)>0?('+'+s.banco):'0')+'</td>':'')+'</tr>';}).join("")+'</tbody></table><div class="tiny" style="margin-top:8px;color:var(--mut)">Limite legal para esta compet\u00eancia: at\u00e9 <b>'+_ll.sem+'h/semana</b> (~'+_ll.mes+'h/m\u00eas) \u2014 '+_ll.nota+'. A <b>EC 141/2026</b> estabelece <b>42h</b> (a partir de 16/12/2026) e depois <b>40h</b> (a partir de 16/12/2027), com escala <b>5x2</b>. Quando algu\u00e9m ficar <b>acima</b>: aumente os <b>dias de folga permitidos</b> ou o <b>m\u00e1ximo de folgas/semana</b>, ou <b>pague hora extra</b>. A coluna <b>A compensar</b> (quando aparece) \u00e9 o <b>banco de folgas</b>: folga que a cobertura n\u00e3o permitiu dar no m\u00eas e que <b>carrega para o pr\u00f3ximo</b> \u2014 \u00e9 adiada, nunca negada (decis\u00e3o do STF de 12/11/2026). Conceda dentro do prazo (padr\u00e3o <b>semestral</b> da CLT, ou o da sua conven\u00e7\u00e3o). Alerta de refer\u00eancia \u2014 jornada, extras, banco de horas, intervalos e acordos coletivos dependem do controle de ponto e do seu contador.</div>';var su=document.getElementById("statsummary");if(su)su.innerHTML="";}
 function renderStats(){
+  if(state.schedule&&state.schedule.multiTurno){document.getElementById("statcard").style.display="";return renderStatsFolgaMulti();}
   if(state.schedule&&state.schedule.result&&state.schedule.result.tipo==="folga"){document.getElementById("statcard").style.display="";return renderStatsFolga();}
   if(!state.schedule)return;
   const res=state.schedule.result,month=state.schedule.month;const is24=(res.tipo!=="giro");
