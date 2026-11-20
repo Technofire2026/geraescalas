@@ -278,6 +278,25 @@
     .del{padding:8px}
   }
   @media(max-width:380px){ header.app h1{letter-spacing:.10em} .brand-logo{width:50px;height:50px} .card .bd{padding:12px} }
+.resolve-acima{border:1px solid #fdba74;border-radius:10px;background:#fffdf8;font-size:13px;margin:10px 0;overflow:hidden}
+.resolve-acima>summary{cursor:pointer;padding:11px 13px;font-weight:800;color:#9a3412;list-style:none;display:flex;align-items:center;gap:9px;background:#fff7ed;user-select:none}
+.resolve-acima>summary::-webkit-details-marker{display:none}
+.resolve-acima>summary:hover{background:#ffedd5}
+.resolve-acima .ra-chev{transition:transform .2s ease;display:inline-block;font-size:13px;color:#c2410c}
+.resolve-acima[open]>summary .ra-chev{transform:rotate(90deg)}
+.resolve-acima .ra-ttl{flex:1;min-width:0}
+.resolve-acima .ra-pill{font-weight:700;font-size:11px;color:#9a3412;background:#fff;border:1px solid #fdba74;border-radius:999px;padding:3px 10px;white-space:nowrap}
+.resolve-acima:not([open]) .ra-pill::before{content:"▾ abrir detalhes"}
+.resolve-acima[open] .ra-pill::before{content:"▴ recolher"}
+.resolve-acima .ra-body{padding:8px 13px 13px;color:#44403c;line-height:1.55}
+.resolve-acima .ra-why{margin:2px 0 4px}
+.resolve-acima .ra-opt{border:1px solid #f0e3d2;border-radius:9px;padding:9px 11px;margin:9px 0;background:#fff}
+.resolve-acima .ra-opt p{margin:5px 0 0}
+.resolve-acima .ra-oh{display:flex;align-items:center;gap:7px;font-size:13.5px}
+.resolve-acima .ra-num{display:inline-flex;align-items:center;justify-content:center;width:21px;height:21px;border-radius:50%;background:#9a3412;color:#fff;font-size:12px;font-weight:800;flex:0 0 auto}
+.resolve-acima .ra-tag{font-size:10.5px;font-weight:700;border-radius:999px;padding:2px 8px}
+.resolve-acima .ra-ok{background:#dcfce7;color:#15803d}
+.resolve-acima .ra-note{background:#fff7ed;border-left:3px solid #fdba74;border-radius:0 7px 7px 0;padding:7px 10px;color:#7c2d12;font-size:12.5px;margin-top:7px}
 </style>
 <meta http-equiv="Cache-Control" content="no-cache, no-store, must-revalidate">
 <meta http-equiv="Pragma" content="no-cache">
@@ -577,14 +596,14 @@
     </div>
   </section>
 
-  <footer><span class="noprint">Confira a escala antes de publicar.<br>© 2026 <b>Gera Escalas</b> · <span class="lnk" onclick="openAbout()">Sobre &amp; Política de Privacidade</span> · <span style="color:var(--mut2)">v13.38</span></span></footer>
+  <footer><span class="noprint">Confira a escala antes de publicar.<br>© 2026 <b>Gera Escalas</b> · <span class="lnk" onclick="openAbout()">Sobre &amp; Política de Privacidade</span> · <span style="color:var(--mut2)">v13.39</span></span></footer>
 </main>
 
 <div id="aboutmodal" class="modal" style="display:none" onclick="if(event.target===this)closeAbout()">
   <div class="mbox">
     <button class="xbtn" onclick="closeAbout()">Fechar ✕</button>
     <h2>Gera Escalas</h2>
-    <p class="muted">Escalas de plantão, turno e giro · Versão 13.38 · 2026</p>
+    <p class="muted">Escalas de plantão, turno e giro · Versão 13.39 · 2026</p>
 
     <h3>Autoria e direitos autorais</h3>
     <p>© 2026 <b>Gera Escalas</b> — desenvolvido por Luís Cesar. Todos os direitos reservados.</p>
@@ -3084,14 +3103,18 @@ function renderFolga(){
   var _ll=limiteLegal(state.schedule.year,state.schedule.month);var _clt=(res.stats||[]).filter(function(s){return (s.horas||0)>_ll.mes||(s.maxSemH||0)>_ll.sem;});
   if(_clt.length)av+='<div style="background:#fff7ed;border:1px solid #fed7aa;color:#9a3412;border-radius:8px;padding:8px 10px;margin:8px 0;font-size:13px">⚠ <b>Carga acima do limite legal</b> para '+_clt.length+' pessoa(s) (acima de <b>'+_ll.sem+'h/semana</b> ~'+_ll.mes+'h/m\u00eas \u2014 '+_ll.nota+'). <b>Orienta\u00e7\u00e3o:</b> aumente os dias de folga permitidos ou o m\u00e1ximo de folgas/semana, <b>pague hora extra</b>, ou <b>compense a folga no próximo mês</b> (banco de folgas). Veja detalhes na aba <b>Estat\u00edstica</b>.</div>';
   if(_clt.length){
-    var _maxD=res.cfg.maxDia||1,_maxD1=_maxD+1,_nEf=res.nEfetivo||(state.militares||[]).length;
-    av+='<details class="noprint" style="margin:8px 0;border:1px solid #fed7aa;border-radius:8px;background:#fffdf8;font-size:13px">'
-      +'<summary style="cursor:pointer;padding:9px 11px;font-weight:700;color:#9a3412;list-style:none">\ud83d\udee0 Como resolver o \u201cacima\u201d \u2014 3 caminhos simples</summary>'
-      +'<div style="padding:0 12px 11px;color:#44403c;line-height:1.55">'
-      +'<p style="margin:6px 0"><b>Por que aparece \u201cacima\u201d?</b> Com <b>\u201cfolgam por dia\u201d = '+_maxD+'</b> e <b>'+_nEf+' pessoa(s)</b> neste turno, n\u00e3o sobra espa\u00e7o de folga suficiente no m\u00eas para todos ficarem dentro de <b>42h por semana</b> \u2014 alguém acaba com uma semana de <b>6 dias</b> de trabalho (48h).</p>'
-      +'<p style="margin:11px 0 3px"><b>\u2460 Aumentar \u201cfolgam por dia\u201d <span style="color:#16a34a">(mais simples)</span></b><br>Mude <b>\u201cFolgam por dia\u201d</b> de <b>'+_maxD+'</b> para <b>'+_maxD1+'</b>. Abre mais espa\u00e7o de folga e <b>todos ficam em at\u00e9 42h</b>.<br><span style="color:#78716c">\u21b3 Em troca: em alguns dias, '+_maxD1+' pessoas folgam juntas \u2014 fica menos gente trabalhando nesses dias.</span></p>'
-      +'<p style="margin:11px 0 3px"><b>\u2461 Incluir mais uma pessoa no turno</b><br>Se voc\u00ea precisa manter <b>mais gente trabalhando por dia</b>, deixe o \u201cfolgam por dia\u201d baixo e <b>adicione +1 funcion\u00e1rio</b> ao turno. Com mais gente para revezar, todos ficam dentro do limite <b>sem reduzir a cobertura</b>.</p>'
-      +'<p style="margin:11px 0 3px"><b>\u2462 Manter como est\u00e1 e pagar ou compensar</b><br>Deixe a escala como est\u00e1 e <b>pague hora extra</b> nas semanas acima de 42h, ou <b>compense a folga no pr\u00f3ximo m\u00eas</b> (banco de folgas). O app j\u00e1 marca quem passou nas colunas <b>\u201cSemana m\u00e1x\u201d</b> e <b>\u201cCLT\u201d</b>.</p>'
+    var _maxD=res.cfg.maxDia||1,_maxD1=_maxD+1,_nEf=res.nEfetivo||(state.militares||[]).length,_minNow=Math.max(0,_nEf-_maxD),_minNew=Math.max(0,_nEf-_maxD1);
+    av+='<details class="resolve-acima noprint">'
+      +'<summary><span class="ra-chev">▸</span><span class="ra-ttl">🛠 Como resolver o “acima”</span><span class="ra-pill"></span></summary>'
+      +'<div class="ra-body">'
+      +'<p class="ra-why"><b>Por que aparece “acima”?</b> Com <b>“folgam por dia” = '+_maxD+'</b> e <b>'+_nEf+' pessoa(s)</b> neste turno, não sobra espaço de folga suficiente no mês para todos ficarem dentro de <b>42h por semana</b> — alguém acaba com uma semana de <b>6 dias</b> de trabalho (48h).</p>'
+      +'<div class="ra-opt"><div class="ra-oh"><span class="ra-num">1</span><b>Aumentar “folgam por dia”</b> <span class="ra-tag ra-ok">mais simples</span></div>'
+        +'<p>Mude <b>“Folgam por dia”</b> de <b>'+_maxD+'</b> para <b>'+_maxD1+'</b>. Abre mais espaço de folga e <b>todos ficam em até 42h</b>.</p>'
+        +'<p class="ra-note"><b>⚠ Atenção à cobertura:</b> hoje ficam no mínimo <b>'+_minNow+' pessoa(s)</b> trabalhando por dia. Com <b>'+_maxD1+'</b> folgas/dia, em alguns dias isso cai para <b>'+_minNew+'</b>. Se precisa manter '+_minNow+' sempre, use a <b>opção 2</b>.</p></div>'
+      +'<div class="ra-opt"><div class="ra-oh"><span class="ra-num">2</span><b>Incluir mais uma pessoa no turno</b></div>'
+        +'<p>Para manter a cobertura (mais gente trabalhando por dia), deixe o “folgam por dia” baixo e <b>adicione +1 funcionário</b> ao turno. Com mais gente para revezar, todos ficam no limite <b>sem reduzir a cobertura</b>.</p></div>'
+      +'<div class="ra-opt"><div class="ra-oh"><span class="ra-num">3</span><b>Manter como está e pagar ou compensar</b></div>'
+        +'<p>Deixe a escala como está e <b>pague hora extra</b> nas semanas acima de 42h, ou <b>compense a folga no próximo mês</b> (banco de folgas). O app já marca quem passou nas colunas <b>“Semana máx”</b> e <b>“CLT”</b>.</p></div>'
       +'</div></details>';
   }
   // Oferta de amostra com coringa quando a escala não fechou na lei
