@@ -596,14 +596,14 @@
     </div>
   </section>
 
-  <footer><span class="noprint">Confira a escala antes de publicar.<br>© 2026 <b>Gera Escalas</b> · <span class="lnk" onclick="openAbout()">Sobre &amp; Política de Privacidade</span> · <span style="color:var(--mut2)">v13.40</span></span></footer>
+  <footer><span class="noprint">Confira a escala antes de publicar.<br>© 2026 <b>Gera Escalas</b> · <span class="lnk" onclick="openAbout()">Sobre &amp; Política de Privacidade</span> · <span style="color:var(--mut2)">v13.41</span></span></footer>
 </main>
 
 <div id="aboutmodal" class="modal" style="display:none" onclick="if(event.target===this)closeAbout()">
   <div class="mbox">
     <button class="xbtn" onclick="closeAbout()">Fechar ✕</button>
     <h2>Gera Escalas</h2>
-    <p class="muted">Escalas de plantão, turno e giro · Versão 13.40 · 2026</p>
+    <p class="muted">Escalas de plantão, turno e giro · Versão 13.41 · 2026</p>
 
     <h3>Autoria e direitos autorais</h3>
     <p>© 2026 <b>Gera Escalas</b> — desenvolvido por Luís Cesar. Todos os direitos reservados.</p>
@@ -2856,7 +2856,7 @@ function renderSchedule(){
   h+=signatureBlockHTML();
   document.getElementById("escala").innerHTML=_tgl+h;
 }
-function setFolgaView(v){state._folgaView=v;renderFolga();}
+function setFolgaView(v){state._folgaView=v;if(state.schedule&&state.schedule.multiTurno){renderFolgaMulti();}else{renderFolga();}}
 function _gradeFolgaTabela(fs){
   if(!state.schedule||!state.schedule.result)return "";
   var res=state.schedule.result,year=state.schedule.year,month=state.schedule.month;
@@ -3039,7 +3039,7 @@ function abrirGradeFull(){
     +'<div id="gradeFullBody" style="flex:1;overflow:auto;padding:12px;-webkit-overflow-scrolling:touch"></div>'
     +'<div class="tiny" style="padding:8px 14px;color:var(--mut);border-top:1px solid var(--line);flex:0 0 auto">Role para os lados para ver todos os dias · gire o celular na horizontal ou use dois dedos para aproximar (zoom).</div>';
   document.body.appendChild(ov);
-  document.getElementById("gradeFullBody").innerHTML=_ehFolga?(_gradeFolgaTabela(16)+_gradeFolgaLegenda()):_ehMed?(_gradeMedicoTabela(16)+_medLegenda(state.schedule.result)):(_gradeServicoTabela(16)+_gradeServicoLegenda());
+  var _gfBody;if(state.schedule.multiTurno&&state.schedule.turnos){var _r0=state.schedule.result,_m0=state.militares,_orig=state.militares||[];_gfBody=(state.schedule.turnos||[]).map(function(x){var _ss=(x.milIds||[]).map(function(id){return _orig.filter(function(mm){return String(mm.id)===String(id);})[0];}).filter(Boolean);state.schedule.result=x.result;state.militares=_ss;return '<div style="margin-bottom:22px"><div style="font-weight:800;font-size:15px;color:#4f46e5;margin:4px 0 8px">'+esc(x.turno.nome)+' \u00b7 '+horLabel(x.turno.hIni,x.turno.hFim)+'</div>'+_gradeFolgaTabela(16)+'</div>';}).join("")+_gradeFolgaLegenda();state.schedule.result=_r0;state.militares=_m0;}else{_gfBody=_ehFolga?(_gradeFolgaTabela(16)+_gradeFolgaLegenda()):_ehMed?(_gradeMedicoTabela(16)+_medLegenda(state.schedule.result)):(_gradeServicoTabela(16)+_gradeServicoLegenda());}document.getElementById("gradeFullBody").innerHTML=_gfBody;
   try{document.body.style.overflow="hidden";}catch(e){}
 }
 function fecharGradeFull(){var m=document.getElementById("gradeFullModal");if(m)m.remove();try{document.body.style.overflow="";}catch(e){}}
