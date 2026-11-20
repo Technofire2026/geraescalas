@@ -596,14 +596,14 @@
     </div>
   </section>
 
-  <footer><span class="noprint">Confira a escala antes de publicar.<br>© 2026 <b>Gera Escalas</b> · <span class="lnk" onclick="openAbout()">Sobre &amp; Política de Privacidade</span> · <span style="color:var(--mut2)">v13.39</span></span></footer>
+  <footer><span class="noprint">Confira a escala antes de publicar.<br>© 2026 <b>Gera Escalas</b> · <span class="lnk" onclick="openAbout()">Sobre &amp; Política de Privacidade</span> · <span style="color:var(--mut2)">v13.40</span></span></footer>
 </main>
 
 <div id="aboutmodal" class="modal" style="display:none" onclick="if(event.target===this)closeAbout()">
   <div class="mbox">
     <button class="xbtn" onclick="closeAbout()">Fechar ✕</button>
     <h2>Gera Escalas</h2>
-    <p class="muted">Escalas de plantão, turno e giro · Versão 13.39 · 2026</p>
+    <p class="muted">Escalas de plantão, turno e giro · Versão 13.40 · 2026</p>
 
     <h3>Autoria e direitos autorais</h3>
     <p>© 2026 <b>Gera Escalas</b> — desenvolvido por Luís Cesar. Todos os direitos reservados.</p>
@@ -2826,7 +2826,7 @@ function renderSchedule(){
   var _vw=state._escView||"grade";
   var _tgl='<div class="noprint" style="display:flex;gap:6px;margin:6px 0;flex-wrap:wrap;align-items:center"><button class="btn ghost" style="padding:5px 10px;font-size:13px'+(_vw==="dia"?';background:var(--cbm);color:#fff':'')+'" onclick="setEscView(\'dia\')">Por dia</button><button class="btn ghost" style="padding:5px 10px;font-size:13px'+(_vw==="grade"?';background:var(--cbm);color:#fff':'')+'" onclick="setEscView(\'grade\')">Grade mensal</button><button class="btn primary" style="padding:5px 12px;font-size:13px;margin-left:auto" onclick="abrirGradeFull()" title="Abrir a grade ampliada na tela inteira">🔍 Visualizar</button></div>';
   if(_vw==="grade"){
-    var _heTip=isAdmin()?('<div class="noprint" style="display:flex;align-items:center;gap:8px;background:#fff7ed;border:1px solid #fed7aa;color:#9a3412;border-radius:8px;padding:8px 10px;margin:6px 0;font-size:13px">💡 <span><b>Hora extra na grade:</b> clique em qualquer dia da grade '+(res.tipo==="ciclo"?'e escolha a pessoa do time':'(na linha da pessoa)')+' para lançar a hora extra naquele dia.</span></div>'):'';
+    var _heTip=isAdmin()?('<div class="noprint" style="display:flex;align-items:center;gap:8px;background:#eef2ff;border:1px solid #c7d2fe;color:#3730a3;border-radius:8px;padding:8px 10px;margin:6px 0;font-size:13px">💡 <span><b>Hora extra na grade:</b> clique em qualquer dia da grade '+(res.tipo==="ciclo"?'e escolha a pessoa do time':'(na linha da pessoa)')+' para lançar a hora extra naquele dia.</span></div>'):'';
     document.getElementById("escala").innerHTML=_tgl+_heTip+_gradeServicoTabela(12)+_gradeServicoLegenda(res)+signatureBlockHTML();
     return;
   }
@@ -3101,7 +3101,7 @@ function renderFolga(){
   }
   if(res.estourou)av+='<div style="background:#fef2f2;border:1px solid #fecaca;color:#b91c1c;border-radius:8px;padding:8px 10px;margin:8px 0;font-size:13px">⚠ <b>As regras escolhidas não comportam a '+res.cfg.trab+'x'+res.cfg.folga+'</b> — para respeitar o <b>“folgam por dia” ('+res.cfg.maxDia+')</b>, alguém ficaria mais de '+res.cfg.trab+' dias seguidos de trabalho. Para evitar: aumente o <b>“folgam por dia”</b>, <b>libere mais dias</b> da semana para folga, aumente o <b>teto de folgas/semana</b>, <b>ou pague hora extra</b>.</div>';
   var _ll=limiteLegal(state.schedule.year,state.schedule.month);var _clt=(res.stats||[]).filter(function(s){return (s.horas||0)>_ll.mes||(s.maxSemH||0)>_ll.sem;});
-  if(_clt.length)av+='<div style="background:#fff7ed;border:1px solid #fed7aa;color:#9a3412;border-radius:8px;padding:8px 10px;margin:8px 0;font-size:13px">⚠ <b>Carga acima do limite legal</b> para '+_clt.length+' pessoa(s) (acima de <b>'+_ll.sem+'h/semana</b> ~'+_ll.mes+'h/m\u00eas \u2014 '+_ll.nota+'). <b>Orienta\u00e7\u00e3o:</b> aumente os dias de folga permitidos ou o m\u00e1ximo de folgas/semana, <b>pague hora extra</b>, ou <b>compense a folga no próximo mês</b> (banco de folgas). Veja detalhes na aba <b>Estat\u00edstica</b>.</div>';
+  if(_clt.length)av+='<div style="background:#fffbeb;border:1px solid #fde68a;color:#92700f;border-radius:8px;padding:8px 10px;margin:8px 0;font-size:13px">⚠ <b>Carga acima do limite legal</b> para '+_clt.length+' pessoa(s) (acima de <b>'+_ll.sem+'h/semana</b> ~'+_ll.mes+'h/m\u00eas \u2014 '+_ll.nota+'). <b>Orienta\u00e7\u00e3o:</b> aumente os dias de folga permitidos ou o m\u00e1ximo de folgas/semana, <b>pague hora extra</b>, ou <b>compense a folga no próximo mês</b> (banco de folgas). Veja detalhes na aba <b>Estat\u00edstica</b>.</div>';
   if(_clt.length){
     var _maxD=res.cfg.maxDia||1,_maxD1=_maxD+1,_nEf=res.nEfetivo||(state.militares||[]).length,_minNow=Math.max(0,_nEf-_maxD),_minNew=Math.max(0,_nEf-_maxD1);
     av+='<details class="resolve-acima noprint">'
@@ -3139,7 +3139,7 @@ function renderFolga(){
   var toggle='<div class="noprint" style="display:flex;gap:6px;margin:6px 0;flex-wrap:wrap;align-items:center"><button class="btn ghost" style="padding:5px 10px;font-size:13px'+(_vw==="dia"?';background:var(--cbm);color:#fff':'')+'" onclick="setFolgaView(\'dia\')">Por dia</button><button class="btn ghost" style="padding:5px 10px;font-size:13px'+(_vw==="grade"?';background:var(--cbm);color:#fff':'')+'" onclick="setFolgaView(\'grade\')">Grade mensal</button><button class="btn primary" style="padding:5px 12px;font-size:13px;margin-left:auto" onclick="abrirGradeFull()" title="Abrir a grade ampliada na tela inteira">🔍 Visualizar</button></div>';
   if(_vw==="grade"){
     var gh=_gradeFolgaTabela(12)+_gradeFolgaLegenda();
-    var _heTip=isAdmin()?'<div class="noprint" style="display:flex;align-items:center;gap:8px;background:#fff7ed;border:1px solid #fed7aa;color:#9a3412;border-radius:8px;padding:8px 10px;margin:6px 0;font-size:13px">💡 <span><b>Hora extra na grade:</b> clique em qualquer dia da grade (na linha da pessoa) para lançar a hora extra dela naquele dia.</span></div>':'';
+    var _heTip=isAdmin()?'<div class="noprint" style="display:flex;align-items:center;gap:8px;background:#eef2ff;border:1px solid #c7d2fe;color:#3730a3;border-radius:8px;padding:8px 10px;margin:6px 0;font-size:13px">💡 <span><b>Hora extra na grade:</b> clique em qualquer dia da grade (na linha da pessoa) para lançar a hora extra dela naquele dia.</span></div>':'';
     document.getElementById("escala").innerHTML=head+av+toggle+_heTip+gh+signatureBlockHTML();
     var tlg=document.getElementById("turmasLegend");if(tlg)tlg.style.display="none";
     return;
@@ -3919,7 +3919,7 @@ function _mapaMulti(sched,mils,Y,Mo,Dy){
     var folIds=fl.map(function(x){return (x&&typeof x==="object")?x.id:x;});
     var nomes=folIds.map(function(id){var m=byM[id];return m?esc((m.posto?m.posto+" ":"")+(m.nome||"")):"";}).filter(Boolean);
     var trab=(tt.milIds||[]).filter(function(id){return folIds.indexOf(id)<0;}).map(function(id){var m=byM[id];return (m&&!isUnavailable(m,new Date(Y,Mo,Dy)))?esc((m.posto?m.posto+" ":"")+m.nome):"";}).filter(Boolean);
-    return '<div class="mc-line" style="flex-direction:column;align-items:stretch;gap:3px"><div class="mc-lab" style="color:#4f46e5">'+esc(tt.turno.nome)+' <small>'+horLabel(tt.turno.hIni,tt.turno.hFim)+'</small></div><div class="mc-folga"><span class="mc-tag amber">Folga</span> '+(nomes.length?nomes.join(", "):"\u2014")+'</div><div><span class="mc-tag" style="background:#dcfce7;color:#15803d">Em servi\u00e7o</span> '+(trab.length?trab.join(", "):"\u2014")+'</div></div>';
+    return '<div class="mc-turno"><div class="mc-turno-h">'+esc(tt.turno.nome)+' <small>'+horLabel(tt.turno.hIni,tt.turno.hFim)+'</small></div>'+'<div class="mc-row"><span class="mc-tag folga">Folga</span><span class="mc-names">'+(nomes.length?nomes.join(", "):'<span class="none">—</span>')+'</span></div>'+'<div class="mc-row"><span class="mc-tag serv">Em serviço</span><span class="mc-names">'+(trab.length?trab.join(", "):'<span class="none">—</span>')+'</span></div></div>';
   }).join("");
 }
 function _syncHorarioBox(){
@@ -3954,7 +3954,7 @@ async function renderMapa(){
     '#mapa_body .mc-folga{font-size:14px}#mapa_body .mc-note{font-size:11px;color:var(--mut);margin-top:4px}'+
     '#mapa_body .mc-empty{color:var(--mut);font-size:13px;padding:6px 0}'+
     '#mapa_body .mc-tag{display:inline-block;border-radius:6px;padding:1px 7px;font-size:11px;font-weight:700}'+
-    '#mapa_body .mc-tag.amber{background:#fef3c7;color:#92700f}#mapa_body .mc-tag.red{background:#fee2e2;color:#b91c1c}';
+    '#mapa_body .mc-tag.amber{background:#fef3c7;color:#92700f}#mapa_body .mc-tag.red{background:#fee2e2;color:#b91c1c}'+'#mapa_body .mc-turno{padding:9px 0}#mapa_body .mc-turno+.mc-turno{border-top:1px solid var(--line)}#mapa_body .mc-turno-h{font-weight:800;font-size:12px;color:#4f46e5;text-transform:uppercase;letter-spacing:.02em;margin-bottom:6px}#mapa_body .mc-turno-h small{font-weight:600;color:var(--mut);text-transform:none;margin-left:3px}#mapa_body .mc-row{display:flex;gap:8px;align-items:flex-start;margin:5px 0}#mapa_body .mc-row .mc-tag{flex:0 0 auto;margin-top:2px}#mapa_body .mc-names{font-size:13.5px;line-height:1.45;color:#1f2937}#mapa_body .mc-names .none{color:var(--mut)}#mapa_body .mc-tag.folga{background:#eef2ff;color:#3730a3}#mapa_body .mc-tag.serv{background:#dcfce7;color:#15803d}';
     document.head.appendChild(st);}
   if(!_proAtivo().ativo){body.innerHTML='<div class="placeholder">🗺️ O <b>Mapa do dia</b> é um recurso Pro. Assine para liberar.'+(isOwner()?' <button class="btn primary" style="margin-top:8px" onclick="irParaAssinatura()">Assinar</button>':'')+'</div>';return;}
   var di=document.getElementById("mapa_data");var dstr=di&&di.value;
@@ -3984,7 +3984,7 @@ function _mapaCard(s,sched,mils,Y,Mo,Dy){
     var folIds=fl.map(function(x){return (x&&typeof x==="object")?x.id:x;});
     var nomes=folIds.map(function(id){var m=byM[id];return m?esc((m.posto?m.posto+" ":"")+(m.nome||"")):"";}).filter(Boolean);
     var trab=(mils||[]).filter(function(m){return folIds.indexOf(m.id)<0&&!isUnavailable(m,new Date(Y,Mo,Dy));}).map(function(m){return esc((m.posto?m.posto+" ":"")+m.nome);});
-    inner='<div class="mc-folga"><span class="mc-tag amber">Folga</span> '+(nomes.length?nomes.join(", "):"—")+'</div><div class="mc-line" style="margin-top:6px"><span class="mc-tag" style="background:#dcfce7;color:#15803d">Em serviço</span> '+(trab.length?trab.join(", "):"—")+'</div>';
+    inner='<div class="mc-row"><span class="mc-tag folga">Folga</span><span class="mc-names">'+(nomes.length?nomes.join(", "):'<span class="none">—</span>')+'</span></div>'+'<div class="mc-row"><span class="mc-tag serv">Em serviço</span><span class="mc-names">'+(trab.length?trab.join(", "):'<span class="none">—</span>')+'</span></div>';
   }else if(sched.tipo==="ciclo"){
     var has2=sched.g2&&Object.keys(sched.g2).length>0;
     var slot=function(lbl,gm){var tid=(gm||{})[Dy];if(!tid)return "";var tn=((sched.turmas||[]).find(function(t){return t.id===tid;})||{}).nome||"—";var mem=(sched.turmasMembros&&sched.turmasMembros[tid])||[];return '<div class="mc-line"><span class="mc-lab">'+(has2?lbl:"Time")+'</span><span class="mc-val"><b>'+esc(tn)+'</b>'+(mem.length?'<span class="mc-mem">'+esc(mem.join(", "))+'</span>':'')+'</span></div>';};
@@ -4020,7 +4020,7 @@ function _mapaMeta(sched){
   else{var cols=(sched.cols&&sched.cols.length)?sched.cols:_colsOf(sched);hrs=cols.map(function(x){return x.hhmm;}).filter(Boolean).join(" · ");if(sched.tipo==="medico"&&sched.turno)t="Plantão médico "+sched.turno;}
   return '<span class="mc-meta">'+esc(t)+(hrs?(' · '+esc(hrs)):'')+'</span>';
 }
-function showTab(t){["equipe","escala","stat","mapa"].forEach(function(n){var p=document.getElementById("pane-"+n);if(p)p.style.display=(n===t)?"":"none";var b=document.getElementById("tab-"+n);if(b)b.classList.toggle("active",n===t);});if(t==="equipe"){try{renderRoster();}catch(e){}}if(t==="stat"){var se=document.getElementById("statempty");if(se)se.style.display=state.schedule?"none":"";}if(t==="mapa"){renderMapa();}state._tab=t;}
+function showTab(t){["equipe","escala","stat","mapa"].forEach(function(n){var p=document.getElementById("pane-"+n);if(p)p.style.display=(n===t)?"":"none";var b=document.getElementById("tab-"+n);if(b)b.classList.toggle("active",n===t);});if(t==="equipe"){try{renderRoster();}catch(e){}}if(t==="stat"){var se=document.getElementById("statempty");if(se)se.style.display=state.schedule?"none":"";}if(t==="mapa"){var _md=document.getElementById("mapa_data");if(_md&&state.schedule){var _sy=state.schedule.year,_sm=state.schedule.month,_dim=new Date(_sy,_sm+1,0).getDate(),_dd=Math.min(new Date().getDate(),_dim);_md.value=_sy+"-"+("0"+(_sm+1)).slice(-2)+"-"+("0"+_dd).slice(-2);}renderMapa();}state._tab=t;}
 function openAbout(){var m=document.getElementById("aboutmodal");if(m)m.style.display="flex";}
 function openHelp(){window.open("/manual.html","_blank","noopener");}
 function closeHelp(){var m=document.getElementById("helpmodal");if(m)m.style.display="none";}
