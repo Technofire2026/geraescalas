@@ -577,14 +577,14 @@
     </div>
   </section>
 
-  <footer><span class="noprint">Confira a escala antes de publicar.<br>© 2026 <b>Gera Escalas</b> · <span class="lnk" onclick="openAbout()">Sobre &amp; Política de Privacidade</span> · <span style="color:var(--mut2)">v13.35</span></span></footer>
+  <footer><span class="noprint">Confira a escala antes de publicar.<br>© 2026 <b>Gera Escalas</b> · <span class="lnk" onclick="openAbout()">Sobre &amp; Política de Privacidade</span> · <span style="color:var(--mut2)">v13.36</span></span></footer>
 </main>
 
 <div id="aboutmodal" class="modal" style="display:none" onclick="if(event.target===this)closeAbout()">
   <div class="mbox">
     <button class="xbtn" onclick="closeAbout()">Fechar ✕</button>
     <h2>Gera Escalas</h2>
-    <p class="muted">Escalas de plantão, turno e giro · Versão 13.35 · 2026</p>
+    <p class="muted">Escalas de plantão, turno e giro · Versão 13.36 · 2026</p>
 
     <h3>Autoria e direitos autorais</h3>
     <p>© 2026 <b>Gera Escalas</b> — desenvolvido por Luís Cesar. Todos os direitos reservados.</p>
@@ -1912,6 +1912,68 @@ function gerarFolga(mils,year,month,cfg,seed){
       });
     }
   }
+  // ---- BALANCEAMENTO SEMANAL DAS FOLGAS ----
+  // Distribui as folgas de cada pessoa pelas semanas do calendário para que NENHUMA
+  // semana ultrapasse o nº de dias de trabalho do ritmo (ex.: 5 no 5x2) -> evita semanas
+  // de 6 dias (acima de 42h). Move folga da semana menos cheia da pessoa para a mais cheia;
+  // o total de folgas NÃO muda, a cobertura (máx/dia) é respeitada, domingos e feriados
+  // fechados são preservados.
+  (function(){
+    if(!(work>=1))return;
+    var w1=new Date(year,month,1).getDay();
+    function wkOf(d){return Math.floor((d-1+w1)/7);}
+    st.forEach(function(s){
+      var guard=0;
+      while(guard++<80){
+        var workWk={},any=false;
+        for(var d=1;d<=N;d++){
+          if(unav(s.ref,d))continue;
+          var w=wkOf(d); if(workWk[w]===undefined)workWk[w]=0; any=true;
+          if(!(folga[d]||[]).some(function(x){return x.id===s.ref.id;}))workWk[w]++;
+        }
+        if(!any)break;
+        var hiW=-1,hiV=-1;
+        for(var w in workWk){var v=workWk[w];if(v>hiV){hiV=v;hiW=+w;}}
+        if(hiW<0)break;
+        if(hiV<=work)break;        // pico já dentro do ritmo -> ok
+        // dia na semana-pico onde a pessoa TRABALHA e cabe +1 folga
+        var addDay=-1,addAlt=-1;
+        for(var d=1;d<=N;d++){
+          if(wkOf(d)!==hiW)continue;
+          if(unav(s.ref,d))continue;
+          if((folga[d]||[]).some(function(x){return x.id===s.ref.id;}))continue;
+          if(!permit(d))continue;
+          if(_feriadoFechado(new Date(year,month,d)))continue;
+          if((folga[d]||[]).length>=maxDia)continue;
+          // preferir um dia que NÃO fique colado a outra folga da pessoa (respeita "não seguidas")
+          var viz=((folga[d-1]||[]).some(function(x){return x.id===s.ref.id;}))||((folga[d+1]||[]).some(function(x){return x.id===s.ref.id;}));
+          if(!viz){addDay=d;break;} if(addAlt<0)addAlt=d;
+        }
+        if(addDay<0)addDay=addAlt;
+        if(addDay<0)break;
+        // semana-doadora: a de MENOS trabalho (<= pico-2) que tenha uma folga movível
+        // (nunca domingo, nunca feriado fechado) — para que mover reduza o pico sem empatar
+        var donorWork=1e9,remDay=-1;
+        for(var w in workWk){
+          var wi=+w; if(wi===hiW)continue;
+          if(workWk[w]>hiV-2)continue;
+          if(workWk[w]>=donorWork)continue;
+          var cand=-1;
+          for(var d=1;d<=N;d++){
+            if(wkOf(d)!==wi)continue;
+            if(!(folga[d]||[]).some(function(x){return x.id===s.ref.id;}))continue;
+            if(new Date(year,month,d).getDay()===0)continue;
+            if(_feriadoFechado(new Date(year,month,d)))continue;
+            cand=d;break;
+          }
+          if(cand>0){donorWork=workWk[w];remDay=cand;}
+        }
+        if(remDay<0)break;
+        folga[addDay].push(s.ref);
+        folga[remDay]=folga[remDay].filter(function(x){return x.id!==s.ref.id;});
+      }
+    });
+  })();
   return {N:N,tipo:"folga",folga:folga,cols:[{lab:"Folga(s)"}],durs:[0],cover:{},changed:{},vacant:[],_folgaPer:per,semDomingo:semDom,domShort:domShort,domTarget:domTarget,numDomingos:nDom,nEfetivo:st.length,excedeuMax:excedeuMax,estourou:estourou,estourouSem:estourouSem,cfg:{trab:work,folga:flen,maxDia:maxDia,domingo:gDom,domFolgas:domTarget,dias:diasP,hIni:(cfg.hIni||"18:00"),hFim:(cfg.hFim||"23:00"),maxSem:maxSem,folgaModo:modo}};
 }
 function computeStatsFolga(res,mils,year,month){
