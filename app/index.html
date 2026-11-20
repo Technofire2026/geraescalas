@@ -577,14 +577,14 @@
     </div>
   </section>
 
-  <footer><span class="noprint">Confira a escala antes de publicar.<br>© 2026 <b>Gera Escalas</b> · <span class="lnk" onclick="openAbout()">Sobre &amp; Política de Privacidade</span> · <span style="color:var(--mut2)">v13.34</span></span></footer>
+  <footer><span class="noprint">Confira a escala antes de publicar.<br>© 2026 <b>Gera Escalas</b> · <span class="lnk" onclick="openAbout()">Sobre &amp; Política de Privacidade</span> · <span style="color:var(--mut2)">v13.35</span></span></footer>
 </main>
 
 <div id="aboutmodal" class="modal" style="display:none" onclick="if(event.target===this)closeAbout()">
   <div class="mbox">
     <button class="xbtn" onclick="closeAbout()">Fechar ✕</button>
     <h2>Gera Escalas</h2>
-    <p class="muted">Escalas de plantão, turno e giro · Versão 13.34 · 2026</p>
+    <p class="muted">Escalas de plantão, turno e giro · Versão 13.35 · 2026</p>
 
     <h3>Autoria e direitos autorais</h3>
     <p>© 2026 <b>Gera Escalas</b> — desenvolvido por Luís Cesar. Todos os direitos reservados.</p>
@@ -2383,7 +2383,7 @@ function updateFolgaWarn(){
     parts.push('⚠ Com <b>folga em bloco</b> e folga permitida só em alguns dias, o 2º dia de folga pode cair num dia <b>não permitido</b> (ex.: sexta ou sábado). Para manter a folga só nos dias escolhidos, use <b>não seguidas</b>. <button class="btn ghost" style="padding:2px 8px;font-size:12px" onclick="usarNaoSeguidas()">Usar “não seguidas”</button>');
   }
   var fc=state.config.folgaCfg||{};
-  if(fc.domingo!==false){
+  if(fc.domingo!==false&&!fc.multiTurno){
     var c=_domCtx(),f=_domFeas(fc,c.nEf,c.nDom);
     if(f.status==="lei_nao"){
       parts.push('<span style="color:#b91c1c">⛔ <b>Não atende a lei neste mês.</b> '+f.nEf+' pessoa(s), teto <b>'+f.maxDia+'</b>/dia e <b>'+f.nDom+'</b> domingos → só cabem <b>'+f.cap+'</b> folgas de domingo; alguém ficaria <b>sem nenhum domingo</b>. Mudança mínima:</span> <button class="btn ghost" style="padding:2px 8px;font-size:12px" onclick="fixDomTeto('+f.sugTetoLei+')">Folgam por dia → '+f.sugTetoLei+'</button> <span style="color:#6b7280">ou inclua mais pessoas / hora extra.</span>');
@@ -2409,7 +2409,7 @@ function _folgaResumoTexto(){
   s+=' No máximo <b>'+md+'</b> funcionário'+(md>1?'s':'')+' de folga por dia.';
   if(dom)s+=' Cada pessoa tem <b>'+dn+' domingo'+(dn>1?'s':'')+'</b> de folga no mês.';
   s+=' A folga '+((dias.length>=7)?'pode cair em qualquer dia da semana':('só cai '+_diasResumo(dias)))+'.';
-  s+=' Expediente das <b>'+_hhR(fc.hIni||"18:00")+'</b> às <b>'+_hhR(fc.hFim||"23:00")+'</b>.';
+  if(fc.multiTurno&&fc.turnos&&fc.turnos.length){s+=' <b>'+fc.turnos.length+' turnos</b>: '+fc.turnos.map(function(tt){return esc(tt.nome)+' ('+_hhR(tt.hIni)+'\u2013'+_hhR(tt.hFim)+')';}).join(', ')+'. O ritmo acima vale para todos; cada turno tem seu próprio horário.';}else{s+=' Expediente das <b>'+_hhR(fc.hIni||"18:00")+'</b> às <b>'+_hhR(fc.hFim||"23:00")+'</b>.';}
   return s;
 }
 function renderCfgResumo(){
@@ -2429,7 +2429,7 @@ function renderCfgResumo(){
     if(t==="giro"||t==="3giros"||t==="24h"||t==="turno"){var fds=(state.config.fdsRodizio!==false);var mg=(document.querySelector('input[name="modo"]:checked')||{}).value;var jaGira=(t==="giro"&&mg==="giro");if(fds||jaGira)s+=' Evita que a mesma pessoa pegue fins de semana seguidos.';}
   }
   s+=cont?' Começa aproveitando o fim do mês anterior.':' Começa do zero (sem o mês anterior).';
-  if(t==="folga"){var _fc=state.config.folgaCfg||{};if(_fc.domingo!==false){var _c=_domCtx(),_f=_domFeas(_fc,_c.nEf,_c.nDom);if(_f.status==="lei_nao")s+=' <b style="color:#b91c1c">⛔ Não atende a lei neste mês — abra “Editar regras” para ajustar.</b>';else if(_f.status==="lei_ok")s+=' <span style="color:#9a3412">ℹ A lei está atendida; só não cabe dar '+_f.dt+' domingos a todos.</span>';}}
+  if(t==="folga"){var _fc=state.config.folgaCfg||{};if(_fc.domingo!==false){var _c=_domCtx(),_f;if(_fc.multiTurno&&_fc.turnos&&_fc.turnos.length){var _ws="ok",_wf=null;_fc.turnos.forEach(function(tt){var _ne=(state.militares||[]).filter(function(p){return p.turno===tt.id;}).filter(function(p){for(var d=1;d<=_c.N;d++){if(!isUnavailable(p,new Date(_c.y,_c.m,d)))return true;}return false;}).length;if(!_ne)return;var _ff=_domFeas(_fc,_ne,_c.nDom);if(_ff.status==="lei_nao"){_ws="lei_nao";_wf=_ff;}else if(_ff.status==="lei_ok"&&_ws!=="lei_nao"){_ws="lei_ok";_wf=_ff;}});_f=_wf||{status:_ws};}else{_f=_domFeas(_fc,_c.nEf,_c.nDom);}if(_f.status==="lei_nao")s+=' <b style="color:#b91c1c">⛔ Não atende a lei neste mês — abra “Editar regras” para ajustar.</b>';else if(_f.status==="lei_ok")s+=' <span style="color:#9a3412">ℹ A lei está atendida; só não cabe dar '+_f.dt+' domingos a todos.</span>';}}
   el.innerHTML='<b style="color:var(--cbm,#4f46e5)">⚙ Configuração atual:</b> '+s;
 }
 function toggleCfgEditor(){var p=document.getElementById("cfgEditor"),b=document.getElementById("cfg_editbtn");if(!p)return;var abrir=(p.style.display==="none"||!p.style.display);p.style.display=abrir?"flex":"none";if(b)b.textContent=abrir?"▴ Fechar edição":"✏️ Editar regras";}
