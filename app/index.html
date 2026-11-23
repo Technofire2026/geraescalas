@@ -606,14 +606,14 @@
     </div>
   </section>
 
-  <footer><span class="noprint">Confira a escala antes de publicar.<br>© 2026 <b>Gera Escalas</b> · <span class="lnk" onclick="openAbout()">Sobre &amp; Política de Privacidade</span> · <span style="color:var(--mut2)">v13.53</span></span></footer>
+  <footer><span class="noprint">Confira a escala antes de publicar.<br>© 2026 <b>Gera Escalas</b> · <span class="lnk" onclick="openAbout()">Sobre &amp; Política de Privacidade</span> · <span style="color:var(--mut2)">v13.54</span></span></footer>
 </main>
 
 <div id="aboutmodal" class="modal" style="display:none" onclick="if(event.target===this)closeAbout()">
   <div class="mbox">
     <button class="xbtn" onclick="closeAbout()">Fechar ✕</button>
     <h2>Gera Escalas</h2>
-    <p class="muted">Escalas de plantão, turno e giro · Versão 13.53 · 2026</p>
+    <p class="muted">Escalas de plantão, turno e giro · Versão 13.54 · 2026</p>
 
     <h3>Autoria e direitos autorais</h3>
     <p>© 2026 <b>Gera Escalas</b> — desenvolvido por Luís Cesar. Todos os direitos reservados.</p>
@@ -2186,15 +2186,15 @@ function _coringaSectionHTML(){
     var tds="";
     for(var d=1;d<=N;d++){
       var p=(cr.plano[c.id]||{})[d]||{s:"folga"};var cell,bg="";
-      if(p.s==="cover"){cell='<b title="Cobrindo '+esc((byMil(p.ef)||{}).nome||"")+' no turno '+esc(p.turno||"")+'" style="color:#b45309">'+esc(_turnoTag(p.turno))+'</b>';bg=";background:#fde68a";}
-      else if(p.s==="reserva"){cell='<b title="De serviço — reserva (sem folga para cobrir nesse dia)" style="color:#7c3aed">R</b>';bg=";background:#ede9fe";}
+      if(p.s==="cover"){cell='<b title="Cobrindo '+esc((byMil(p.ef)||{}).nome||"")+' no turno '+esc(p.turno||"")+'" style="color:#b45309">'+esc(_turnoTag(p.turno))+'</b>';bg=";background:#fef3c7";}
+      else if(p.s==="reserva"){cell='<b title="De serviço — reserva (sem folga para cobrir nesse dia)" style="color:#0d9488">R</b>';bg=";background:#ccfbf1";}
       else {cell='<b title="Folga" style="color:#2563eb">F</b>';}
       tds+='<td style="text-align:center;padding:3px 5px;border:1px solid #eef0f6'+bg+'">'+cell+'</td>';
     }
     var st=(cr.stat&&cr.stat[c.id])||{};
     rows+='<tr><td style="text-align:left;font-weight:600;position:sticky;left:0;background:#fff;white-space:nowrap;padding:3px 8px;border:1px solid #eef0f6">'+esc((c.posto?c.posto+" ":"")+c.nome)+' <span style="color:#b45309;font-size:0.8em">🃏</span>'+(isAdmin()&&st.cover!=null?(' <span class="tiny" style="color:var(--mut);font-weight:400">('+(st.cover||0)+' cob · '+(st.reserva||0)+' res · '+(st.folga||0)+' folga)</span>'):"")+'</td>'+tds+'</tr>';
   });
-  var leg='<div class="tiny" style="color:var(--mut);margin-top:4px"><b style="color:#b45309">A/B/C</b> = cobrindo aquele turno · <b style="color:#7c3aed">R</b> = reserva (de serviço, pronto para cobrir) · <b style="color:#2563eb">F</b> = folga</div>';
+  var leg='<div class="tiny" style="color:var(--mut);margin-top:4px"><b style="color:#b45309">A/B/C</b> = cobrindo aquele turno · <b style="color:#0d9488">R</b> = reserva (de serviço, pronto para cobrir) · <b style="color:#2563eb">F</b> = folga</div>';
   return head+'<div style="overflow-x:auto"><table style="border-collapse:collapse;font-size:12px;width:max-content">'+'<thead><tr>'+th+'</tr></thead><tbody>'+rows+'</tbody></table></div>'+leg+'</section>';
 }
 
@@ -3078,7 +3078,7 @@ function _gradeFolgaTabela(fs){
       var _fol=(res.folga[gd2]||[]).some(function(x){return x.id===m.id;});
       var _cover=(m.folguista&&!_fol&&res.usarFolguistas);
       var _efCob=(!m.folguista&&_fol&&res.usarFolguistas&&res.cobertura&&res.cobertura[gd2]&&res.cobertura[gd2][m.id]);
-      var _cbg=_cover?';background:#fde68a':(_efCob?';background:#fef9c3':'');
+      var _cbg=_cover?';background:#fef3c7':(_efCob?';background:#fef9c3':'');
       var cell=_fer?'<span title="Férias" style="font-size:'+_em+'px">🏖️</span>':(_ate?'<span title="Atestado/afastado" style="font-size:'+_em+'px">🩹</span>':(_cover?'<b title="Cobertura de folga (folguista)" style="color:#b45309">C</b>':(_fol?('<b title="'+(_efCob?('Folga coberta por '+esc((byMil(res.cobertura[gd2][m.id])||{}).nome||'')):'Folga')+'" style="color:#2563eb">F</b>'):'<b title="Em serviço" style="color:#16a34a">S</b>')));
       var _wd2=new Date(year,month,gd2).getDay();
       var _exc=((res.extras&&res.extras[gd2])||[]).filter(function(e){return String(e.id)===String(m.id);});
