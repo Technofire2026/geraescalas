@@ -606,14 +606,14 @@
     </div>
   </section>
 
-  <footer><span class="noprint">Confira a escala antes de publicar.<br>© 2026 <b>Gera Escalas</b> · <span class="lnk" onclick="openAbout()">Sobre &amp; Política de Privacidade</span> · <span style="color:var(--mut2)">v13.59</span></span></footer>
+  <footer><span class="noprint">Confira a escala antes de publicar.<br>© 2026 <b>Gera Escalas</b> · <span class="lnk" onclick="openAbout()">Sobre &amp; Política de Privacidade</span> · <span style="color:var(--mut2)">v13.60</span></span></footer>
 </main>
 
 <div id="aboutmodal" class="modal" style="display:none" onclick="if(event.target===this)closeAbout()">
   <div class="mbox">
     <button class="xbtn" onclick="closeAbout()">Fechar ✕</button>
     <h2>Gera Escalas</h2>
-    <p class="muted">Escalas de plantão, turno e giro · Versão 13.59 · 2026</p>
+    <p class="muted">Escalas de plantão, turno e giro · Versão 13.60 · 2026</p>
 
     <h3>Autoria e direitos autorais</h3>
     <p>© 2026 <b>Gera Escalas</b> — desenvolvido por Luís Cesar. Todos os direitos reservados.</p>
@@ -2139,11 +2139,11 @@ function _folguistaAviso(res){
   var cfg=res.cfg||{},efIds={};(res.efetivoIds||[]).forEach(function(id){efIds[id]=1;});
   var totalGap=0,coberto=0;
   for(var d=1;d<=res.N;d++){var offs=(res.folga[d]||[]).filter(function(m){return efIds[m.id];});totalGap+=offs.length;var cob=(res.cobertura&&res.cobertura[d])||{};offs.forEach(function(m){if(cob[m.id])coberto++;});}
-  var nFg=(res.folguistaIds||[]).length,nec=_folguistasNecessarios(res,cfg),falta=totalGap-coberto;
+  var nFg=(res.folguistaIds||[]).length,nCor=((typeof _coringasList==="function")?_coringasList().length:0),totCad=nFg+nCor,nec=_folguistasNecessarios(res,cfg),falta=totalGap-coberto;
   var h='<div style="background:#f5f3ff;border:1px solid #c7d2fe;color:#3730a3;border-radius:8px;padding:10px 12px;margin:8px 0;font-size:13px">';
   h+='<div style="font-weight:800;margin-bottom:4px">🔁 Cobertura de folgas por folguistas</div>';
   h+='<div>Folgas da equipe no mês: <b>'+totalGap+'</b> · já cobertas: <b>'+coberto+'</b>'+(falta>0?(' · <b style="color:#b45309">faltam '+falta+'</b>'):(totalGap>0?' · <b style="color:#15803d">todas cobertas ✓</b>':''))+'</div>';
-  h+='<div style="margin-top:3px">Folguistas cadastrados: <b>'+nFg+'</b> · necessários p/ cobrir dentro da lei: <b>~'+nec.necessario+'</b>'+((nFg<nec.necessario)?(' <span style="color:#b45309">(cadastre mais '+(nec.necessario-nFg)+' \u2014 folguista de turno ou coringa)</span>'):'')+'</div>';
+  h+='<div style="margin-top:3px">Folguistas cadastrados: <b>'+nFg+'</b> de turno'+(nCor>0?(' + <b>'+nCor+'</b> coringa'+(nCor>1?'s':'')):'')+' · necessários p/ cobrir dentro da lei: <b>~'+nec.necessario+'</b>'+((totCad<nec.necessario)?(' <span style="color:#b45309">(cadastre mais '+(nec.necessario-totCad)+' \u2014 folguista de turno ou coringa)</span>'):'')+'</div>';
   h+='<div style="margin-top:8px;display:flex;gap:8px;flex-wrap:wrap"><button class="btn" style="background:var(--cbm,#4f46e5);color:#fff;padding:6px 12px;font-size:13px" onclick="preencherFolguistasAuto()">🔁 Preencher folguistas automaticamente</button>'+(coberto>0?'<button class="btn ghost" style="padding:6px 12px;font-size:13px" onclick="limparCobertura()">Limpar cobertura</button>':'')+'</div>';
   h+='<div style="margin-top:6px;color:#6b7280;font-size:12px">Ou clique numa <b>folga (F)</b> na grade para escolher o folguista manualmente. A cobertura aparece como <b style="color:#b45309">C</b> (cor própria).</div>';
   h+=_coberturaHTML(res)+'</div>';
@@ -4795,6 +4795,17 @@ function _syncFlash(txt){
     clearTimeout(state._syncT);state._syncT=setTimeout(function(){el.style.opacity="0";},3500);
   }catch(e){}
 }
+function _schedFillScore(o){
+  if(!o)return -1;var n=0,d,k,dd,d2;
+  try{
+    if(o.multiTurno){
+      (o.turnos||[]).forEach(function(t){var c=t.cobertura||{};for(d in c)n+=Object.keys(c[d]||{}).length;});
+      var pl=(o.coringas&&o.coringas.plano)||null;
+      if(pl){for(k in pl){dd=pl[k]||{};for(d2 in dd){if((dd[d2]||{}).s==="cover")n++;}}}
+    }else{var cc=o.cobertura||{};for(d in cc)n+=Object.keys(cc[d]||{}).length;}
+  }catch(e){}
+  return n;
+}
 function _applyRemoteState(chave,dados){
   try{
     if(chave==="setores"){ if(JSON.stringify(state.setores||null)!==JSON.stringify(dados||null)){ state.setores=(dados&&dados.length)?dados:(state.setores||[{id:"principal",nome:"Setor principal"}]); try{localStorage.setItem("ciops:setores",JSON.stringify(state.setores));}catch(e){} try{renderSetorSel();renderAddSetor();}catch(e){} } return; }
@@ -4814,6 +4825,13 @@ function _applyRemoteState(chave,dados){
     if(base==="schedule"){
       var cur=null;try{cur=serializeSchedule();}catch(e){}
       if(JSON.stringify(dados||null)!==JSON.stringify(cur||null)){
+        // Proteção: não deixar uma versão remota mais "pobre" (ex.: eco atrasado da escala
+        // antes de preencher folguistas/coringas) apagar a cobertura/coringas já montados
+        // localmente para a MESMA escala. Nesse caso, mantém o local e reenvia.
+        if(dados&&cur&&!!dados.multiTurno===!!cur.multiTurno&&dados.year===cur.year&&dados.month===cur.month&&_schedFillScore(dados)<_schedFillScore(cur)){
+          try{cloudPush("schedule");}catch(e){}
+          return;
+        }
         try{ if(dados){localStorage.setItem("ciops:schedule",JSON.stringify(dados));}else{localStorage.removeItem("ciops:schedule");state.schedule=null;} }catch(e){}
         if(dados&&typeof restoreSchedule==="function"){try{restoreSchedule();}catch(e){}}
         try{renderSchedule();renderStats();}catch(e){}
