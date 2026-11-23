@@ -606,14 +606,14 @@
     </div>
   </section>
 
-  <footer><span class="noprint">Confira a escala antes de publicar.<br>© 2026 <b>Gera Escalas</b> · <span class="lnk" onclick="openAbout()">Sobre &amp; Política de Privacidade</span> · <span style="color:var(--mut2)">v13.60</span></span></footer>
+  <footer><span class="noprint">Confira a escala antes de publicar.<br>© 2026 <b>Gera Escalas</b> · <span class="lnk" onclick="openAbout()">Sobre &amp; Política de Privacidade</span> · <span style="color:var(--mut2)">v13.62</span></span></footer>
 </main>
 
 <div id="aboutmodal" class="modal" style="display:none" onclick="if(event.target===this)closeAbout()">
   <div class="mbox">
     <button class="xbtn" onclick="closeAbout()">Fechar ✕</button>
     <h2>Gera Escalas</h2>
-    <p class="muted">Escalas de plantão, turno e giro · Versão 13.60 · 2026</p>
+    <p class="muted">Escalas de plantão, turno e giro · Versão 13.62 · 2026</p>
 
     <h3>Autoria e direitos autorais</h3>
     <p>© 2026 <b>Gera Escalas</b> — desenvolvido por Luís Cesar. Todos os direitos reservados.</p>
@@ -2064,6 +2064,26 @@ function _folguistasNecessarios(res,cfg){
   var capFolg=Math.max(1,Math.floor(res.N*trab/(trab+folga)));
   return {total:total,peak:peak,necessario:Math.max(peak,Math.ceil(total/capFolg)),capFolg:capFolg};
 }
+function _coringaCoberturaGlobal(){
+  if(!state.schedule||!state.schedule.multiTurno)return null;
+  var N=state.schedule.result.N,cfg=state.config.folgaCfg||{};
+  var trab=Math.max(1,cfg.trab||5),folga=Math.max(1,cfg.folga||2);
+  var capFolg=Math.max(1,Math.floor(N*trab/(trab+folga)));
+  var total=0,coberto=0,peak=0,perDay=[];for(var i=0;i<=N;i++)perDay[i]=0;
+  (state.schedule.turnos||[]).forEach(function(x){
+    var res=x.result;if(!res||!res.usarFolguistas)return;
+    var efIds={};(res.efetivoIds||[]).forEach(function(id){efIds[id]=1;});
+    for(var d=1;d<=N;d++){var cob=(res.cobertura&&res.cobertura[d])||{};(res.folga[d]||[]).forEach(function(m){if(efIds[m.id]){total++;perDay[d]++;if(cob[m.id])coberto++;}});}
+  });
+  for(var d2=1;d2<=N;d2++){if(perDay[d2]>peak)peak=perDay[d2];}
+  var nCor=((typeof _coringasList==="function")?_coringasList().length:0);
+  var nFgTurno=0;(state.schedule.turnos||[]).forEach(function(x){nFgTurno+=((x.result.folguistaIds||[]).length);});
+  // Nos dias de pico (peak folgas ao mesmo tempo) são precisos 'peak' coringas de serviço;
+  // pelo volume total, ~ceil(total/capacidade de 1 coringa). Vale o maior dos dois.
+  var porVolume=Math.ceil(total/capFolg);
+  var necessario=Math.max(peak,porVolume);
+  return {total:total,coberto:coberto,falta:total-coberto,peak:peak,capFolg:capFolg,necessario:necessario,nCoringas:nCor,nFolguistasTurno:nFgTurno,totalCobridores:nCor+nFgTurno};
+}
 function _fillCobertura(res,mils,year,month){
   if(!res||!res.usarFolguistas)return;
   var folg=(mils||[]).filter(function(m){return m.folguista&&(res.folguistaIds||[]).some(function(id){return String(id)===String(m.id);});});
@@ -2143,7 +2163,13 @@ function _folguistaAviso(res){
   var h='<div style="background:#f5f3ff;border:1px solid #c7d2fe;color:#3730a3;border-radius:8px;padding:10px 12px;margin:8px 0;font-size:13px">';
   h+='<div style="font-weight:800;margin-bottom:4px">🔁 Cobertura de folgas por folguistas</div>';
   h+='<div>Folgas da equipe no mês: <b>'+totalGap+'</b> · já cobertas: <b>'+coberto+'</b>'+(falta>0?(' · <b style="color:#b45309">faltam '+falta+'</b>'):(totalGap>0?' · <b style="color:#15803d">todas cobertas ✓</b>':''))+'</div>';
-  h+='<div style="margin-top:3px">Folguistas cadastrados: <b>'+nFg+'</b> de turno'+(nCor>0?(' + <b>'+nCor+'</b> coringa'+(nCor>1?'s':'')):'')+' · necessários p/ cobrir dentro da lei: <b>~'+nec.necessario+'</b>'+((totCad<nec.necessario)?(' <span style="color:#b45309">(cadastre mais '+(nec.necessario-totCad)+' \u2014 folguista de turno ou coringa)</span>'):'')+'</div>';
+  var _G=(state.schedule&&state.schedule.multiTurno&&nCor>0&&(typeof _coringaCoberturaGlobal==="function"))?_coringaCoberturaGlobal():null;
+  if(_G){
+    h+='<div style="margin-top:3px">Cadastrados: <b>'+nFg+'</b> folguista(s) de turno + <b>'+nCor+'</b> coringa'+(nCor>1?'s':'')+' · necessários p/ cobrir <b>todos os turnos</b>: <b>~'+_G.necessario+'</b>'+((_G.totalCobridores<_G.necessario)?(' <span style="color:#b45309">(cadastre mais '+(_G.necessario-_G.totalCobridores)+' \u2014 coringa ou folguista de turno)</span>'):' <span style="color:#15803d">✓</span>')+'</div>';
+    if(_G.totalCobridores<_G.necessario){h+='<div style="margin-top:3px;color:#9a3412;font-size:12px">⚠ Um coringa cobre no máximo ~'+_G.capFolg+' folgas/mês e <b>só uma por dia</b>. Nesta escala são <b>'+_G.total+'</b> folgas (todos os turnos) e em alguns dias <b>'+_G.peak+'</b> pessoas folgam ao mesmo tempo — por isso sobram folgas sem cobertura. Cadastre mais coringas (ou folguistas de turno) para fechar tudo.</div>';}
+  }else{
+    h+='<div style="margin-top:3px">Folguistas cadastrados: <b>'+nFg+'</b> de turno'+(nCor>0?(' + <b>'+nCor+'</b> coringa'+(nCor>1?'s':'')):'')+' · necessários p/ cobrir dentro da lei: <b>~'+nec.necessario+'</b>'+((totCad<nec.necessario)?(' <span style="color:#b45309">(cadastre mais '+(nec.necessario-totCad)+' \u2014 folguista de turno ou coringa)</span>'):'')+'</div>';
+  }
   h+='<div style="margin-top:8px;display:flex;gap:8px;flex-wrap:wrap"><button class="btn" style="background:var(--cbm,#4f46e5);color:#fff;padding:6px 12px;font-size:13px" onclick="preencherFolguistasAuto()">🔁 Preencher folguistas automaticamente</button>'+(coberto>0?'<button class="btn ghost" style="padding:6px 12px;font-size:13px" onclick="limparCobertura()">Limpar cobertura</button>':'')+'</div>';
   h+='<div style="margin-top:6px;color:#6b7280;font-size:12px">Ou clique numa <b>folga (F)</b> na grade para escolher o folguista manualmente. A cobertura aparece como <b style="color:#b45309">C</b> (cor própria).</div>';
   h+=_coberturaHTML(res)+'</div>';
@@ -2163,23 +2189,36 @@ function _fillCoringas(){
     var efIds={};(res.efetivoIds||[]).forEach(function(id){efIds[id]=1;});
     for(var d=1;d<=N;d++){var cob=(res.cobertura&&res.cobertura[d])||{};(res.folga[d]||[]).forEach(function(m){if(efIds[m.id]&&!cob[m.id]){gaps[d]=gaps[d]||[];gaps[d].push({res:res,turno:x.turno,ef:m.id});}});}
   });
-  var plano={},stat={},consec={};
-  coringas.forEach(function(c){plano[c.id]={};stat[c.id]={trab:0,folga:0,reserva:0,cover:0,sun:false};consec[c.id]=0;});
+  var plano={},stat={},consec={},restWk={},lastWk={},sunOff={};
+  coringas.forEach(function(c){plano[c.id]={};stat[c.id]={trab:0,folga:0,reserva:0,cover:0,sun:false};consec[c.id]=0;restWk[c.id]=0;lastWk[c.id]=-1;sunOff[c.id]=false;});
+  var folgaWk=Math.max(1,(cfg.folga||2)),w1=new Date(year,month,1).getDay();
   for(var d=1;d<=N;d++){
-    var dt=new Date(year,month,d),isSun=dt.getDay()===0;
+    var dt=new Date(year,month,d),isSun=dt.getDay()===0,wk=Math.floor((d-1+w1)/7);
+    coringas.forEach(function(c){if(lastWk[c.id]!==wk){restWk[c.id]=0;lastWk[c.id]=wk;}});
+    var dem=(gaps[d]||[]).length;
+    // disponíveis x indisponíveis (férias/atestado)
+    var avail=[],off=[];
+    coringas.forEach(function(c){if(isUnavailable(c,dt))off.push(c);else avail.push(c);});
+    // folga obrigatória por dias seguidos (limite legal)
+    var rest={},jaRest=0;
+    avail.forEach(function(c){if(consec[c.id]>=trab){rest[c.id]=1;jaRest++;}});
+    // folga voluntária só na SOBRA de capacidade do dia → descansa nos dias de MENOR demanda
+    var sobra=Math.max(0,avail.length-dem-jaRest);
+    var cand=avail.filter(function(c){return !rest[c.id]&&restWk[c.id]<folgaWk;});
+    cand.sort(function(a,b){if(isSun){var aa=sunOff[a.id]?1:0,bb=sunOff[b.id]?1:0;if(aa!==bb)return aa-bb;}return consec[b.id]-consec[a.id];});
+    for(var r=0;r<cand.length&&r<sobra;r++)rest[cand[r].id]=1;
     var working=[],resting=[];
-    coringas.forEach(function(c,k){
-      var cyc=((d-1+k*3)%7);var cycleRest=(cyc>=trab);var mustRest=(consec[c.id]>=trab);
-      if(isUnavailable(c,dt)||cycleRest||mustRest)resting.push(c);else working.push(c);
-    });
+    avail.forEach(function(c){if(rest[c.id])resting.push(c);else working.push(c);});
+    off.forEach(function(c){resting.push(c);});
+    // atribui coringas de serviço às folgas em aberto (justiça: quem cobriu menos primeiro)
     var gd=(gaps[d]||[]).slice();
-    if(gd.length>1){var rot=d%gd.length;gd=gd.slice(rot).concat(gd.slice(0,rot));}
+    working.sort(function(a,b){return stat[a.id].cover-stat[b.id].cover;});
     working.forEach(function(c,i){
       if(i<gd.length){var g=gd[i];plano[c.id][d]={s:"cover",turno:g.turno.nome,turnoId:g.turno.id,ef:g.ef};g.res.cobertura[d]=g.res.cobertura[d]||{};g.res.cobertura[d][g.ef]=c.id;stat[c.id].cover++;stat[c.id].trab++;}
       else{plano[c.id][d]={s:"reserva"};stat[c.id].reserva++;stat[c.id].trab++;}
       consec[c.id]++;
     });
-    resting.forEach(function(c){plano[c.id][d]={s:"folga"};stat[c.id].folga++;consec[c.id]=0;if(isSun)stat[c.id].sun=true;});
+    resting.forEach(function(c){plano[c.id][d]={s:"folga"};stat[c.id].folga++;consec[c.id]=0;restWk[c.id]++;if(isSun){sunOff[c.id]=true;stat[c.id].sun=true;}});
   }
   coringas.forEach(function(c){
     var hasSun=false,sunRes=null;
