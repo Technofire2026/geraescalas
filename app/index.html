@@ -606,14 +606,14 @@
     </div>
   </section>
 
-  <footer><span class="noprint">Confira a escala antes de publicar.<br>© 2026 <b>Gera Escalas</b> · <span class="lnk" onclick="openAbout()">Sobre &amp; Política de Privacidade</span> · <span style="color:var(--mut2)">v13.50</span></span></footer>
+  <footer><span class="noprint">Confira a escala antes de publicar.<br>© 2026 <b>Gera Escalas</b> · <span class="lnk" onclick="openAbout()">Sobre &amp; Política de Privacidade</span> · <span style="color:var(--mut2)">v13.51</span></span></footer>
 </main>
 
 <div id="aboutmodal" class="modal" style="display:none" onclick="if(event.target===this)closeAbout()">
   <div class="mbox">
     <button class="xbtn" onclick="closeAbout()">Fechar ✕</button>
     <h2>Gera Escalas</h2>
-    <p class="muted">Escalas de plantão, turno e giro · Versão 13.50 · 2026</p>
+    <p class="muted">Escalas de plantão, turno e giro · Versão 13.51 · 2026</p>
 
     <h3>Autoria e direitos autorais</h3>
     <p>© 2026 <b>Gera Escalas</b> — desenvolvido por Luís Cesar. Todos os direitos reservados.</p>
@@ -924,12 +924,12 @@ function saveCarry(){try{localStorage.setItem("ciops:carry",JSON.stringify(state
 function _serFolga(f){var o={};for(var d in f){o[d]=(f[d]||[]).map(function(m){return m.id;});}return o;}
 function serializeSchedule(){
   if(!state.schedule||!state.schedule.result)return null;
-  if(state.schedule.multiTurno&&state.schedule.turnos){return {multiTurno:true,year:state.schedule.year,month:state.schedule.month,N:state.schedule.result.N,tipo:"folga",contInfo:state.contInfo||null,turnos:state.schedule.turnos.map(function(x){return {turno:x.turno,milIds:x.milIds,cfg:x.result.cfg||null,folga:(x.result.folga?_serFolga(x.result.folga):null),_folgaPer:x.result._folgaPer||null,extras:x.result.extras||{}};})};}
+  if(state.schedule.multiTurno&&state.schedule.turnos){return {multiTurno:true,year:state.schedule.year,month:state.schedule.month,N:state.schedule.result.N,tipo:"folga",contInfo:state.contInfo||null,turnos:state.schedule.turnos.map(function(x){return {turno:x.turno,milIds:x.milIds,cfg:x.result.cfg||null,folga:(x.result.folga?_serFolga(x.result.folga):null),_folgaPer:x.result._folgaPer||null,extras:x.result.extras||{},usarFolguistas:x.result.usarFolguistas||false,efetivoIds:x.result.efetivoIds||null,folguistaIds:x.result.folguistaIds||null,cobertura:x.result.cobertura||null,coberturaFalta:x.result.coberturaFalta||null};})};}
   var r=state.schedule.result,idOf=function(x){return x?x.id:null;};
   var g1={},g2={},g3={};if(r.g1){for(var d=1;d<=r.N;d++){g1[d]=idOf(r.g1[d]);g2[d]=idOf(r.g2&&r.g2[d]);g3[d]=idOf(r.g3?r.g3[d]:null);}}
   var cover={};for(var k in (r.cover||{})){var c=r.cover[k];cover[k]={};for(var gi in c){cover[k][gi]={was:idOf(c[gi].was),sub:idOf(c[gi].sub)};}}
   var stats=(r.stats||[]).map(function(s){return {id:s.ref.id,order:s.order,servicos:s.servicos,g1:s.g1,g2:s.g2,sab:s.sab,dom:s.dom,wknd:s.wknd,cob:s.cob,horas:s.horas,folgao:s.folgao,lastDay:s.lastDay,feriasNoMes:s.feriasNoMes,atestadoNoMes:s.atestadoNoMes};});
-  return {year:state.schedule.year,month:state.schedule.month,N:r.N,tipo:r.tipo||"giro",seed:r.seed||null,g1:g1,g2:g2,g3:g3,cols:r.cols||null,durs:r.durs||null,cover:cover,changed:r.changed||{},vacant:r.vacant||[],stats:stats,contInfo:state.contInfo||null,turmas:r.turmas||null,turmasMembros:r.turmasMembros||null,folga:(r.folga?_serFolga(r.folga):null),cfg:r.cfg||null,semDomingo:r.semDomingo||null,excedeuMax:r.excedeuMax||false,estourou:r.estourou||false,extras:r.extras||{},_amostra:r._amostra||false,_coringaServ:r._coringaServ||null,_coringas:r._coringas||0,_coringaTotal:r._coringaTotal||0,slots:r.slots||null,shifts:r.shifts||null,vagas:r.vagas||null,turno:r.turno||null,vagasDescobertas:r.vagasDescobertas||0,diaristas:r.diaristas||null,sobreaviso:r.sobreaviso||null,temSobre:r.temSobre||false,temDiarista:r.temDiarista||false};
+  return {year:state.schedule.year,month:state.schedule.month,N:r.N,tipo:r.tipo||"giro",seed:r.seed||null,g1:g1,g2:g2,g3:g3,cols:r.cols||null,durs:r.durs||null,cover:cover,changed:r.changed||{},vacant:r.vacant||[],stats:stats,contInfo:state.contInfo||null,turmas:r.turmas||null,turmasMembros:r.turmasMembros||null,folga:(r.folga?_serFolga(r.folga):null),cfg:r.cfg||null,semDomingo:r.semDomingo||null,excedeuMax:r.excedeuMax||false,estourou:r.estourou||false,extras:r.extras||{},_amostra:r._amostra||false,_coringaServ:r._coringaServ||null,_coringas:r._coringas||0,_coringaTotal:r._coringaTotal||0,slots:r.slots||null,shifts:r.shifts||null,vagas:r.vagas||null,turno:r.turno||null,vagasDescobertas:r.vagasDescobertas||0,diaristas:r.diaristas||null,sobreaviso:r.sobreaviso||null,temSobre:r.temSobre||false,temDiarista:r.temDiarista||false,usarFolguistas:r.usarFolguistas||false,efetivoIds:r.efetivoIds||null,folguistaIds:r.folguistaIds||null,cobertura:r.cobertura||null,coberturaFalta:r.coberturaFalta||null};
 }
 function saveSchedule(){try{var o=serializeSchedule();if(o)localStorage.setItem("ciops:schedule",JSON.stringify(o));else localStorage.removeItem("ciops:schedule");}catch(e){}cloudPush("schedule");try{arquivarResumo();}catch(e){}}
 function restoreSchedule(){
@@ -941,7 +941,7 @@ function restoreSchedule(){
       o.turnos.forEach(function(t){
         var subset=(t.milIds||[]).map(function(id){return _byIdT[id];}).filter(Boolean);
         var _folR={};if(t.folga){for(var fd in t.folga){_folR[fd]=(t.folga[fd]||[]).map(function(id){return _byIdT[id];}).filter(Boolean);}}
-        var _rR={N:o.N,tipo:"folga",folga:_folR,cols:[{lab:"Folga(s)"}],durs:[0],cover:{},changed:{},vacant:[],_folgaPer:t._folgaPer||null,cfg:t.cfg||null,extras:t.extras||{}};
+        var _rR={N:o.N,tipo:"folga",folga:_folR,cols:[{lab:"Folga(s)"}],durs:[0],cover:{},changed:{},vacant:[],_folgaPer:t._folgaPer||null,cfg:t.cfg||null,extras:t.extras||{},usarFolguistas:t.usarFolguistas||false,efetivoIds:t.efetivoIds||null,folguistaIds:t.folguistaIds||null,cobertura:t.cobertura||{},coberturaFalta:t.coberturaFalta||{}};
         computeStatsFolga(_rR,subset,o.year,o.month);
         _trR.push({turno:t.turno,result:_rR,milIds:t.milIds});
       });
@@ -955,7 +955,7 @@ function restoreSchedule(){
     var stats=(o.stats||[]).map(function(s){var m=byId[s.id];if(!m)return null;var ss=Object.assign({},s);ss.ref=m;return ss;}).filter(Boolean);
     var enter={};enter[0]=g2[1]?{ref:g2[1]}:null;for(var d2=1;d2<=o.N;d2++)enter[d2]=g1[d2]?{ref:g1[d2]}:null;
 var _fol=null;if(o.folga){_fol={};for(var fd in o.folga){_fol[fd]=(o.folga[fd]||[]).map(ref).filter(Boolean);}}
-    var result={N:o.N,tipo:o.tipo||"giro",seed:o.seed||null,g1:g1,g2:g2,g3:g3,cols:o.cols||null,durs:o.durs||null,cover:cover,changed:o.changed||{},vacant:o.vacant||[],stats:stats,enter:enter,sel:[],folga:_fol,cfg:o.cfg||null,semDomingo:o.semDomingo||null,excedeuMax:o.excedeuMax||false,estourou:o.estourou||false,turmas:o.turmas||null,turmasMembros:o.turmasMembros||null,extras:o.extras||{},_amostra:o._amostra||false,_coringaServ:o._coringaServ||null,_coringas:o._coringas||0,_coringaTotal:o._coringaTotal||0,slots:o.slots||null,shifts:o.shifts||null,vagas:o.vagas||null,turno:o.turno||null,vagasDescobertas:o.vagasDescobertas||0,diaristas:o.diaristas||null,sobreaviso:o.sobreaviso||null,temSobre:o.temSobre||false,temDiarista:o.temDiarista||false};
+    var result={N:o.N,tipo:o.tipo||"giro",seed:o.seed||null,g1:g1,g2:g2,g3:g3,cols:o.cols||null,durs:o.durs||null,cover:cover,changed:o.changed||{},vacant:o.vacant||[],stats:stats,enter:enter,sel:[],folga:_fol,cfg:o.cfg||null,semDomingo:o.semDomingo||null,excedeuMax:o.excedeuMax||false,estourou:o.estourou||false,turmas:o.turmas||null,turmasMembros:o.turmasMembros||null,extras:o.extras||{},_amostra:o._amostra||false,_coringaServ:o._coringaServ||null,_coringas:o._coringas||0,_coringaTotal:o._coringaTotal||0,slots:o.slots||null,shifts:o.shifts||null,vagas:o.vagas||null,turno:o.turno||null,vagasDescobertas:o.vagasDescobertas||0,diaristas:o.diaristas||null,sobreaviso:o.sobreaviso||null,temSobre:o.temSobre||false,temDiarista:o.temDiarista||false,usarFolguistas:o.usarFolguistas||false,efetivoIds:o.efetivoIds||null,folguistaIds:o.folguistaIds||null,cobertura:o.cobertura||{},coberturaFalta:o.coberturaFalta||{}};
     state.schedule={result:result,year:o.year,month:o.month};
     if(result.tipo==="medico")computeStatsMedico(result,state.militares,o.year,o.month);
     if(result.tipo==="folga"&&result.folga)computeStatsFolga(result,state.militares,o.year,o.month);
