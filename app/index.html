@@ -606,14 +606,14 @@
     </div>
   </section>
 
-  <footer><span class="noprint">Confira a escala antes de publicar.<br>© 2026 <b>Gera Escalas</b> · <span class="lnk" onclick="openAbout()">Sobre &amp; Política de Privacidade</span> · <span style="color:var(--mut2)">v13.48</span></span></footer>
+  <footer><span class="noprint">Confira a escala antes de publicar.<br>© 2026 <b>Gera Escalas</b> · <span class="lnk" onclick="openAbout()">Sobre &amp; Política de Privacidade</span> · <span style="color:var(--mut2)">v13.49</span></span></footer>
 </main>
 
 <div id="aboutmodal" class="modal" style="display:none" onclick="if(event.target===this)closeAbout()">
   <div class="mbox">
     <button class="xbtn" onclick="closeAbout()">Fechar ✕</button>
     <h2>Gera Escalas</h2>
-    <p class="muted">Escalas de plantão, turno e giro · Versão 13.48 · 2026</p>
+    <p class="muted">Escalas de plantão, turno e giro · Versão 13.49 · 2026</p>
 
     <h3>Autoria e direitos autorais</h3>
     <p>© 2026 <b>Gera Escalas</b> — desenvolvido por Luís Cesar. Todos os direitos reservados.</p>
@@ -2822,7 +2822,7 @@ function renderRoster(){
       var _podeAcesso=(m.email&&typeof cloudReady==="function"&&cloudReady());
       h+='<div class="mname">'+(m.posto?'<span class="pg">'+esc(m.posto)+' </span>':'')+esc(m.nome)+' <button class="mini" title="Editar" onclick="editMilitar('+m.id+')">✎</button>'+(_ex.length?' <button class="mini" title="Ver dados" onclick="toggleMil('+m.id+')">ⓘ</button>':'')+(_podeAcesso?' <button class="mini" title="Dar acesso de funcionário (pede e recebe permuta) e enviar e-mail de login" onclick="enviarAcessoFunc('+m.id+')" style="color:#4f46e5">✉ acesso</button>':'')+'</div>';
       var _fcT=state.config.folgaCfg||{};var _tsT=(state.config.tipo==="folga"&&_fcT.multiTurno&&_fcT.turnos&&_fcT.turnos.length)?_fcT.turnos:[];if(_tsT.length){h+='<div class="tiny" style="margin:2px 0 3px"><span style="color:var(--mut)">Turno:</span> <select onchange="setMilTurno('+m.id+',this.value)" style="font:inherit;padding:2px 5px;border:1px solid var(--line2);border-radius:6px"><option value="">—</option>'+_tsT.map(function(t){return '<option value="'+t.id+'"'+((m.turno===t.id)?" selected":"")+'>'+esc(t.nome)+'</option>';}).join("")+'</select></div>';}
-      h+=(state.config.tipo==="folga")?('<label class="tiny" style="display:inline-flex;align-items:center;gap:5px;margin:1px 0 4px;cursor:pointer;color:#6d28d9;font-weight:600"><input type="checkbox" '+(m.folguista?"checked":"")+' onchange="setFolguista('+m.id+',this.checked)"> 🔁 Folguista <span style="color:var(--mut);font-weight:400">(cobre as folgas da equipe)</span></label>'):'';
+      h+=(state.config.tipo==="folga")?('<label class="tiny" title="Folguista: pessoa contratada só para cobrir as folgas da equipe. O app a distribui automaticamente nas folgas dos efetivos, em rodízio, e ela também folga 5×2 e no domingo. Diferente do coringa, que é um reforço avulso por hora extra para tapar buracos quando falta gente." style="display:inline-flex;align-items:center;gap:5px;margin:1px 0 4px;cursor:pointer;color:#6d28d9;font-weight:600"><input type="checkbox" '+(m.folguista?"checked":"")+' onchange="setFolguista('+m.id+',this.checked)"> 🔁 Folguista <span style="color:var(--mut);font-weight:400">(cobre as folgas da equipe)</span></label>'):'';
       if(_ex.length)h+='<div class="tiny" id="mil_dados_'+m.id+'" style="display:none;color:var(--mut);margin:2px 0 4px">'+_ex.join(" · ")+'</div>';
     }
     h+='<div class="fer"><div class="lbl">✈ Férias (dias editáveis · padrão '+feriasPadrao()+')</div>';
@@ -3209,7 +3209,7 @@ function renderFolga(){
   }
   // Oferta de amostra com coringa quando a escala não fechou na lei
   if(!res._amostra && ((res.semDomingo&&res.semDomingo.length)||res.estourou||(res.domShort&&res.domShort.length))){
-    av+='<div class="noprint" style="background:#eef2ff;border:1px solid #c7d2fe;color:#3730a3;border-radius:8px;padding:10px 12px;margin:8px 0;font-size:13px">💡 <b>Quer uma saída sem mudar as regras?</b> O app monta uma <b>escala de amostra</b> em que todos recebem folga e domingo certos, e marca os turnos que faltam como <b>serviço de coringa</b> — você cobre cada um com <b>hora extra</b> de alguém do quadro.<br><button class="btn" style="margin-top:8px;background:var(--cbm,#4f46e5);color:#fff" onclick="gerarAmostraCoringa()">🃏 Gerar amostra com coringa</button></div>';
+    av+='<div class="noprint" style="background:#eef2ff;border:1px solid #c7d2fe;color:#3730a3;border-radius:8px;padding:10px 12px;margin:8px 0;font-size:13px">💡 <b>Quer uma saída sem mudar as regras?</b> O app monta uma <b>escala de amostra</b> em que todos recebem folga e domingo certos, e marca os turnos que faltam como <b>serviço de coringa</b> — você cobre cada um com <b>hora extra</b> de alguém do quadro. <span style="display:block;margin-top:6px;color:#4338ca">ℹ Isso é um <b>reforço avulso</b> por hora extra, para tapar buracos quando falta gente num pico. Se você quer alguém <b>fixo</b> cobrindo as folgas da equipe de forma organizada, cadastre a pessoa e marque <b>🔁 Folguista</b> na lista de funcionários — o app distribui sozinho, em rodízio.</span><br><button class="btn" style="margin-top:8px;background:var(--cbm,#4f46e5);color:#fff" onclick="gerarAmostraCoringa()">🃏 Gerar amostra com coringa</button></div>';
   }
   // Painel da amostra: lista dos serviços de coringa a cobrir
   if(res._amostra){
