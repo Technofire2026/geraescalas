@@ -606,14 +606,14 @@
     </div>
   </section>
 
-  <footer><span class="noprint">Confira a escala antes de publicar.<br>© 2026 <b>Gera Escalas</b> · <span class="lnk" onclick="openAbout()">Sobre &amp; Política de Privacidade</span> · <span style="color:var(--mut2)">v13.55</span></span></footer>
+  <footer><span class="noprint">Confira a escala antes de publicar.<br>© 2026 <b>Gera Escalas</b> · <span class="lnk" onclick="openAbout()">Sobre &amp; Política de Privacidade</span> · <span style="color:var(--mut2)">v13.56</span></span></footer>
 </main>
 
 <div id="aboutmodal" class="modal" style="display:none" onclick="if(event.target===this)closeAbout()">
   <div class="mbox">
     <button class="xbtn" onclick="closeAbout()">Fechar ✕</button>
     <h2>Gera Escalas</h2>
-    <p class="muted">Escalas de plantão, turno e giro · Versão 13.55 · 2026</p>
+    <p class="muted">Escalas de plantão, turno e giro · Versão 13.56 · 2026</p>
 
     <h3>Autoria e direitos autorais</h3>
     <p>© 2026 <b>Gera Escalas</b> — desenvolvido por Luís Cesar. Todos os direitos reservados.</p>
@@ -2115,7 +2115,7 @@ function _coberturaHTML(res){
   var rows="";
   for(var d=1;d<=res.N;d++){
     var cob=(res.cobertura&&res.cobertura[d])||{};var ks=Object.keys(cob);if(!ks.length)continue;
-    var txt=ks.map(function(efId){var ef=byMil(efId),fg=byMil(cob[efId]);return esc(ef?ef.nome:"?")+" → <b>"+esc(fg?fg.nome:"?")+"</b>";}).join("; ");
+    var txt=ks.map(function(efId){var ef=byMil(efId),fg=byMil(cob[efId]);return "folga de "+esc(ef?ef.nome:"—")+" coberta por <b>"+esc(fg?fg.nome:"—")+"</b>";}).join("; ");
     rows+='<div style="padding:3px 0;border-top:1px solid #0000000f">Dia <b>'+pad(d)+'</b>: '+txt+'</div>';
   }
   if(!rows)return "";
