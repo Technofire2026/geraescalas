@@ -606,14 +606,14 @@
     </div>
   </section>
 
-  <footer><span class="noprint">Confira a escala antes de publicar.<br>© 2026 <b>Gera Escalas</b> · <span class="lnk" onclick="openAbout()">Sobre &amp; Política de Privacidade</span> · <span style="color:var(--mut2)">v13.54</span></span></footer>
+  <footer><span class="noprint">Confira a escala antes de publicar.<br>© 2026 <b>Gera Escalas</b> · <span class="lnk" onclick="openAbout()">Sobre &amp; Política de Privacidade</span> · <span style="color:var(--mut2)">v13.55</span></span></footer>
 </main>
 
 <div id="aboutmodal" class="modal" style="display:none" onclick="if(event.target===this)closeAbout()">
   <div class="mbox">
     <button class="xbtn" onclick="closeAbout()">Fechar ✕</button>
     <h2>Gera Escalas</h2>
-    <p class="muted">Escalas de plantão, turno e giro · Versão 13.54 · 2026</p>
+    <p class="muted">Escalas de plantão, turno e giro · Versão 13.55 · 2026</p>
 
     <h3>Autoria e direitos autorais</h3>
     <p>© 2026 <b>Gera Escalas</b> — desenvolvido por Luís Cesar. Todos os direitos reservados.</p>
@@ -2448,7 +2448,7 @@ function addAtestado(id){const m=byMil(id);if(!m)return;m.atestados=m.atestados|
 function setAtestadoStart(id,aid,val_){const m=byMil(id);if(!m)return;m.atestados=(m.atestados||[]).map(a=>a.id===aid?Object.assign({},a,{start:val_}):a);saveMil();renderRoster();log("Atestado definido",((m.posto?m.posto+" ":"")+m.nome)+": início "+val_);}
 function setAtestadoDias(id,aid,val_){const m=byMil(id);if(!m)return;const n=parseInt(val_,10);m.atestados=(m.atestados||[]).map(a=>a.id===aid?Object.assign({},a,{dias:isNaN(n)?"":n}):a);saveMil();renderRoster();log("Atestado (dias)",((m.posto?m.posto+" ":"")+m.nome)+": "+(isNaN(n)?"":n)+" dia(s)");}
 function removeAtestado(id,aid){const m=byMil(id);if(!m)return;m.atestados=(m.atestados||[]).filter(a=>a.id!==aid);saveMil();renderRoster();log("Atestado removido",(m.posto?m.posto+" ":"")+m.nome);}
-function byMil(id){return state.militares.find(x=>x.id===id);}
+function byMil(id){return state.militares.find(function(x){return x.id===id||String(x.id)===String(id);});}
 function val(id){const e=document.getElementById(id);return e?e.value:"";}
 function showErro(msg){document.getElementById("erro").innerHTML=msg?('<div class="err">⚠ '+esc(msg)+'</div>'):"";}
 function showMsg(msg){document.getElementById("erro").innerHTML=msg?('<div class="note">ℹ '+esc(msg)+'</div>'):"";}
