@@ -606,14 +606,14 @@
     </div>
   </section>
 
-  <footer><span class="noprint">Confira a escala antes de publicar.<br>© 2026 <b>Gera Escalas</b> · <span class="lnk" onclick="openAbout()">Sobre &amp; Política de Privacidade</span> · <span style="color:var(--mut2)">v13.62</span></span></footer>
+  <footer><span class="noprint">Confira a escala antes de publicar.<br>© 2026 <b>Gera Escalas</b> · <span class="lnk" onclick="openAbout()">Sobre &amp; Política de Privacidade</span> · <span style="color:var(--mut2)">v13.63</span></span></footer>
 </main>
 
 <div id="aboutmodal" class="modal" style="display:none" onclick="if(event.target===this)closeAbout()">
   <div class="mbox">
     <button class="xbtn" onclick="closeAbout()">Fechar ✕</button>
     <h2>Gera Escalas</h2>
-    <p class="muted">Escalas de plantão, turno e giro · Versão 13.62 · 2026</p>
+    <p class="muted">Escalas de plantão, turno e giro · Versão 13.63 · 2026</p>
 
     <h3>Autoria e direitos autorais</h3>
     <p>© 2026 <b>Gera Escalas</b> — desenvolvido por Luís Cesar. Todos os direitos reservados.</p>
@@ -1751,7 +1751,7 @@ function computeStatsMedico(res,mils,year,month){
   arr.forEach(function(s,i){s.order=i+1;});
   res.stats=arr;
 }
-function gerarFolga(mils,year,month,cfg,seed){
+function gerarFolga(mils,year,month,cfg,seed,phase){
   var N=new Date(year,month+1,0).getDate();
   var work=Math.max(1,cfg.trab||6),flen=Math.max(1,cfg.folga||1),maxDia=Math.max(1,cfg.maxDia||1),gDom=!!cfg.domingo;
   var diasP=(cfg.dias&&cfg.dias.length)?cfg.dias.slice():[0,1,2,3,4,5,6]; // dias da semana permitidos p/ folga
@@ -1770,6 +1770,9 @@ function gerarFolga(mils,year,month,cfg,seed){
   var nextP=new Array(N+2).fill(N+999);
   for(var dd=N;dd>=1;dd--){nextP[dd]=permit(dd+1)?(dd+1):((dd+1<=N)?nextP[dd+1]:N+999);}
   var st=mils.map(function(m,i){var sd=seed&&seed.folgaPer&&seed.folgaPer[m.id];return{ref:m,order:i,cons:(sd&&sd.cons!=null)?sd.cons:0,gi:(sd&&sd.gi!=null)?sd.gi:0,until:0,total:0,doms:0};});
+  // Escalonamento entre turnos: desloca a fase inicial (dias já trabalhados) para que as folgas
+  // de cada turno caiam em dias diferentes. Só quando NÃO há continuidade (seed) para o mês.
+  if(phase&&!(seed&&seed.folgaPer)){var _ph=((Math.round(phase)%work)+work)%work;if(_ph>0){st.forEach(function(s){s.cons=_ph;});}}
   function unav(m,d){return isUnavailable(m,new Date(year,month,d));}
   // cota mensal de folgas por pessoa = ritmo da escala (ex.: 5x2 → ~2/7 dos dias disponíveis). O "folgam por dia" é TETO, não meta.
   st.forEach(function(s){var av=0;for(var dd2=1;dd2<=N;dd2++){if(!unav(s.ref,dd2))av++;}s.cotaF=Math.round(av*flen/(work+flen));});
@@ -1874,6 +1877,9 @@ function gerarFolga(mils,year,month,cfg,seed){
     if(excesso<=0)return;
     var doms=meus.filter(function(d){return new Date(year,month,d).getDay()===0;});
     var semana=meus.filter(function(d){return new Date(year,month,d).getDay()!==0;});
+    // Escalonamento entre turnos: gira a ORDEM de remoção dos dias de semana, para que cada turno
+    // conserve folgas em dias diferentes (a legalidade é mantida: só remove onde runSemFolga<=work).
+    if(phase&&semana.length>1){var _pp=((Math.round(phase)%semana.length)+semana.length)%semana.length;if(_pp>0)semana=semana.slice(_pp).concat(semana.slice(0,_pp));}
     var cands=semana.concat(doms.slice(gDom?domTarget:0)); // só domingos ALÉM da cota podem sair
     for(var i=0;i<cands.length&&excesso>0;i++){var dd=cands[i];if(runSemFolga(dd)<=work){folga[dd]=folga[dd].filter(function(x){return x.id!==s.ref.id;});excesso--;}}
   });
@@ -2042,11 +2048,11 @@ function _assignFolguistas(efRes,folguistas,year,month,cfg){
   return {restByDay:restByDay,workByDay:workByDay,uncovered:uncovered};
 }
 function _folgCfgOn(){var fc=state.config.folgaCfg||{};return !!fc.usarFolguistas;}
-function gerarFolgaBase(mils,year,month,cfg,seed){
+function gerarFolgaBase(mils,year,month,cfg,seed,phase){
   var folg=(mils||[]).filter(function(m){return m.folguista;});
   var efe=(mils||[]).filter(function(m){return !m.folguista;});
-  var _hasCor=(state.militares||[]).some(function(m){return m.folguista&&m.coringa;});if(!_folgCfgOn()||(!folg.length&&!_hasCor)||!efe.length)return gerarFolga(mils,year,month,cfg,seed);
-  var res=gerarFolga(efe,year,month,cfg,seed);
+  var _hasCor=(state.militares||[]).some(function(m){return m.folguista&&m.coringa;});if(!_folgCfgOn()||(!folg.length&&!_hasCor)||!efe.length)return gerarFolga(mils,year,month,cfg,seed,phase);
+  var res=gerarFolga(efe,year,month,cfg,seed,phase);
   res.usarFolguistas=true;
   res.efetivoIds=efe.map(function(m){return m.id;});
   res.folguistaIds=folg.map(function(m){return m.id;});
@@ -2590,12 +2596,14 @@ function _gerarCore(forcar){
       var _seedT=cont?state.carry[mkey(year,month)]:null;
       var _trG=[],_semTurno=[];
       state.militares.forEach(function(m){if((!m.turno||!_turnosG.some(function(t){return t.id===m.turno;}))&&!m.coringa)_semTurno.push(m);});
-      _turnosG.forEach(function(t){
+      var _escal=(_cfgBase.escalonarTurnos!==false),_nTur=_turnosG.length,_wTur=Math.max(1,(_cfgBase.trab||5));
+      _turnosG.forEach(function(t,_ti){
         var _mils=state.militares.filter(function(m){return m.turno===t.id&&!m.coringa;});
         if(!_mils.length)return;
         var _cfgT=Object.assign({},_cfgBase,{hIni:t.hIni,hFim:t.hFim,interv:(t.interv||0),almIni:(t.almIni||"")});
         var _sd=(_seedT&&_seedT.turnos&&_seedT.turnos[t.id])?{folgaPer:_seedT.turnos[t.id]}:null;
-        var _rT=gerarFolgaBase(_mils,year,month,_cfgT,_sd);
+        var _ph=(_escal&&_nTur>1&&!_sd)?Math.round(_ti*_wTur/_nTur):0;
+        var _rT=gerarFolgaBase(_mils,year,month,_cfgT,_sd,_ph);
         _rT.extras=_keepExtras;
         computeStatsFolga(_rT,_mils,year,month);
         _trG.push({turno:t,result:_rT,milIds:_mils.map(function(m){return m.id;})});
@@ -2683,7 +2691,8 @@ function updateFdsVisibility(){
 }
 function setSatFolga(){var c=document.getElementById("satfolga");state.config.satFolga2c=!!(c&&c.checked);saveConfig();}
 function renderFolgaDias(){var box=document.getElementById("fg_dias");if(!box)return;var AB=["D","S","T","Q","Q","S","S"],NM=["Domingo","Segunda","Terça","Quarta","Quinta","Sexta","Sábado"];var dias=(state.config.folgaCfg&&state.config.folgaCfg.dias)||[0,1,2,3,4,5,6];box.innerHTML=AB.map(function(l,i){var on=dias.indexOf(i)>=0;return '<label title="'+NM[i]+'" style="cursor:pointer;font-size:11px;font-weight:700;border:1px solid var(--line2);border-radius:6px;padding:2px 7px;background:'+(on?"var(--cbm)":"#fff")+';color:'+(on?"#fff":"var(--mut)")+'"><input type="checkbox" data-d="'+i+'" '+(on?"checked":"")+' onchange="setFolgaCfg()" style="display:none">'+l+'</label>';}).join("");}
-function setFolgaCfg(){var _prevFc=state.config.folgaCfg||{};var g=function(id){return document.getElementById(id);};var dias=[];document.querySelectorAll('#fg_dias input[data-d]').forEach(function(c){if(c.checked)dias.push(parseInt(c.getAttribute("data-d"),10));});if(!dias.length)dias=[0,1,2,3,4,5,6];var modo=((g("fg_modo")||{}).value)||"bloco";state.config.folgaCfg={trab:Math.max(1,parseInt((g("fg_trab")||{}).value||6,10)),folga:Math.max(1,parseInt((g("fg_folga")||{}).value||1,10)),maxDia:Math.max(1,parseInt((g("fg_max")||{}).value||1,10)),domingo:!!((g("fg_dom")||{}).checked),domFolgas:Math.max(1,parseInt((g("fg_dom_n")||{}).value||1,10)),dias:dias,hIni:(g("fg_hini")||{}).value||"18:00",hFim:(g("fg_hfim")||{}).value||"23:00",interv:Math.max(0,parseInt((g("fg_interv")||{}).value||0,10)||0),almIni:(g("fg_almini")||{}).value||"",usarFolguistas:!!((g("fg_usarfolg")||{}).checked),maxSem:Math.max(0,parseInt((g("fg_maxsem")||{}).value||0,10)),folgaModo:modo,multiTurno:!!_prevFc.multiTurno,turnos:_prevFc.turnos||[]};saveConfig();renderFolgaDias();refreshFolgaBadge();_syncHorarioBox();}
+function setFolgaCfg(){var _prevFc=state.config.folgaCfg||{};var g=function(id){return document.getElementById(id);};var dias=[];document.querySelectorAll('#fg_dias input[data-d]').forEach(function(c){if(c.checked)dias.push(parseInt(c.getAttribute("data-d"),10));});if(!dias.length)dias=[0,1,2,3,4,5,6];var modo=((g("fg_modo")||{}).value)||"bloco";state.config.folgaCfg={trab:Math.max(1,parseInt((g("fg_trab")||{}).value||6,10)),folga:Math.max(1,parseInt((g("fg_folga")||{}).value||1,10)),maxDia:Math.max(1,parseInt((g("fg_max")||{}).value||1,10)),domingo:!!((g("fg_dom")||{}).checked),domFolgas:Math.max(1,parseInt((g("fg_dom_n")||{}).value||1,10)),dias:dias,hIni:(g("fg_hini")||{}).value||"18:00",hFim:(g("fg_hfim")||{}).value||"23:00",interv:Math.max(0,parseInt((g("fg_interv")||{}).value||0,10)||0),almIni:(g("fg_almini")||{}).value||"",usarFolguistas:!!((g("fg_usarfolg")||{}).checked),maxSem:Math.max(0,parseInt((g("fg_maxsem")||{}).value||0,10)),folgaModo:modo,multiTurno:!!_prevFc.multiTurno,escalonarTurnos:(_prevFc.escalonarTurnos!==false),turnos:_prevFc.turnos||[]};saveConfig();renderFolgaDias();refreshFolgaBadge();_syncHorarioBox();}
+function setEscalonar(){var fc=state.config.folgaCfg||(state.config.folgaCfg={});var cb=document.getElementById("fg_escalturnos");fc.escalonarTurnos=!!(cb&&cb.checked);saveConfig();try{renderCfgResumo();}catch(e){}}
 function refreshFolgaBadge(){var fc=state.config.folgaCfg||{};var t=Math.max(1,parseInt(fc.trab||6,10)),f=Math.max(1,parseInt(fc.folga||1,10));var b=document.getElementById("fg_badge");if(b)b.textContent=t+"×"+f;var w=document.getElementById("fg_modoWrap");if(w)w.style.display=(f>1)?"inline-flex":"none";updateFolgaWarn();renderCfgResumo();}
 function folgaBlocoSpill(){
   var fc=state.config.folgaCfg||{};
@@ -3317,7 +3326,7 @@ function turnoDel(id){var fc=state.config.folgaCfg;if(!fc||!fc.turnos)return;fc.
 function turnoSetField(id,fld,v){var fc=state.config.folgaCfg;if(!fc||!fc.turnos)return;var t=fc.turnos.filter(function(x){return x.id===id;})[0];if(!t)return;t[fld]=(fld==="interv")?Math.max(0,parseInt(v||0,10)||0):v;saveConfig();try{renderCfgResumo();}catch(e){}if(fld==="nome"){renderTurnosEditor();renderAddTurno();renderRoster();}}
 function setMilTurno(id,v){var m=byMil(id);if(!m)return;m.turno=v||"";saveMil();renderRoster();try{renderTurnosEditor();}catch(e){}}
 function renderAddTurno(){var wrap=document.getElementById("add_turno_wrap"),sel=document.getElementById("add_turno");if(!wrap||!sel)return;var fc=state.config.folgaCfg||{};var isFolga=(state.config&&state.config.tipo)==="folga";var ts=(isFolga&&fc.multiTurno&&fc.turnos&&fc.turnos.length)?fc.turnos:[];if(ts.length){wrap.style.display="";var cur=sel.value;sel.innerHTML='<option value="">— sem turno —</option>'+ts.map(function(t){return '<option value="'+t.id+'">'+esc(t.nome)+'</option>';}).join("");if(cur)sel.value=cur;}else{wrap.style.display="none";}}
-function renderTurnosEditor(){var box=document.getElementById("fg_turnos");if(!box)return;var fc=state.config.folgaCfg||{};var on=!!fc.multiTurno;var ts=fc.turnos||[];var h='<label class="tiny" style="display:flex;align-items:center;gap:6px;cursor:pointer;font-weight:800;color:var(--cbm,#4f46e5)"><input type="checkbox" id="fg_multiturno" '+(on?"checked":"")+' onchange="turnoToggle()"> Vários turnos neste setor</label>';h+='<div class="tiny" style="color:var(--mut);margin:3px 0 0;line-height:1.4">Divida a equipe em turnos (ex.: A, B, C), cada um com seu horário. O app gera <b>uma grade e uma estatística por turno</b>. No cadastro de cada pessoa, escolha o turno dela.</div>';if(on){h+='<div style="margin-top:8px;display:flex;flex-direction:column;gap:6px">';ts.forEach(function(t){h+='<div style="display:flex;align-items:center;gap:6px;flex-wrap:wrap"><input value="'+esc(t.nome||"")+'" onchange="turnoSetField(\''+t.id+'\',\'nome\',this.value)" placeholder="Nome do turno" style="flex:1 1 120px;min-width:100px;font:inherit;padding:4px 7px;border:1px solid var(--line2);border-radius:6px"><input type="time" value="'+(t.hIni||"07:00")+'" onchange="turnoSetField(\''+t.id+'\',\'hIni\',this.value)" style="font:inherit;padding:4px 6px;border:1px solid var(--line2);border-radius:6px"><span class="tiny">–</span><input type="time" value="'+(t.hFim||"13:00")+'" onchange="turnoSetField(\''+t.id+'\',\'hFim\',this.value)" style="font:inherit;padding:4px 6px;border:1px solid var(--line2);border-radius:6px"><span class="tiny lbl-nowrap" style="color:var(--mut)" title="Intervalo de refeição (min). Não conta na jornada.">🍴 almoço</span><input type="time" value="'+(t.almIni||"")+'" onchange="turnoSetField(\''+t.id+'\',\'almIni\',this.value)" title="Hora em que começa o almoço (dentro do turno)." style="width:100px;font:inherit;padding:4px 6px;border:1px solid var(--line2);border-radius:6px"><span class="tiny" style="color:var(--mut)">por</span><input type="number" min="0" max="240" step="5" value="'+(t.interv||0)+'" onchange="turnoSetField(\''+t.id+'\',\'interv\',this.value)" title="Minutos de intervalo (almoço). Não conta na jornada." style="width:56px;font:inherit;padding:4px 6px;border:1px solid var(--line2);border-radius:6px"><span class="tiny">min</span><button class="mini" title="Remover turno" onclick="turnoDel(\''+t.id+'\')">🗑</button></div>';});h+='</div><button class="btn ghost" style="margin-top:7px;padding:4px 10px;font-size:12px" onclick="turnoAdd()">＋ adicionar turno</button>';var cnt={};(state.militares||[]).forEach(function(m){if(m.turno)cnt[m.turno]=(cnt[m.turno]||0)+1;});var semT=(state.militares||[]).filter(function(m){return !m.turno||!ts.some(function(t){return t.id===m.turno;});}).length;var resumo=ts.map(function(t){return esc(t.nome)+": "+((cnt[t.id]||0))+" pessoa(s)";}).join(" · ");h+='<div class="tiny" style="color:var(--mut);margin-top:6px">'+resumo+(semT?(' · <b style="color:#b45309">'+semT+' sem turno</b>'):"")+'</div>';}box.innerHTML=h;_syncHorarioBox();}
+function renderTurnosEditor(){var box=document.getElementById("fg_turnos");if(!box)return;var fc=state.config.folgaCfg||{};var on=!!fc.multiTurno;var ts=fc.turnos||[];var h='<label class="tiny" style="display:flex;align-items:center;gap:6px;cursor:pointer;font-weight:800;color:var(--cbm,#4f46e5)"><input type="checkbox" id="fg_multiturno" '+(on?"checked":"")+' onchange="turnoToggle()"> Vários turnos neste setor</label>';h+='<div class="tiny" style="color:var(--mut);margin:3px 0 0;line-height:1.4">Divida a equipe em turnos (ex.: A, B, C), cada um com seu horário. O app gera <b>uma grade e uma estatística por turno</b>. No cadastro de cada pessoa, escolha o turno dela.</div>';if(on){h+='<div style="margin-top:8px;display:flex;flex-direction:column;gap:6px">';ts.forEach(function(t){h+='<div style="display:flex;align-items:center;gap:6px;flex-wrap:wrap"><input value="'+esc(t.nome||"")+'" onchange="turnoSetField(\''+t.id+'\',\'nome\',this.value)" placeholder="Nome do turno" style="flex:1 1 120px;min-width:100px;font:inherit;padding:4px 7px;border:1px solid var(--line2);border-radius:6px"><input type="time" value="'+(t.hIni||"07:00")+'" onchange="turnoSetField(\''+t.id+'\',\'hIni\',this.value)" style="font:inherit;padding:4px 6px;border:1px solid var(--line2);border-radius:6px"><span class="tiny">–</span><input type="time" value="'+(t.hFim||"13:00")+'" onchange="turnoSetField(\''+t.id+'\',\'hFim\',this.value)" style="font:inherit;padding:4px 6px;border:1px solid var(--line2);border-radius:6px"><span class="tiny lbl-nowrap" style="color:var(--mut)" title="Intervalo de refeição (min). Não conta na jornada.">🍴 almoço</span><input type="time" value="'+(t.almIni||"")+'" onchange="turnoSetField(\''+t.id+'\',\'almIni\',this.value)" title="Hora em que começa o almoço (dentro do turno)." style="width:100px;font:inherit;padding:4px 6px;border:1px solid var(--line2);border-radius:6px"><span class="tiny" style="color:var(--mut)">por</span><input type="number" min="0" max="240" step="5" value="'+(t.interv||0)+'" onchange="turnoSetField(\''+t.id+'\',\'interv\',this.value)" title="Minutos de intervalo (almoço). Não conta na jornada." style="width:56px;font:inherit;padding:4px 6px;border:1px solid var(--line2);border-radius:6px"><span class="tiny">min</span><button class="mini" title="Remover turno" onclick="turnoDel(\''+t.id+'\')">🗑</button></div>';});h+='</div><button class="btn ghost" style="margin-top:7px;padding:4px 10px;font-size:12px" onclick="turnoAdd()">＋ adicionar turno</button>';h+='<label class="tiny" style="display:flex;align-items:flex-start;gap:6px;cursor:pointer;margin-top:9px;padding-top:8px;border-top:1px dashed var(--line2);font-weight:700;color:var(--cbm,#4f46e5)"><input type="checkbox" id="fg_escalturnos" '+((fc.escalonarTurnos!==false)?"checked":"")+' onchange="setEscalonar()" style="margin-top:2px"><span>Escalonar folgas entre os turnos <span style="color:var(--mut);font-weight:400">— cada turno folga em dias diferentes, para espalhar a demanda e precisar de menos folguistas/coringas. Gere a escala de novo após alterar.</span></span></label>';var cnt={};(state.militares||[]).forEach(function(m){if(m.turno)cnt[m.turno]=(cnt[m.turno]||0)+1;});var semT=(state.militares||[]).filter(function(m){return !m.turno||!ts.some(function(t){return t.id===m.turno;});}).length;var resumo=ts.map(function(t){return esc(t.nome)+": "+((cnt[t.id]||0))+" pessoa(s)";}).join(" · ");h+='<div class="tiny" style="color:var(--mut);margin-top:6px">'+resumo+(semT?(' · <b style="color:#b45309">'+semT+' sem turno</b>'):"")+'</div>';}box.innerHTML=h;_syncHorarioBox();}
 function _forEachTurnoRender(cb){var _r=state.schedule.result,_m=state.militares,orig=state.militares||[];var out="";state._milAll=orig;(state.schedule.turnos||[]).forEach(function(x){var subset=(x.milIds||[]).map(function(id){return orig.filter(function(mm){return String(mm.id)===String(id);})[0];}).filter(Boolean);state.schedule.result=x.result;state.militares=subset;out+=cb(x);});state.schedule.result=_r;state.militares=_m;state._milAll=null;return out;}
 function renderFolgaMulti(){state._hideSig=true;state._hideSelo=true;var html=_forEachTurnoRender(function(x){renderFolga();return '<section class="turno-sec" style="margin-bottom:26px"><div class="turno-hd" style="font-weight:800;font-size:15px;color:var(--cbm,#4f46e5);border-left:4px solid var(--cbm,#4f46e5);padding-left:8px;margin:6px 0 8px">'+esc(x.turno.nome)+' <span style="font-weight:600;color:var(--mut);font-size:13px">· '+horLabel(x.turno.hIni,x.turno.hFim)+_intervTxt(x.turno)+'</span></div>'+document.getElementById("escala").innerHTML+'</section>';});state._hideSig=false;state._hideSelo=false;var _alSel=((state.schedule.turnos||[]).length>0)&&(state.schedule.turnos||[]).every(function(x){return _escalaConforme(x.result);})&&_coringasConformes();document.getElementById("escala").innerHTML=html+_coringaSectionHTML()+(_alSel?_seloMarkup(state.schedule.turnos[0].result):"")+signatureBlockHTML();document.getElementById("tituloEsc").textContent="Escala — "+MESES[state.schedule.month]+" de "+state.schedule.year+" · "+((state.schedule.turnos||[]).length)+" turnos";["btncob"].forEach(function(id){var b=document.getElementById(id);if(b)b.disabled=true;});}
 function _coringaNormalH(){var t0=((state.schedule.turnos||[])[0]||{}).turno||{};return durHNet(t0.hIni||"07:00",t0.hFim||"15:00",t0.interv||0);}
