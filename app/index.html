@@ -307,6 +307,9 @@
 .gcell:hover{background:#eef2ff!important;box-shadow:inset 0 0 0 2px var(--cbm,#4f46e5);border-radius:4px;position:relative}
 .gcell:hover::after{content:"✎";position:absolute;top:0;right:2px;font-size:9px;line-height:1;color:var(--cbm,#4f46e5);opacity:.85}
 @media print{.gcell:hover{background:none!important;box-shadow:none}.gcell:hover::after{display:none}}
+.gcellv{transition:background .1s,box-shadow .1s}
+.gcellv:hover{background:#fff7ed!important;box-shadow:inset 0 0 0 2px #f59e0b;border-radius:4px;position:relative}
+@media print{.gcellv:hover{background:none!important;box-shadow:none}}
 </style>
 <meta http-equiv="Cache-Control" content="no-cache, no-store, must-revalidate">
 <meta http-equiv="Pragma" content="no-cache">
@@ -606,14 +609,14 @@
     </div>
   </section>
 
-  <footer><span class="noprint">Confira a escala antes de publicar.<br>© 2026 <b>Gera Escalas</b> · <span class="lnk" onclick="openAbout()">Sobre &amp; Política de Privacidade</span> · <span style="color:var(--mut2)">v13.67</span></span></footer>
+  <footer><span class="noprint">Confira a escala antes de publicar.<br>© 2026 <b>Gera Escalas</b> · <span class="lnk" onclick="openAbout()">Sobre &amp; Política de Privacidade</span> · <span style="color:var(--mut2)">v13.68</span></span></footer>
 </main>
 
 <div id="aboutmodal" class="modal" style="display:none" onclick="if(event.target===this)closeAbout()">
   <div class="mbox">
     <button class="xbtn" onclick="closeAbout()">Fechar ✕</button>
     <h2>Gera Escalas</h2>
-    <p class="muted">Escalas de plantão, turno e giro · Versão 13.67 · 2026</p>
+    <p class="muted">Escalas de plantão, turno e giro · Versão 13.68 · 2026</p>
 
     <h3>Autoria e direitos autorais</h3>
     <p>© 2026 <b>Gera Escalas</b> — desenvolvido por Luís Cesar. Todos os direitos reservados.</p>
@@ -2148,6 +2151,11 @@ function coberturaManual(day,efetivoId,folguistaId){
   var mils=_multiT()?((_turnoOfPid(efetivoId)||{milIds:[]}).milIds||[]).map(function(id){return byMil(id);}).filter(Boolean):state.militares;
   computeStatsFolga(res,mils,state.schedule.year,state.schedule.month);
   saveSchedule();renderSchedule();
+  // Notifica o(s) folguista(s) envolvido(s) — aviso sonoro + notificação no celular do próprio
+  try{if(db&&isAdmin()){var _tn=_turnoObjDeRes(res)||{};var _hr=_tn.hIni?(" "+_hhR(_tn.hIni)+"–"+_hhR(_tn.hFim)):"";var _tx=(_tn.nome?(" ("+_tn.nome+_hr+")"):"");var _efNm=(byMil(efetivoId)||{}).nome||"";
+    if(folguistaId){var _nf=byMil(folguistaId);if(_nf&&_nf.nome)db.rpc("notificar_pessoa",{p_pessoa_nome:_nf.nome,p_titulo:"Cobertura de folga",p_corpo:"Você vai cobrir a folga de "+_efNm+" no dia "+pad(day)+_tx+"."});}
+    if(prev&&String(prev)!==String(folguistaId||"")){var _np=byMil(prev);if(_np&&_np.nome)db.rpc("notificar_pessoa",{p_pessoa_nome:_np.nome,p_titulo:"Cobertura de folga",p_corpo:"Você não cobre mais a folga de "+_efNm+" no dia "+pad(day)+"."});}
+  }}catch(e){}
 }
 function _coberturaHTML(res){
   if(!res||!res.usarFolguistas)return "";
@@ -2181,7 +2189,7 @@ function imprimirCobertura(){
         var alm=_amn?(_aini?("almoço "+_hhR(_aini)+"–"+_hhR(_almFim(_aini,_amn))):(_fmtMin(_amn)+" de intervalo")):"";
         var r={d:d,wd:WD[new Date(year,month,d).getDay()],turno:(t.nome||"—"),hr:hr,alm:alm,ef:(ef?ef.nome:"—"),efPosto:(ef?(ef.posto||""):""),fg:(fg?fg.nome:"—"),fgPosto:(fg?(fg.posto||""):""),coringa:!!(fg&&fg.coringa)};
         rows.push(r);
-        var key=fg?fg.id:"?";porFolg[key]=porFolg[key]||{nome:(fg?fg.nome:"—"),posto:(fg?(fg.posto||""):""),coringa:!!(fg&&fg.coringa),itens:[]};porFolg[key].itens.push(r);
+        var key=fg?fg.id:"?";porFolg[key]=porFolg[key]||{nome:(fg?fg.nome:"—"),posto:(fg?(fg.posto||""):""),tel:(fg?(fg.tel||""):""),coringa:!!(fg&&fg.coringa),itens:[]};porFolg[key].itens.push(r);
       });
     }
   });
@@ -2198,9 +2206,12 @@ function imprimirCobertura(){
   var fgKeys=Object.keys(porFolg).sort(function(a,b){return porFolg[b].itens.length-porFolg[a].itens.length;});
   var fgBlocks=fgKeys.map(function(k){var g=porFolg[k];g.itens.sort(function(a,b){return a.d-b.d;});
     var body=g.itens.map(function(r){return '<tr><td class="c"><b>'+pad(r.d)+'</b> '+r.wd+'</td><td>'+esc(r.turno)+'</td><td class="c">'+r.hr+(r.alm?'<div class="alm">'+MEAL+' '+esc(r.alm)+'</div>':'')+'</td><td>'+esc(r.ef)+fnl(r.efPosto)+'</td></tr>';}).join("");
-    return '<div class="fgb"><h3>'+esc(g.nome)+(g.posto?' <span class="hpf">'+esc(g.posto)+'</span>':'')+' '+tag(g.coringa)+' <span class="qt">'+g.itens.length+' cobertura(s)</span></h3><table class="mini"><thead><tr><th>Dia</th><th>Turno</th><th>Horário</th><th>Cobre a folga de</th></tr></thead><tbody>'+body+'</tbody></table></div>';
+    var _waTxt="Olá "+g.nome+"! Sua escala de cobertura de folgas — "+MESES[month]+"/"+year+":\n"+g.itens.map(function(r){return "• Dia "+pad(r.d)+" ("+r.wd+") "+r.turno+" "+r.hr+" — cobrir "+r.ef;}).join("\n")+"\n\n("+(org||"Gera Escalas")+")";
+    var _waD=_waDigits(g.tel);
+    var _waBtn=_waD?('<a class="wabtn" href="https://wa.me/'+_waD+'?text='+encodeURIComponent(_waTxt)+'" target="_blank" rel="noopener">📱 Enviar pelo WhatsApp</a>'):('<span class="watxt">sem telefone cadastrado</span>');
+    return '<div class="fgb"><h3>'+esc(g.nome)+(g.posto?' <span class="hpf">'+esc(g.posto)+'</span>':'')+' '+tag(g.coringa)+' <span class="qt">'+g.itens.length+' cobertura(s)</span><span class="wawrap">'+_waBtn+'</span></h3><table class="mini"><thead><tr><th>Dia</th><th>Turno</th><th>Horário</th><th>Cobre a folga de</th></tr></thead><tbody>'+body+'</tbody></table></div>';
   }).join("");
-  var css='*{box-sizing:border-box}body{font-family:-apple-system,Segoe UI,Arial,sans-serif;color:#0f172a;padding:22px;max-width:900px;margin:0 auto}h1{font-size:19px;margin:0 0 2px}.sub{color:#64748b;font-size:12px;margin-bottom:14px}h2{font-size:14px;margin:24px 0 8px;color:#3730a3;border-bottom:2px solid #c7d2fe;padding-bottom:3px}table{border-collapse:collapse;width:100%;font-size:12.5px}th,td{border:1px solid #cbd5e1;padding:5px 8px;text-align:left;vertical-align:top}th{background:#eef2ff;font-size:11.5px}td.c{text-align:center;white-space:nowrap}td.arr{text-align:center;color:#94a3b8;width:22px}tr.dh td{background:#eef2ff;font-weight:800;color:#312e81}.alm{color:#92700f;font-size:10.5px;margin-top:2px;white-space:nowrap}.fn{color:#64748b;font-size:10px;font-weight:400;margin-top:1px}.hpf{color:#64748b;font-size:11px;font-weight:400}.tag{font-size:10px;font-weight:700;border-radius:999px;padding:1px 7px;white-space:nowrap}.tag.cor{background:#fff7ed;color:#b45309;border:1px solid #fed7aa}.tag.fg{background:#eef2ff;color:#4338ca;border:1px solid #c7d2fe}.fgb{break-inside:avoid;margin:0 0 16px}.fgb h3{font-size:13px;margin:0 0 5px;display:flex;align-items:center;gap:7px;flex-wrap:wrap}.fgb .qt{color:#64748b;font-weight:400;font-size:11px}.mini{font-size:12px}.mini td,.mini th{padding:4px 8px}@media print{button{display:none}body{padding:0}h2{margin-top:16px}}';
+  var css='*{box-sizing:border-box}body{font-family:-apple-system,Segoe UI,Arial,sans-serif;color:#0f172a;padding:22px;max-width:900px;margin:0 auto}h1{font-size:19px;margin:0 0 2px}.sub{color:#64748b;font-size:12px;margin-bottom:14px}h2{font-size:14px;margin:24px 0 8px;color:#3730a3;border-bottom:2px solid #c7d2fe;padding-bottom:3px}table{border-collapse:collapse;width:100%;font-size:12.5px}th,td{border:1px solid #cbd5e1;padding:5px 8px;text-align:left;vertical-align:top}th{background:#eef2ff;font-size:11.5px}td.c{text-align:center;white-space:nowrap}td.arr{text-align:center;color:#94a3b8;width:22px}tr.dh td{background:#eef2ff;font-weight:800;color:#312e81}.alm{color:#92700f;font-size:10.5px;margin-top:2px;white-space:nowrap}.fn{color:#64748b;font-size:10px;font-weight:400;margin-top:1px}.hpf{color:#64748b;font-size:11px;font-weight:400}.wawrap{margin-left:auto}.wabtn{display:inline-flex;align-items:center;gap:5px;background:#25d366;color:#fff;font-size:11.5px;font-weight:700;text-decoration:none;padding:4px 11px;border-radius:999px;white-space:nowrap}.wabtn::before{content:"\\1F4F1"}.watxt{color:#94a3b8;font-size:10.5px;font-weight:400}@media print{.wabtn{display:none}.watxt{display:none}}.tag{font-size:10px;font-weight:700;border-radius:999px;padding:1px 7px;white-space:nowrap}.tag.cor{background:#fff7ed;color:#b45309;border:1px solid #fed7aa}.tag.fg{background:#eef2ff;color:#4338ca;border:1px solid #c7d2fe}.fgb{break-inside:avoid;margin:0 0 16px}.fgb h3{font-size:13px;margin:0 0 5px;display:flex;align-items:center;gap:7px;flex-wrap:wrap}.fgb .qt{color:#64748b;font-weight:400;font-size:11px}.mini{font-size:12px}.mini td,.mini th{padding:4px 8px}@media print{button{display:none}body{padding:0}h2{margin-top:16px}}';
   var html='<!doctype html><html lang="pt-BR"><head><meta charset="utf-8"><title>'+esc(titulo)+'</title><style>'+css+'</style></head><body>'
     +'<h1>'+esc(titulo)+'</h1><div class="sub">'+(org?esc(org)+' · ':'')+rows.length+' cobertura(s) · '+fgKeys.length+' folguista(s) · gerado em '+when+'</div>'
     +'<h2>Por dia — quem cobre quem</h2>'
@@ -2310,7 +2321,7 @@ function _coringaSectionHTML(){
       if(p.s==="cover"){var _ce=byMil(p.ef)||{};ctip='Dia '+pad(d)+': cobrindo a folga de '+((_ce.posto?_ce.posto+' ':'')+(_ce.nome||''))+' · '+(p.turno||'');cell='<b style="color:#b45309">'+esc(_turnoTag(p.turno))+'</b>';bg=";background:#fef3c7";}
       else if(p.s==="reserva"){ctip='Dia '+pad(d)+': de serviço — reserva (pronto para cobrir)';cell='<b style="color:#0d9488">R</b>';bg=";background:#ccfbf1";}
       else {ctip='Dia '+pad(d)+': folga';cell='<b style="color:#2563eb">F</b>';}
-      tds+='<td title="'+esc(ctip)+'" style="text-align:center;padding:3px 5px;border:1px solid #eef0f6'+bg+'">'+cell+'</td>';
+      tds+='<td class="gcellv" title="'+esc(ctip)+'" style="text-align:center;padding:3px 5px;border:1px solid #eef0f6'+bg+'">'+cell+'</td>';
     }
     var st=(cr.stat&&cr.stat[c.id])||{};
     rows+='<tr><td style="text-align:left;font-weight:600;position:sticky;left:0;background:#fff;white-space:nowrap;padding:3px 8px;border:1px solid #eef0f6">'+'<span style="color:#9a3412">'+esc(c.nome)+'</span> <span style="font-size:0.9em">🔀</span>'+(c.posto?'<div style="font-size:0.78em;color:#64748b;font-weight:400;line-height:1.1">'+esc(c.posto)+'</div>':'')+(isAdmin()&&st.cover!=null?(' <span class="tiny" style="color:var(--mut);font-weight:400">('+(st.cover||0)+' cob · '+(st.reserva||0)+' res · '+(st.folga||0)+' folga)</span>'):"")+'</td>'+tds+'</tr>';
@@ -3630,6 +3641,11 @@ function _permutaCobertura(day,pid,pid2){
   if(resB!==resA){var milsB=_multiT()?((_turnoOfPid(pid2)||{milIds:[]}).milIds||[]).map(function(id){return byMil(id);}).filter(Boolean):state.militares;computeStatsFolga(resB,milsB,state.schedule.year,state.schedule.month);}
   saveSchedule();renderSchedule();
   try{log("Permuta de cobertura","dia "+day);}catch(e){}
+  // Notifica os dois folguistas envolvidos na permuta
+  try{if(db&&isAdmin()){var _eA=(byMil(pid)||{}).nome||"",_eB=(byMil(pid2)||{}).nome||"";
+    if(mB&&mB.nome)db.rpc("notificar_pessoa",{p_pessoa_nome:mB.nome,p_titulo:"Permuta de cobertura",p_corpo:"No dia "+pad(day)+" você passou a cobrir a folga de "+_eA+"."});
+    if(mA&&mA.nome)db.rpc("notificar_pessoa",{p_pessoa_nome:mA.nome,p_titulo:"Permuta de cobertura",p_corpo:"No dia "+pad(day)+" você passou a cobrir a folga de "+_eB+"."});
+  }}catch(e){}
   return true;
 }
 function _cellPermutaCob(){var s=state._cellSel;if(!s)return;var v=val("cp_permcob");if(!v){_cellMsg("Escolha a folga para permutar.","#b45309");return;}var ok=_permutaCobertura(s.day,s.pid,v);openCellActions(s.pid,s.day,null);_cellMsg(ok?"Cobertura permutada ✓":"Não foi possível permutar.",ok?"#15803d":"#b91c1c");}
