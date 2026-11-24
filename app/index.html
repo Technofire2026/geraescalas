@@ -606,14 +606,14 @@
     </div>
   </section>
 
-  <footer><span class="noprint">Confira a escala antes de publicar.<br>© 2026 <b>Gera Escalas</b> · <span class="lnk" onclick="openAbout()">Sobre &amp; Política de Privacidade</span> · <span style="color:var(--mut2)">v13.65</span></span></footer>
+  <footer><span class="noprint">Confira a escala antes de publicar.<br>© 2026 <b>Gera Escalas</b> · <span class="lnk" onclick="openAbout()">Sobre &amp; Política de Privacidade</span> · <span style="color:var(--mut2)">v13.66</span></span></footer>
 </main>
 
 <div id="aboutmodal" class="modal" style="display:none" onclick="if(event.target===this)closeAbout()">
   <div class="mbox">
     <button class="xbtn" onclick="closeAbout()">Fechar ✕</button>
     <h2>Gera Escalas</h2>
-    <p class="muted">Escalas de plantão, turno e giro · Versão 13.65 · 2026</p>
+    <p class="muted">Escalas de plantão, turno e giro · Versão 13.66 · 2026</p>
 
     <h3>Autoria e direitos autorais</h3>
     <p>© 2026 <b>Gera Escalas</b> — desenvolvido por Luís Cesar. Todos os direitos reservados.</p>
@@ -2164,6 +2164,7 @@ function imprimirCobertura(){
   if(!state.schedule){alert("Gere a escala primeiro.");return;}
   var year=state.schedule.year,month=state.schedule.month;
   var WD=["Dom","Seg","Ter","Qua","Qui","Sex","Sáb"];
+  function fnl(p){return p?('<div class="fn">'+esc(p)+'</div>'):"";}
   var cfg=state.config.folgaCfg||{};
   var MEAL='<svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="#d97706" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" style="vertical-align:-1px"><path d="M3 2v7c0 1.1.9 2 2 2h4a2 2 0 0 0 2-2V2"/><path d="M7 2v20"/><path d="M21 15V2a5 5 0 0 0-5 5v6c0 1.1.9 2 2 2h3Zm0 0v7"/></svg>';
   var list=_multiT()?state.schedule.turnos:[{turno:{nome:"",hIni:cfg.hIni||"07:00",hFim:cfg.hFim||"19:00",interv:cfg.interv||0,almIni:cfg.almIni||""},result:state.schedule.result}];
@@ -2178,9 +2179,9 @@ function imprimirCobertura(){
         var hr=_hhR(t.hIni||cfg.hIni||"")+"–"+_hhR(t.hFim||cfg.hFim||"");
         var _amn=(typeof _ivOf==="function")?_ivOf(t):0,_aini=(typeof _almOf==="function")?_almOf(t):"";
         var alm=_amn?(_aini?("almoço "+_hhR(_aini)+"–"+_hhR(_almFim(_aini,_amn))):(_fmtMin(_amn)+" de intervalo")):"";
-        var r={d:d,wd:WD[new Date(year,month,d).getDay()],turno:(t.nome||"—"),hr:hr,alm:alm,ef:(ef?ef.nome:"—"),fg:(fg?fg.nome:"—"),coringa:!!(fg&&fg.coringa)};
+        var r={d:d,wd:WD[new Date(year,month,d).getDay()],turno:(t.nome||"—"),hr:hr,alm:alm,ef:(ef?ef.nome:"—"),efPosto:(ef?(ef.posto||""):""),fg:(fg?fg.nome:"—"),fgPosto:(fg?(fg.posto||""):""),coringa:!!(fg&&fg.coringa)};
         rows.push(r);
-        var key=fg?fg.id:"?";porFolg[key]=porFolg[key]||{nome:(fg?fg.nome:"—"),coringa:!!(fg&&fg.coringa),itens:[]};porFolg[key].itens.push(r);
+        var key=fg?fg.id:"?";porFolg[key]=porFolg[key]||{nome:(fg?fg.nome:"—"),posto:(fg?(fg.posto||""):""),coringa:!!(fg&&fg.coringa),itens:[]};porFolg[key].itens.push(r);
       });
     }
   });
@@ -2192,14 +2193,14 @@ function imprimirCobertura(){
   var curD=null,trs="";
   rows.forEach(function(r){
     if(r.d!==curD){curD=r.d;trs+='<tr class="dh"><td colspan="5">Dia '+pad(r.d)+' · '+r.wd+'</td></tr>';}
-    trs+='<tr><td class="c">'+esc(r.turno)+'</td><td class="c">'+r.hr+(r.alm?'<div class="alm">'+MEAL+' '+esc(r.alm)+'</div>':'')+'</td><td>'+esc(r.ef)+'</td><td class="arr">→</td><td><b>'+esc(r.fg)+'</b>'+(r.coringa?' '+tag(true):'')+'</td></tr>';
+    trs+='<tr><td class="c">'+esc(r.turno)+'</td><td class="c">'+r.hr+(r.alm?'<div class="alm">'+MEAL+' '+esc(r.alm)+'</div>':'')+'</td><td>'+esc(r.ef)+fnl(r.efPosto)+'</td><td class="arr">→</td><td><b>'+esc(r.fg)+'</b>'+(r.coringa?' '+tag(true):'')+fnl(r.fgPosto)+'</td></tr>';
   });
   var fgKeys=Object.keys(porFolg).sort(function(a,b){return porFolg[b].itens.length-porFolg[a].itens.length;});
   var fgBlocks=fgKeys.map(function(k){var g=porFolg[k];g.itens.sort(function(a,b){return a.d-b.d;});
-    var body=g.itens.map(function(r){return '<tr><td class="c"><b>'+pad(r.d)+'</b> '+r.wd+'</td><td>'+esc(r.turno)+'</td><td class="c">'+r.hr+(r.alm?'<div class="alm">'+MEAL+' '+esc(r.alm)+'</div>':'')+'</td><td>'+esc(r.ef)+'</td></tr>';}).join("");
-    return '<div class="fgb"><h3>'+esc(g.nome)+' '+tag(g.coringa)+' <span class="qt">'+g.itens.length+' cobertura(s)</span></h3><table class="mini"><thead><tr><th>Dia</th><th>Turno</th><th>Horário</th><th>Cobre a folga de</th></tr></thead><tbody>'+body+'</tbody></table></div>';
+    var body=g.itens.map(function(r){return '<tr><td class="c"><b>'+pad(r.d)+'</b> '+r.wd+'</td><td>'+esc(r.turno)+'</td><td class="c">'+r.hr+(r.alm?'<div class="alm">'+MEAL+' '+esc(r.alm)+'</div>':'')+'</td><td>'+esc(r.ef)+fnl(r.efPosto)+'</td></tr>';}).join("");
+    return '<div class="fgb"><h3>'+esc(g.nome)+(g.posto?' <span class="hpf">'+esc(g.posto)+'</span>':'')+' '+tag(g.coringa)+' <span class="qt">'+g.itens.length+' cobertura(s)</span></h3><table class="mini"><thead><tr><th>Dia</th><th>Turno</th><th>Horário</th><th>Cobre a folga de</th></tr></thead><tbody>'+body+'</tbody></table></div>';
   }).join("");
-  var css='*{box-sizing:border-box}body{font-family:-apple-system,Segoe UI,Arial,sans-serif;color:#0f172a;padding:22px;max-width:900px;margin:0 auto}h1{font-size:19px;margin:0 0 2px}.sub{color:#64748b;font-size:12px;margin-bottom:14px}h2{font-size:14px;margin:24px 0 8px;color:#3730a3;border-bottom:2px solid #c7d2fe;padding-bottom:3px}table{border-collapse:collapse;width:100%;font-size:12.5px}th,td{border:1px solid #cbd5e1;padding:5px 8px;text-align:left;vertical-align:top}th{background:#eef2ff;font-size:11.5px}td.c{text-align:center;white-space:nowrap}td.arr{text-align:center;color:#94a3b8;width:22px}tr.dh td{background:#eef2ff;font-weight:800;color:#312e81}.alm{color:#92700f;font-size:10.5px;margin-top:2px;white-space:nowrap}.tag{font-size:10px;font-weight:700;border-radius:999px;padding:1px 7px;white-space:nowrap}.tag.cor{background:#fff7ed;color:#b45309;border:1px solid #fed7aa}.tag.fg{background:#eef2ff;color:#4338ca;border:1px solid #c7d2fe}.fgb{break-inside:avoid;margin:0 0 16px}.fgb h3{font-size:13px;margin:0 0 5px;display:flex;align-items:center;gap:7px;flex-wrap:wrap}.fgb .qt{color:#64748b;font-weight:400;font-size:11px}.mini{font-size:12px}.mini td,.mini th{padding:4px 8px}@media print{button{display:none}body{padding:0}h2{margin-top:16px}}';
+  var css='*{box-sizing:border-box}body{font-family:-apple-system,Segoe UI,Arial,sans-serif;color:#0f172a;padding:22px;max-width:900px;margin:0 auto}h1{font-size:19px;margin:0 0 2px}.sub{color:#64748b;font-size:12px;margin-bottom:14px}h2{font-size:14px;margin:24px 0 8px;color:#3730a3;border-bottom:2px solid #c7d2fe;padding-bottom:3px}table{border-collapse:collapse;width:100%;font-size:12.5px}th,td{border:1px solid #cbd5e1;padding:5px 8px;text-align:left;vertical-align:top}th{background:#eef2ff;font-size:11.5px}td.c{text-align:center;white-space:nowrap}td.arr{text-align:center;color:#94a3b8;width:22px}tr.dh td{background:#eef2ff;font-weight:800;color:#312e81}.alm{color:#92700f;font-size:10.5px;margin-top:2px;white-space:nowrap}.fn{color:#64748b;font-size:10px;font-weight:400;margin-top:1px}.hpf{color:#64748b;font-size:11px;font-weight:400}.tag{font-size:10px;font-weight:700;border-radius:999px;padding:1px 7px;white-space:nowrap}.tag.cor{background:#fff7ed;color:#b45309;border:1px solid #fed7aa}.tag.fg{background:#eef2ff;color:#4338ca;border:1px solid #c7d2fe}.fgb{break-inside:avoid;margin:0 0 16px}.fgb h3{font-size:13px;margin:0 0 5px;display:flex;align-items:center;gap:7px;flex-wrap:wrap}.fgb .qt{color:#64748b;font-weight:400;font-size:11px}.mini{font-size:12px}.mini td,.mini th{padding:4px 8px}@media print{button{display:none}body{padding:0}h2{margin-top:16px}}';
   var html='<!doctype html><html lang="pt-BR"><head><meta charset="utf-8"><title>'+esc(titulo)+'</title><style>'+css+'</style></head><body>'
     +'<h1>'+esc(titulo)+'</h1><div class="sub">'+(org?esc(org)+' · ':'')+rows.length+' cobertura(s) · '+fgKeys.length+' folguista(s) · gerado em '+when+'</div>'
     +'<h2>Por dia — quem cobre quem</h2>'
@@ -2305,14 +2306,14 @@ function _coringaSectionHTML(){
   coringas.forEach(function(c){
     var tds="";
     for(var d=1;d<=N;d++){
-      var p=(cr.plano[c.id]||{})[d]||{s:"folga"};var cell,bg="";
-      if(p.s==="cover"){cell='<b title="Cobrindo '+esc((byMil(p.ef)||{}).nome||"")+' no turno '+esc(p.turno||"")+'" style="color:#b45309">'+esc(_turnoTag(p.turno))+'</b>';bg=";background:#fef3c7";}
-      else if(p.s==="reserva"){cell='<b title="De serviço — reserva (sem folga para cobrir nesse dia)" style="color:#0d9488">R</b>';bg=";background:#ccfbf1";}
-      else {cell='<b title="Folga" style="color:#2563eb">F</b>';}
-      tds+='<td style="text-align:center;padding:3px 5px;border:1px solid #eef0f6'+bg+'">'+cell+'</td>';
+      var p=(cr.plano[c.id]||{})[d]||{s:"folga"};var cell,bg="",ctip="";
+      if(p.s==="cover"){var _ce=byMil(p.ef)||{};ctip='Dia '+pad(d)+': cobrindo a folga de '+((_ce.posto?_ce.posto+' ':'')+(_ce.nome||''))+' · '+(p.turno||'');cell='<b style="color:#b45309">'+esc(_turnoTag(p.turno))+'</b>';bg=";background:#fef3c7";}
+      else if(p.s==="reserva"){ctip='Dia '+pad(d)+': de serviço — reserva (pronto para cobrir)';cell='<b style="color:#0d9488">R</b>';bg=";background:#ccfbf1";}
+      else {ctip='Dia '+pad(d)+': folga';cell='<b style="color:#2563eb">F</b>';}
+      tds+='<td title="'+esc(ctip)+'" style="text-align:center;padding:3px 5px;border:1px solid #eef0f6'+bg+'">'+cell+'</td>';
     }
     var st=(cr.stat&&cr.stat[c.id])||{};
-    rows+='<tr><td style="text-align:left;font-weight:600;position:sticky;left:0;background:#fff;white-space:nowrap;padding:3px 8px;border:1px solid #eef0f6">'+'<span style="color:#9a3412">'+esc((c.posto?c.posto+" ":"")+c.nome)+'</span> <span style="font-size:0.9em">🔀</span>'+(isAdmin()&&st.cover!=null?(' <span class="tiny" style="color:var(--mut);font-weight:400">('+(st.cover||0)+' cob · '+(st.reserva||0)+' res · '+(st.folga||0)+' folga)</span>'):"")+'</td>'+tds+'</tr>';
+    rows+='<tr><td style="text-align:left;font-weight:600;position:sticky;left:0;background:#fff;white-space:nowrap;padding:3px 8px;border:1px solid #eef0f6">'+'<span style="color:#9a3412">'+esc(c.nome)+'</span> <span style="font-size:0.9em">🔀</span>'+(c.posto?'<div style="font-size:0.78em;color:#64748b;font-weight:400;line-height:1.1">'+esc(c.posto)+'</div>':'')+(isAdmin()&&st.cover!=null?(' <span class="tiny" style="color:var(--mut);font-weight:400">('+(st.cover||0)+' cob · '+(st.reserva||0)+' res · '+(st.folga||0)+' folga)</span>'):"")+'</td>'+tds+'</tr>';
   });
   var leg='<div class="tiny" style="color:var(--mut);margin-top:4px"><b style="color:#b45309">A/B/C</b> = cobrindo aquele turno · <b style="color:#0d9488">R</b> = reserva (de serviço, pronto para cobrir) · <b style="color:#2563eb">F</b> = folga</div>';
   return head+'<div style="overflow-x:auto"><table style="border-collapse:collapse;font-size:12px;width:max-content">'+'<thead><tr>'+th+'</tr></thead><tbody>'+rows+'</tbody></table></div>'+leg+'</section>';
@@ -3194,7 +3195,7 @@ function _gradeFolgaTabela(fs){
   for(var gd=1;gd<=res.N;gd++){var _dth=new Date(year,month,gd);var _wd=_dth.getDay();var _ferh=isFeriado(_dth);var _hbg=_ferh?';background:#b45309':((_wd===0||_wd===6)?';background:#4338ca':'');gh+='<th title="'+(_ferh?esc(feriadoNome(_dth)):'')+'" style="padding:4px 5px'+_hbg+'">'+(_ferh?'\u2605':'')+pad(gd)+'<br><span style="font-weight:400;font-size:'+_sm+'px">'+AB[_wd][0]+'</span></th>';}
   gh+='</tr></thead><tbody>';
   mils.forEach(function(m){
-    gh+='<tr><td style="text-align:left;font-weight:600;position:sticky;left:0;background:#fff;white-space:nowrap">'+esc((m.posto?m.posto+" ":"")+m.nome)+(m.folguista?' <span style="color:#7c3aed;font-weight:800;font-size:0.8em" title="Folguista — cobre as folgas da equipe">🔁</span>':'')+'</td>';
+    gh+='<tr><td style="text-align:left;font-weight:600;position:sticky;left:0;background:#fff;white-space:nowrap">'+esc(m.nome)+(m.folguista?' <span style="color:#7c3aed;font-weight:800;font-size:0.8em" title="Folguista — cobre as folgas da equipe">🔁</span>':'')+(m.posto?'<div style="font-size:0.78em;color:#64748b;font-weight:500;line-height:1.1">'+esc(m.posto)+'</div>':'')+'</td>';
     for(var gd2=1;gd2<=res.N;gd2++){
       var _dt=new Date(year,month,gd2);
       var _fer=onVacation(m,_dt),_ate=onAtestado(m,_dt);
@@ -3202,14 +3203,16 @@ function _gradeFolgaTabela(fs){
       var _cover=(m.folguista&&!_fol&&res.usarFolguistas);
       var _efCob=(!m.folguista&&_fol&&res.usarFolguistas&&res.cobertura&&res.cobertura[gd2]&&res.cobertura[gd2][m.id]);
       var _cbg=_cover?';background:#fef3c7':(_efCob?';background:#fef9c3':'');
-      var cell=_fer?'<span title="Férias" style="font-size:'+_em+'px">🏖️</span>':(_ate?'<span title="Atestado/afastado" style="font-size:'+_em+'px">🩹</span>':(_cover?'<b title="Cobertura de folga (folguista)" style="color:#b45309">C</b>':(_fol?('<b title="'+(_efCob?('Folga coberta por '+esc((byMil(res.cobertura[gd2][m.id])||{}).nome||'')):'Folga')+'" style="color:#2563eb">F</b>'):'<b title="Em serviço" style="color:#16a34a">S</b>')));
+      var _covEf=null;if(_cover&&res.cobertura&&res.cobertura[gd2]){var _cbm=res.cobertura[gd2];for(var _ck in _cbm){if(String(_cbm[_ck])===String(m.id)){_covEf=byMil(_ck);break;}}}
+      var _tip=_fer?'Férias':(_ate?'Atestado/afastado':(_cover?(_covEf?('Cobrindo a folga de: '+((_covEf.posto?_covEf.posto+' ':'')+(_covEf.nome||''))):'De reserva (sem folga para cobrir neste dia)'):(_fol?(_efCob?('Folga coberta por: '+((byMil(res.cobertura[gd2][m.id])||{}).nome||'—')):'Folga'):'Em serviço')));
+      var cell=_fer?'<span style="font-size:'+_em+'px">🏖️</span>':(_ate?'<span style="font-size:'+_em+'px">🩹</span>':(_cover?'<b style="color:#b45309">C</b>':(_fol?'<b style="color:#2563eb">F</b>':'<b style="color:#16a34a">S</b>')));
       var _wd2=new Date(year,month,gd2).getDay();
       var _exc=((res.extras&&res.extras[gd2])||[]).filter(function(e){return String(e.id)===String(m.id);});
       var _exh=_exc.reduce(function(a,e){return a+(+e.horas||0);},0);
       var _mk=_exh>0?'<br><span title="Hora extra: '+_exh+'h" style="font-size:'+Math.max(7,Math.round(_fs*0.6))+'px;color:#ea580c;font-weight:700">+'+_exh+'h</span>':'';
       var _bg=isFeriado(_dt)?';background:#fffbeb':((_wd2===0||_wd2===6)?';background:#eef2ff':'');
-      if(isAdmin())gh+='<td onclick="openCellActions(\''+m.id+'\','+gd2+',this)" class="gcell" title="Clique: hora extra ou permuta" style="cursor:pointer;text-align:center;padding:3px 5px'+_bg+_cbg+'">'+cell+_mk+'</td>';
-      else gh+='<td style="text-align:center;padding:3px 5px'+_bg+'">'+cell+_mk+'</td>';
+      if(isAdmin())gh+='<td onclick="openCellActions(\''+m.id+'\','+gd2+',this)" class="gcell" title="'+esc(_tip)+' · clique p/ hora extra ou permuta" style="cursor:pointer;text-align:center;padding:3px 5px'+_bg+_cbg+'">'+cell+_mk+'</td>';
+      else gh+='<td title="'+esc(_tip)+'" style="text-align:center;padding:3px 5px'+_bg+_cbg+'">'+cell+_mk+'</td>';
     }
     gh+='</tr>';
   });
@@ -3598,10 +3601,38 @@ function _cellFolguistaBody(pid,day,res){
   var h='<div style="color:#6b7280;font-size:12.5px;margin-bottom:8px">Folga de <b>'+esc(m.nome||'')+'</b> no dia '+pad(day)+' — '+statusTxt+'. Escolha um <b>folguista</b> para assumir esta folga.</div>';
   h+='<div style="display:flex;gap:8px;flex-wrap:wrap;align-items:flex-end"><label class="fld" style="flex:1;min-width:170px"><span class="tiny">Cobrir com folguista</span><select id="cp_folg" style="font:inherit;padding:5px 7px;border:1px solid var(--line2,#cfd3e6);border-radius:6px">'+opts+'</select></label><button class="btn primary" onclick="_cellAplicaFolg()">Aplicar</button></div>';
   if(!livres.length&&!atual)h+='<div style="margin-top:8px;color:#b45309;font-size:12.5px">Nenhum folguista livre nesse dia — todos já estão cobrindo outra folga. Cadastre mais folguistas.</div>';
+  if(atual){
+    var _outros=[];
+    (_multiT()?(state.schedule.turnos||[]):[{result:state.schedule.result,turno:{}}]).forEach(function(x){
+      var r=x.result;var cb=(r.cobertura&&r.cobertura[day])||{};
+      Object.keys(cb).forEach(function(ef){if(String(ef)===String(pid)||cb[ef]==null)return;var efm=byMil(ef),fgm=byMil(cb[ef]);_outros.push('<option value="'+ef+'">'+esc(efm?efm.nome:ef)+((x.turno&&x.turno.nome)?(' ('+esc(x.turno.nome)+')'):'')+' — coberta por '+esc(fgm?fgm.nome:'?')+'</option>');});
+    });
+    if(_outros.length){h+='<div style="margin-top:12px;padding-top:10px;border-top:1px dashed var(--line,#e7e9f2)"><div class="tiny" style="color:#6b7280;margin-bottom:6px">🔁 <b>Permutar cobertura</b> — troca quem cobre esta folga com outra folga coberta <b>no mesmo dia</b>.</div><div style="display:flex;gap:8px;flex-wrap:wrap;align-items:flex-end"><label class="fld" style="flex:1;min-width:200px"><span class="tiny">Permutar com</span><select id="cp_permcob" style="font:inherit;padding:5px 7px;border:1px solid var(--line2,#cfd3e6);border-radius:6px"><option value="">— escolha a folga —</option>'+_outros.join("")+'</select></label><button class="btn ghost" onclick="_cellPermutaCob()">Permutar</button></div></div>';}
+  }
   h+='<div id="cp_msg" style="margin-top:8px;font-size:12.5px"></div>';
   return h;
 }
 function _cellAplicaFolg(){var s=state._cellSel;if(!s)return;var v=val("cp_folg");coberturaManual(s.day,s.pid,v||"");openCellActions(s.pid,s.day,null);_cellMsg(v?"Cobertura aplicada ✓":"Cobertura removida ✓","#15803d");}
+function _permutaCobertura(day,pid,pid2){
+  var resA=_multiT()?(_resForPid(pid)||state.schedule.result):state.schedule.result;
+  var resB=_multiT()?(_resForPid(pid2)||state.schedule.result):state.schedule.result;
+  if(!resA||!resB)return false;
+  var cobA=(resA.cobertura&&resA.cobertura[day])||{},cobB=(resB.cobertura&&resB.cobertura[day])||{};
+  var fA=cobA[pid],fB=cobB[pid2];
+  if(fA==null||fB==null)return false;
+  resA.cobertura[day]=resA.cobertura[day]||{};resB.cobertura[day]=resB.cobertura[day]||{};
+  resA.cobertura[day][pid]=fB;resB.cobertura[day][pid2]=fA;
+  var mA=byMil(fA),mB=byMil(fB);
+  if(mA&&mA.coringa)_coringaPlanoSet(fA,day,resB,pid2);
+  if(mB&&mB.coringa)_coringaPlanoSet(fB,day,resA,pid);
+  var milsA=_multiT()?((_turnoOfPid(pid)||{milIds:[]}).milIds||[]).map(function(id){return byMil(id);}).filter(Boolean):state.militares;
+  computeStatsFolga(resA,milsA,state.schedule.year,state.schedule.month);
+  if(resB!==resA){var milsB=_multiT()?((_turnoOfPid(pid2)||{milIds:[]}).milIds||[]).map(function(id){return byMil(id);}).filter(Boolean):state.militares;computeStatsFolga(resB,milsB,state.schedule.year,state.schedule.month);}
+  saveSchedule();renderSchedule();
+  try{log("Permuta de cobertura","dia "+day);}catch(e){}
+  return true;
+}
+function _cellPermutaCob(){var s=state._cellSel;if(!s)return;var v=val("cp_permcob");if(!v){_cellMsg("Escolha a folga para permutar.","#b45309");return;}var ok=_permutaCobertura(s.day,s.pid,v);openCellActions(s.pid,s.day,null);_cellMsg(ok?"Cobertura permutada ✓":"Não foi possível permutar.",ok?"#15803d":"#b91c1c");}
 function _cellHEBody(pid,day,res){
   var th=_turnoHoras(res);
   return '<div style="color:#6b7280;font-size:12.5px;margin-bottom:8px">Registra uma hora extra para esta pessoa neste dia (ex.: chamada para cobrir um dia de folga, ou horas a mais).</div>'
@@ -4251,7 +4282,7 @@ function limiteLegal(year,month){
   else if(ref>=D42){sem=42;nota="EC 141/2026";}
   return {sem:sem, mes:Math.round(sem*ref.getDate()/7), nota:nota};
 }
-function renderStatsFolga(){var res=state.schedule.result,box=document.getElementById("stats");if(!box)return;var _dobro=!!(state.config&&state.config.ferDobro);var _temBanco=(res.stats||[]).some(function(s){return (s.banco||0)>0;});var _ll=limiteLegal(state.schedule.year,state.schedule.month);var LIM=_ll.mes;var ss=(res.stats||[]).slice().sort(function(a,b){return (b.horas||0)-(a.horas||0)||a.order-b.order;});box.innerHTML='<table class="stat"><thead><tr><th>Pessoa</th><th>Dias trab.</th><th>Folgas</th>'+(_dobro?'<th title="Feriados trabalhados — pagar em dobro">Feriados 2×</th>':'')+'<th>Horas/mês</th><th>Semana máx</th><th>CLT</th><th>Domingo</th>'+(_temBanco?'<th title="Folgas a compensar (banco) — adiadas, n\u00e3o negadas (decis\u00e3o do STF)">A compensar</th>':'')+'</tr></thead><tbody>'+ss.map(function(s){var acimaM=(s.horas||0)>LIM,acimaS=(s.maxSemH||0)>_ll.sem;var ok=!acimaM&&!acimaS;return '<tr><td>'+esc((s.ref.posto?s.ref.posto+" ":"")+s.ref.nome)+'</td><td>'+s.trabalhados+'</td><td>'+s.folgasTotal+'</td>'+(_dobro?'<td style="color:#b45309;font-weight:700">'+(s.feriadosTrab||0)+'</td>':'')+'<td>'+(s.horas||0).toFixed(1).replace(".",",")+'h</td><td>'+(s.maxSemH||0).toFixed(1).replace(".",",")+'h'+(acimaS?' <span style="color:#b91c1c">⚠</span>':'')+'</td><td>'+(ok?'<span style="color:#15803d">ok</span>':'<span style="color:#b91c1c;font-weight:700">acima</span>')+'</td><td>'+(s.sunday?"✓":'<span style="color:#b45309">—</span>')+'</td>'+(_temBanco?'<td style="color:#b45309;font-weight:700">'+((s.banco||0)>0?('+'+s.banco):'0')+'</td>':'')+'</tr>';}).join("")+'</tbody></table><div class="tiny" style="margin-top:8px;color:var(--mut)">Limite legal para esta compet\u00eancia: at\u00e9 <b>'+_ll.sem+'h/semana</b> (~'+_ll.mes+'h/m\u00eas) \u2014 '+_ll.nota+'. A <b>EC 141/2026</b> estabelece <b>42h</b> (a partir de 16/12/2026) e depois <b>40h</b> (a partir de 16/12/2027), com escala <b>5x2</b>. Quando algu\u00e9m ficar <b>acima</b>: aumente os <b>dias de folga permitidos</b> ou o <b>m\u00e1ximo de folgas/semana</b>, <b>pague hora extra</b>, ou <b>compense a folga no próximo mês</b> (banco de folgas). A coluna <b>A compensar</b> (quando aparece) \u00e9 o <b>banco de folgas</b>: folga que a cobertura n\u00e3o permitiu dar no m\u00eas e que <b>carrega para o pr\u00f3ximo</b> \u2014 \u00e9 adiada, nunca negada (decis\u00e3o do STF de 12/11/2026). Conceda dentro do prazo (padr\u00e3o <b>semestral</b> da CLT, ou o da sua conven\u00e7\u00e3o). Alerta de refer\u00eancia \u2014 jornada, extras, banco de horas, intervalos e acordos coletivos dependem do controle de ponto e do seu contador.</div>';var su=document.getElementById("statsummary");if(su)su.innerHTML="";}
+function renderStatsFolga(){var res=state.schedule.result,box=document.getElementById("stats");if(!box)return;var _dobro=!!(state.config&&state.config.ferDobro);var _temBanco=(res.stats||[]).some(function(s){return (s.banco||0)>0;});var _ll=limiteLegal(state.schedule.year,state.schedule.month);var LIM=_ll.mes;var ss=(res.stats||[]).slice().sort(function(a,b){return (b.horas||0)-(a.horas||0)||a.order-b.order;});box.innerHTML='<table class="stat"><thead><tr><th>Pessoa</th><th>Dias trab.</th><th>Folgas</th>'+(_dobro?'<th title="Feriados trabalhados — pagar em dobro">Feriados 2×</th>':'')+'<th>Horas/mês</th><th>Semana máx</th><th>CLT</th><th>Domingo</th>'+(_temBanco?'<th title="Folgas a compensar (banco) — adiadas, n\u00e3o negadas (decis\u00e3o do STF)">A compensar</th>':'')+'</tr></thead><tbody>'+ss.map(function(s){var acimaM=(s.horas||0)>LIM,acimaS=(s.maxSemH||0)>_ll.sem;var ok=!acimaM&&!acimaS;return '<tr><td>'+esc(s.ref.nome)+(s.ref.posto?'<div style="font-size:0.8em;color:#64748b;font-weight:400;line-height:1.1">'+esc(s.ref.posto)+'</div>':'')+'</td><td>'+s.trabalhados+'</td><td>'+s.folgasTotal+'</td>'+(_dobro?'<td style="color:#b45309;font-weight:700">'+(s.feriadosTrab||0)+'</td>':'')+'<td>'+(s.horas||0).toFixed(1).replace(".",",")+'h</td><td>'+(s.maxSemH||0).toFixed(1).replace(".",",")+'h'+(acimaS?' <span style="color:#b91c1c">⚠</span>':'')+'</td><td>'+(ok?'<span style="color:#15803d">ok</span>':'<span style="color:#b91c1c;font-weight:700">acima</span>')+'</td><td>'+(s.sunday?"✓":'<span style="color:#b45309">—</span>')+'</td>'+(_temBanco?'<td style="color:#b45309;font-weight:700">'+((s.banco||0)>0?('+'+s.banco):'0')+'</td>':'')+'</tr>';}).join("")+'</tbody></table><div class="tiny" style="margin-top:8px;color:var(--mut)">Limite legal para esta compet\u00eancia: at\u00e9 <b>'+_ll.sem+'h/semana</b> (~'+_ll.mes+'h/m\u00eas) \u2014 '+_ll.nota+'. A <b>EC 141/2026</b> estabelece <b>42h</b> (a partir de 16/12/2026) e depois <b>40h</b> (a partir de 16/12/2027), com escala <b>5x2</b>. Quando algu\u00e9m ficar <b>acima</b>: aumente os <b>dias de folga permitidos</b> ou o <b>m\u00e1ximo de folgas/semana</b>, <b>pague hora extra</b>, ou <b>compense a folga no próximo mês</b> (banco de folgas). A coluna <b>A compensar</b> (quando aparece) \u00e9 o <b>banco de folgas</b>: folga que a cobertura n\u00e3o permitiu dar no m\u00eas e que <b>carrega para o pr\u00f3ximo</b> \u2014 \u00e9 adiada, nunca negada (decis\u00e3o do STF de 12/11/2026). Conceda dentro do prazo (padr\u00e3o <b>semestral</b> da CLT, ou o da sua conven\u00e7\u00e3o). Alerta de refer\u00eancia \u2014 jornada, extras, banco de horas, intervalos e acordos coletivos dependem do controle de ponto e do seu contador.</div>';var su=document.getElementById("statsummary");if(su)su.innerHTML="";}
 function renderStats(){
   if(state.schedule&&state.schedule.multiTurno){document.getElementById("statcard").style.display="";return renderStatsFolgaMulti();}
   if(state.schedule&&state.schedule.result&&state.schedule.result.tipo==="folga"){document.getElementById("statcard").style.display="";return renderStatsFolga();}
