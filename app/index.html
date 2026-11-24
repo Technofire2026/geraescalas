@@ -606,14 +606,14 @@
     </div>
   </section>
 
-  <footer><span class="noprint">Confira a escala antes de publicar.<br>© 2026 <b>Gera Escalas</b> · <span class="lnk" onclick="openAbout()">Sobre &amp; Política de Privacidade</span> · <span style="color:var(--mut2)">v13.66</span></span></footer>
+  <footer><span class="noprint">Confira a escala antes de publicar.<br>© 2026 <b>Gera Escalas</b> · <span class="lnk" onclick="openAbout()">Sobre &amp; Política de Privacidade</span> · <span style="color:var(--mut2)">v13.67</span></span></footer>
 </main>
 
 <div id="aboutmodal" class="modal" style="display:none" onclick="if(event.target===this)closeAbout()">
   <div class="mbox">
     <button class="xbtn" onclick="closeAbout()">Fechar ✕</button>
     <h2>Gera Escalas</h2>
-    <p class="muted">Escalas de plantão, turno e giro · Versão 13.66 · 2026</p>
+    <p class="muted">Escalas de plantão, turno e giro · Versão 13.67 · 2026</p>
 
     <h3>Autoria e direitos autorais</h3>
     <p>© 2026 <b>Gera Escalas</b> — desenvolvido por Luís Cesar. Todos os direitos reservados.</p>
@@ -5419,7 +5419,19 @@ async function cloudPullAll(){
   for(var i=0;i<bases.length;i++){
     var b=bases[i],ls="ciops:"+b,v=map[b+"@"+sa];
     if((v===undefined||v===null)&&sa==="principal")v=map[b]; /* migração: dados antigos (sem setor) = principal */
-    if(v!==undefined&&v!==null){try{localStorage.setItem(ls,JSON.stringify(v));}catch(e){}}
+    if(v!==undefined&&v!==null){
+      /* Proteção da cobertura: se o app foi atualizado/recarregado antes de a nuvem receber
+         o último "preencher folguistas", o cache local pode ter MAIS cobertura que a nuvem.
+         Nesse caso, mantém o local (mesma escala) e o reenvia, em vez de apagar a cobertura. */
+      if(b==="schedule"&&isAdmin()){
+        var _lr=null;try{_lr=JSON.parse(localStorage.getItem(ls)||"null");}catch(e){}
+        if(_lr&&_lr.N&&!!_lr.multiTurno===!!v.multiTurno&&_lr.year===v.year&&_lr.month===v.month&&(typeof _schedFillScore==="function")&&_schedFillScore(_lr)>_schedFillScore(v)){
+          try{await db.from("app_state").upsert({org_id:state.user.orgId,chave:"schedule@"+sa,dados:_lr,atualizado_em:new Date().toISOString()},{onConflict:"org_id,chave"});}catch(e){}
+          continue;
+        }
+      }
+      try{localStorage.setItem(ls,JSON.stringify(v));}catch(e){}
+    }
     else{
       var local=localStorage.getItem(ls);
       if(local&&sa==="principal"&&isAdmin()&&setores.length<=1){try{await db.from("app_state").upsert({org_id:state.user.orgId,chave:b+"@principal",dados:JSON.parse(local),atualizado_em:new Date().toISOString()},{onConflict:"org_id,chave"});}catch(e){}}
