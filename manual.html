@@ -137,8 +137,20 @@
         <li><b>Folga no domingo</b> garantida (descanso semanal).</li>
         <li><b>Dias de folga</b>: em quais dias da semana pode haver folga. Útil para <b>bar/restaurante</b> que não quer folga na <b>sexta e no sábado</b> (dias de pico) — a folga <b>nunca</b> cai nos dias bloqueados.</li>
         <li><b>Horário</b> do expediente (início e fim), usado no cálculo das horas.</li>
+        <li><b>Intervalo de almoço</b> 🍽️ (opcional): informe a <b>hora do almoço</b> e os <b>minutos</b> de intervalo. Ele aparece no horário da escala e, conforme a lei, <b>não conta</b> nas horas trabalhadas da semana/mês.</li>
+        <li><b>♀ Folga dominical quinzenal p/ mulheres</b> (CLT art. 386): quando ligada, garante à mulher folga em um <b>domingo a cada 15 dias</b> (domingos alternados) — nunca dois domingos seguidos. Marque o <b>sexo</b> de cada pessoa no cadastro. É <b>opcional</b>: desligue se a sua <b>convenção coletiva</b> dispensar a regra.</li>
       </ul>
-      <p>O botão <b>5x2 (nova lei)</b> já aplica a escala da <b>EC 141/2026</b> (fim da 6x1). Comum em comércio, bares, restaurantes e serviços.</p>
+      <p>O botão <b>5x2 (nova lei)</b> já aplica a escala da <b>EC 141/2026</b> (fim da 6x1). Comum em comércio, bares, restaurantes e serviços. Quando a escala fica <b>100% dentro da lei</b>, o app mostra um <b>selo de conformidade</b> e uma <b>comemoração</b> — confira os detalhes na aba <b>Estatística</b>.</p>
+      <h3>Vários turnos no mesmo setor</h3>
+      <p>Em <b>Editar regras → Turnos</b>, ligue <b>“Vários turnos neste setor”</b> e crie os turnos (ex.: <b>07h</b>, <b>19h</b>), cada um com seu <b>horário</b> e <b>intervalo de almoço</b>. No cadastro de cada pessoa, escolha o turno dela. O app gera <b>uma grade e uma estatística por turno</b>. A opção <b>“Escalonar folgas entre os turnos”</b> faz cada turno folgar em <b>dias diferentes</b>, espalhando a demanda e reduzindo a quantidade de folguistas necessários.</p>
+      <h3>Folguistas (reserva que cobre as folgas)</h3>
+      <p>Ligue <b>“Usar folguistas”</b> nas regras da folga. A escala é gerada com os <b>efetivos</b> e, nos dias de folga, você insere os <b>folguistas</b> (pessoal de reserva). Clique em <b>“Preencher folguistas automaticamente”</b> para o app distribuir a cobertura, ou clique numa <b>folga (F)</b> na grade e escolha o folguista manualmente. O app informa <b>quantos folguistas</b> são necessários para fechar a cobertura dentro da lei. A cobertura aparece na grade com a letra <b>C</b> (cor própria).</p>
+      <h3>Folguistas coringa (cobrem qualquer turno)</h3>
+      <p>Um <b>coringa</b> é um folguista que cobre folgas de <b>qualquer turno</b>, no horário do turno coberto; nos dias sem folga para cobrir, fica de <b>reserva</b> (de serviço). Marque a pessoa como <b>coringa</b> no cadastro. O app distribui os coringas de forma inteligente — eles <b>descansam nos dias de menor movimento</b> e trabalham nos dias cheios — e mostra a <b>escala dos coringas</b> com estatística e enquadramento na CLT.</p>
+      <h3>Imprimir e enviar a escala de cobertura</h3>
+      <p>No quadro de cobertura, o botão <b>“🖨️ Imprimir cobertura”</b> gera uma folha com <b>duas partes</b>: <b>por dia</b> (quem cobre quem, com data e horário) para fixar num quadro, e <b>por folguista</b> (a escala individual de cada um). Na escala individual há um botão <b>“📱 Enviar pelo WhatsApp”</b> que manda a escala pronta para o celular da pessoa (cadastre o telefone dela).</p>
+      <h3>Permuta de cobertura</h3>
+      <p>Clique numa folga já coberta na grade, aba <b>🔁 Folguista</b>, e use <b>“Permutar cobertura”</b> para <b>trocar quem cobre</b> duas folgas do mesmo dia. Os folguistas envolvidos recebem o aviso no celular.</p>
       <h3>Avisos e sugestões</h3>
       <p>Se a configuração <b>não couber</b> no efetivo (ex.: não dá para todos terem domingo sem alguém trabalhar demais), o app <b>avisa antes de gerar</b> e sugere a <b>mudança mínima</b>: aumentar o “folgam por dia”, reduzir os domingos por pessoa, liberar mais dias para folga, incluir pessoas ou pagar hora extra. Há <b>botões de ajuste rápido</b> que corrigem com um toque.</p>
       <h3>Amostra com funcionário coringa</h3>
@@ -282,6 +294,7 @@
       <ul>
         <li><b>Permuta aprovada/negada:</b> só os funcionários <b>envolvidos</b> na troca.</li>
         <li><b>Alteração que afeta o setor</b> (ex.: atestado que mexe na escala): use o botão <b>📣 Avisar o setor</b> dentro de 🔔 Avisos — só os funcionários <b>daquele setor</b> são avisados.</li>
+        <li><b>Cobertura de folga e permuta de cobertura</b>: quando você atribui ou troca manualmente o folguista que cobre uma folga, <b>só o folguista envolvido</b> recebe o aviso (com som e notificação no celular), informando qual folga ele vai cobrir, o dia e o horário.</li>
       </ul>
     </section>
 
@@ -403,7 +416,9 @@
       <h3>A escala continua de um mês para o outro?</h3>
       <p>Sim — mantenha ligada a opção de <b>continuidade</b> antes de gerar.</p>
       <h3>O app segue a nova lei (fim da 6x1)?</h3>
-      <p>Sim — no tipo <b>Folga rotativa</b>, o botão <b>5x2 (nova lei)</b> já gera no formato da EC 141/2026.</p>
+      <p>Sim — no tipo <b>Folga rotativa</b>, o botão <b>5x2 (nova lei)</b> já gera no formato da EC 141/2026, com folga no domingo, carga horária controlada e o <b>selo de conformidade</b>. Também traz a <b>folga dominical quinzenal das mulheres</b> (CLT art. 386), que você liga ou desliga conforme a sua convenção coletiva.</p>
+      <h3>E a folga das mulheres aos domingos?</h3>
+      <p>A CLT (art. 386) garante à mulher que trabalha aos domingos uma folga dominical a cada <b>15 dias</b> (domingos alternados). Marque o <b>sexo</b> no cadastro e ligue a opção em <b>Editar regras → Descanso</b>. O app distribui os domingos alternados automaticamente e avisa na <b>Estatística</b> se faltar gente para cumprir. Observação: não é aconselhamento jurídico — confirme com seu contador e a sua convenção coletiva.</p>
       <h3>Como coloco muita gente de uma vez?</h3>
       <p>Use <b>⬆ Importar por CSV</b> no efetivo.</p>
       <h3>Meus dados estão seguros?</h3>
