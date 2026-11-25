@@ -8,6 +8,7 @@
 <meta name="mobile-web-app-capable" content="yes">
 <meta name="apple-mobile-web-app-status-bar-style" content="black">
 <meta name="apple-mobile-web-app-title" content="Gera Escalas">
+<link rel="manifest" href="manifest.webmanifest">
 <meta property="og:type" content="website">
 <meta property="og:site_name" content="Gera Escalas">
 <meta property="og:title" content="Gera Escalas — Monte escalas de serviço em minutos">
@@ -5652,8 +5653,7 @@ function init(){
   try{
     var mk=function(rel,href){var l=document.createElement("link");l.rel=rel;l.href=href;document.head.appendChild(l);};
     mk("icon",APP_ICON);mk("apple-touch-icon",APP_ICON);
-    var mani={name:"Gera Escalas \u2014 Gest\u00e3o de Escalas",short_name:"Gera Escalas",description:"Monte escalas de servi\u00e7o (plant\u00f5es, turnos e giros) em minutos",start_url:".",scope:".",display:"standalone",orientation:"any",background_color:"#0f172a",theme_color:"#0f172a",icons:[{src:APP_ICON,sizes:"192x192",type:"image/jpeg",purpose:"any"},{src:APP_ICON,sizes:"512x512",type:"image/jpeg",purpose:"maskable"}]};
-    var blob=new Blob([JSON.stringify(mani)],{type:"application/manifest+json"});mk("manifest",URL.createObjectURL(blob));
+    /* manifest agora é arquivo fixo (manifest.webmanifest) no <head> — instalável no Android */
   }catch(e){}
   try{ if("serviceWorker" in navigator){ navigator.serviceWorker.register("./sw.js").catch(function(){}); } }catch(e){}
   cloudBoot();
