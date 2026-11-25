@@ -367,6 +367,19 @@
   <section class="card" id="config">
     <div class="bd">
       <div class="passo-hd"><span class="passo-n">1</span> Setor <span class="tiny" id="setorHint" style="color:var(--mut);font-weight:400;margin-left:2px"></span></div>
+      <div class="filialbar" style="display:flex;align-items:center;gap:8px;flex-wrap:wrap;margin-bottom:8px">
+        <span class="tiny" style="color:var(--mut);min-width:34px;font-weight:600">Filial</span>
+        <select id="filialSel" onchange="switchFilial(this.value)" style="font:inherit;padding:8px 10px;border:1px solid var(--line2);border-radius:8px;min-width:180px;flex:1 1 200px"></select>
+        <button class="btn ghost" id="btnNovaFilial" onclick="toggleNovaFilial()" style="white-space:nowrap">＋ Nova filial</button>
+        <span class="tiny" id="filialHint" style="color:var(--mut)"></span>
+      </div>
+      <div id="novaFilialBox" style="display:none;gap:8px;margin-bottom:8px;flex-wrap:wrap;align-items:center">
+        <input id="nova_filial" placeholder="Nome da filial (ex.: Loja Centro)" style="flex:1;min-width:160px">
+        <input id="nova_filial_cnpj" placeholder="CNPJ (opcional)" style="flex:1;min-width:120px" inputmode="numeric">
+        <input id="nova_filial_end" placeholder="Endereço (opcional)" style="flex:1;min-width:160px">
+        <button class="btn dark" onclick="addFilial()">Criar filial</button>
+        <span class="tiny" id="filial_msg" style="width:100%;color:var(--mut)"></span>
+      </div>
       <div class="setorbar" style="display:flex;align-items:center;gap:8px;flex-wrap:wrap">
         <select id="setorSel" onchange="switchSetor(this.value)" style="font:inherit;padding:8px 10px;border:1px solid var(--line2);border-radius:8px;min-width:200px;flex:1 1 220px"></select>
         <button class="btn ghost" id="btnNovoSetor" onclick="toggleNovoSetor()" style="white-space:nowrap">＋ Novo setor</button>
@@ -516,6 +529,17 @@
       <div id="assin_box"><span class="tiny">—</span></div>
       <div id="assin_pix" style="display:none;margin-top:10px;text-align:center"></div>
       <div id="docbox" style="margin-top:12px"><label class="fld"><span>CNPJ ou CPF da organização (para a cobrança)</span><input id="cfg_doc" placeholder="somente números" inputmode="numeric"></label><button class="btn ghost" onclick="salvarDoc()">Salvar documento</button> <span class="tiny" id="doc_msg"></span></div>
+      <hr style="border:none;border-top:1px solid var(--line);margin:18px 0">
+      <h3 style="margin:0 0 8px;font-size:15px">Filiais</h3>
+      <p class="tiny">Cada filial é uma unidade (loja, base, unidade). Dentro dela ficam os setores e as escalas. O nome, o CNPJ e o endereço saem no cabeçalho da escala e nos PDFs.</p>
+      <div id="filiais_list"></div>
+      <div id="filial_add" style="display:flex;gap:8px;margin-top:8px;flex-wrap:wrap">
+        <input id="nova_filial2" placeholder="Nome da filial" style="flex:1;min-width:140px">
+        <input id="nova_filial2_cnpj" placeholder="CNPJ (opcional)" style="flex:1;min-width:120px" inputmode="numeric">
+        <input id="nova_filial2_end" placeholder="Endereço (opcional)" style="flex:1;min-width:140px">
+        <button class="btn dark" onclick="addFilial2()">Adicionar filial</button>
+      </div>
+      <div class="tiny" id="filial_msg2" style="margin-top:6px"></div>
       <hr style="border:none;border-top:1px solid var(--line);margin:18px 0">
       <h3 style="margin:0 0 8px;font-size:15px">Setores</h3>
       <p class="tiny">Crie setores (ex.: UTI, Pronto-Socorro, Portaria). Cada setor tem seu próprio efetivo e escala. Alterne o setor no topo (em Período). <b>Recurso Pro.</b></p>
@@ -1476,7 +1500,7 @@ function renderTurmasLegend(){
   html+=ts.map(function(t){var mem=(sch.turmasMembros[t.id]||[]);return '<div style="margin:3px 0"><b>'+esc(t.nome)+':</b> '+(mem.length?esc(mem.join(", ")):'<span class="tiny" style="color:var(--mut)">sem militares</span>')+'</div>';}).join("");
   html+='</div>';el.innerHTML=html;el.style.display="";
 }
-function renderConfigForm(){if(document.getElementById("horbox"))renderHorarios();if(document.getElementById("assin_box"))renderAssinatura();if(document.getElementById("docbox"))renderDoc();if(document.getElementById("setores_list"))renderSetoresList();if(document.getElementById("turmas_list"))renderTurmas();
+function renderConfigForm(){if(document.getElementById("horbox"))renderHorarios();if(document.getElementById("assin_box"))renderAssinatura();if(document.getElementById("docbox"))renderDoc();if(document.getElementById("filiais_list")&&typeof renderFiliaisList==="function")renderFiliaisList();if(document.getElementById("setores_list"))renderSetoresList();if(document.getElementById("turmas_list"))renderTurmas();
   document.getElementById("cfg_dirnome").value=state.config.diretorNome||"";
   document.getElementById("cfg_dirposto").value=state.config.diretorPosto||"";
   var _fd=document.getElementById("cfg_feriasdias");if(_fd)_fd.value=feriasPadrao();
@@ -5514,7 +5538,8 @@ async function cloudPush(base){
     var ck = SEC_KEYS[base] ? (base+"@"+setorAtual()) : base;   /* dados de escala são por setor */
     var raw=localStorage.getItem("ciops:"+base);
     var dados=raw?JSON.parse(raw):null;
-    await db.from("app_state").upsert({org_id:state.user.orgId,chave:ck,dados:dados,atualizado_em:new Date().toISOString()},{onConflict:"org_id,chave"});
+    var _fid=(typeof _filialDoSetorAtual==="function"&&SEC_KEYS[base])?_filialDoSetorAtual():null;
+    await db.from("app_state").upsert({org_id:state.user.orgId,chave:ck,dados:dados,filial_id:_fid,atualizado_em:new Date().toISOString()},{onConflict:"org_id,chave"});
   }catch(e){/* melhor-esforço */}
 }
 async function cloudPullAll(){
@@ -5537,9 +5562,11 @@ async function cloudPullAll(){
   var setores=map["setores"];
   if(!setores||!setores.length)setores=[{id:"principal",nome:"Setor principal"}];
   state.setores=setores;try{localStorage.setItem("ciops:setores",JSON.stringify(setores));}catch(e){}
+  try{if(typeof _carregarFiliais==="function")await _carregarFiliais(map);}catch(e){}
   var sa=localStorage.getItem("ciops:setorAtivo")||(setores[0]&&setores[0].id)||"principal";
   if(!setores.some(function(x){return x.id===sa;}))sa=setores[0].id;
   state.setorAtivo=sa;try{localStorage.setItem("ciops:setorAtivo",sa);}catch(e){}
+  try{var _sObj=(state.setores||[]).find(function(x){return x.id===sa;});state.filialAtiva=(_sObj&&_sObj.filialId)||((state.filiais&&state.filiais[0]&&state.filiais[0].id)||"matriz");localStorage.setItem("ciops:filialAtiva",state.filialAtiva);}catch(e){}
   /* dados do setor ativo */
   var bases=["militares","config","carry","schedule","relhist"];
   for(var i=0;i<bases.length;i++){
@@ -5572,13 +5599,15 @@ async function cloudPullAll(){
 function _uidSetor(){return "s"+Date.now().toString(36)+Math.floor(Math.random()*1000);}
 function renderSetorSel(){
   var sel=document.getElementById("setorSel");if(!sel)return;
-  var lista=state.setores||[{id:"principal",nome:"Setor principal"}];
+  var _fa=(typeof filialAtiva==="function")?filialAtiva():null;
+  var lista=(state.setores||[{id:"principal",nome:"Setor principal"}]).filter(function(s){return !_fa||!s.filialId||s.filialId===_fa;});
+  if(!lista.length)lista=(state.setores||[{id:"principal",nome:"Setor principal"}]);
   sel.innerHTML=lista.map(function(s){return '<option value="'+s.id+'"'+(s.id===setorAtual()?' selected':'')+'>'+esc(s.nome)+'</option>';}).join("");
   var hint=document.getElementById("setorHint");if(hint)hint.textContent=lista.length>1?("· "+lista.length+" setores"):"";
   var bn=document.getElementById("btnNovoSetor");if(bn)bn.style.display=(typeof isOwner==="function"&&isOwner())?"":"none";
 }
 function _refreshUI(){
-  renderSetorSel();renderAddSetor();renderRoster();renderContControls();applyPerms();renderProBanner();
+  if(typeof renderFilialSel==="function")renderFilialSel();renderSetorSel();renderAddSetor();renderRoster();renderContControls();applyPerms();renderProBanner();
   var _tp=document.getElementById("tipo");if(_tp)_tp.value=state.config.tipo||"giro";
   var _sf=document.getElementById("satfolga");if(_sf)_sf.checked=!!state.config.satFolga2c;
   var _ts=document.getElementById("turnosel");if(_ts&&state.config.hor&&state.config.hor.turno)_ts.value=state.config.hor.turno.sel||"dia";
@@ -5605,7 +5634,7 @@ async function addSetor(){
   if(!isOwner())return;var m=document.getElementById("setor_msg");
   if(!_podeMultiSetor()){if(m){m.textContent="Vários setores é um recurso do plano Profissional. Faça upgrade para liberar.";m.style.color="#b91c1c";}if(typeof irParaAssinatura==="function")irParaAssinatura();return;}
   var nome=(val("novo_setor")||"").trim();if(!nome){return;}
-  var lista=state.setores||[];lista.push({id:_uidSetor(),nome:nome});state.setores=lista;
+  var lista=state.setores||[];lista.push({id:_uidSetor(),nome:nome,filialId:(typeof filialAtiva==="function"?filialAtiva():null)});state.setores=lista;
   try{localStorage.setItem("ciops:setores",JSON.stringify(lista));}catch(e){}
   await cloudPush("setores");
   var el=document.getElementById("novo_setor");if(el)el.value="";
@@ -5623,7 +5652,7 @@ async function addSetorFlow(){
   if(!isOwner())return;var m=document.getElementById("setor_msg_f");
   if(!_podeMultiSetor()){if(m){m.textContent="Vários setores é um recurso do plano Profissional. Faça upgrade para liberar.";m.style.color="#b91c1c";}if(typeof irParaAssinatura==="function")irParaAssinatura();return;}
   var nome=(val("novo_setor_f")||"").trim();if(!nome){return;}
-  var lista=state.setores||[];lista.push({id:_uidSetor(),nome:nome});state.setores=lista;
+  var lista=state.setores||[];lista.push({id:_uidSetor(),nome:nome,filialId:(typeof filialAtiva==="function"?filialAtiva():null)});state.setores=lista;
   try{localStorage.setItem("ciops:setores",JSON.stringify(lista));}catch(e){}
   await cloudPush("setores");
   var el=document.getElementById("novo_setor_f");if(el)el.value="";
@@ -5693,5 +5722,97 @@ init();
     <div style="text-align:right;margin-top:14px"><button class="btn ghost" onclick="fecharTroca()">Fechar</button></div>
   </div>
 </div>
+
+<script>
+/* ============ MULTI-FILIAL (Fase 2) ============ */
+function filialAtiva(){return state.filialAtiva||((state.filiais&&state.filiais[0]&&state.filiais[0].id)||"matriz");}
+function _filialDoSetorAtual(){try{var s=(state.setores||[]).find(function(x){return x.id===setorAtual();});return (s&&s.filialId)||filialAtiva()||null;}catch(e){return null;}}
+async function _carregarFiliais(map){
+  var fs=null;
+  try{ if(window.db&&state.user&&state.user.orgId){ var q=await db.from("filiais").select("id,nome,cnpj,endereco,ativo").eq("org_id",state.user.orgId).order("criado_em",{ascending:true}); if(!q.error) fs=q.data||[]; } }catch(e){}
+  if(!fs||!fs.length){ var loc=null; try{loc=JSON.parse(localStorage.getItem("ciops:filiais")||"null");}catch(e){} fs=(loc&&loc.length)?loc:[{id:"matriz",nome:"Matriz"}]; }
+  state.filiais=fs; try{localStorage.setItem("ciops:filiais",JSON.stringify(fs));}catch(e){}
+  var def=fs[0]&&fs[0].id, ch=false;
+  (state.setores||[]).forEach(function(s){ if(!s.filialId){s.filialId=def;ch=true;} else if(!fs.some(function(f){return f.id===s.filialId;})){s.filialId=def;ch=true;} });
+  if(ch){ try{localStorage.setItem("ciops:setores",JSON.stringify(state.setores));}catch(e){} try{if(window.db&&isAdmin())await cloudPush("setores");}catch(e){} }
+}
+function renderFilialSel(){
+  var sel=document.getElementById("filialSel"); var fs=state.filiais||[{id:"matriz",nome:"Matriz"}];
+  if(sel)sel.innerHTML=fs.map(function(f){return '<option value="'+f.id+'"'+(f.id===filialAtiva()?' selected':'')+'>'+esc(f.nome)+'</option>';}).join("");
+  var bn=document.getElementById("btnNovaFilial"); if(bn)bn.style.display=(typeof isOwner==="function"&&isOwner())?"":"none";
+  var h=document.getElementById("filialHint"); if(h)h.textContent=fs.length>1?("· "+fs.length+" filiais"):"";
+}
+async function switchFilial(id){
+  if(!id||id===filialAtiva())return;
+  state.filialAtiva=id; try{localStorage.setItem("ciops:filialAtiva",id);}catch(e){}
+  var sets=(state.setores||[]).filter(function(s){return s.filialId===id;});
+  if(!sets.length){
+    var ns={id:_uidSetor(),nome:"Principal",filialId:id};
+    (state.setores=state.setores||[]).push(ns);
+    try{localStorage.setItem("ciops:setores",JSON.stringify(state.setores));}catch(e){}
+    try{if(window.db&&isAdmin())await cloudPush("setores");}catch(e){}
+    sets=[ns];
+  }
+  renderFilialSel(); renderSetorSel();
+  if(typeof switchSetor==="function"){ await switchSetor(sets[0].id); }
+  if(typeof renderFiliaisList==="function")renderFiliaisList();
+}
+function toggleNovaFilial(){ var b=document.getElementById("novaFilialBox"); if(!b)return; var show=(b.style.display==="none"||!b.style.display); b.style.display=show?"flex":"none"; if(show){var i=document.getElementById("nova_filial"); if(i)setTimeout(function(){i.focus();},30);} }
+async function _criarFilialCore(nome,cnpj,end,say){
+  if(!isOwner()){say&&say("Apenas o proprietário pode criar filiais.","#b91c1c");return null;}
+  nome=(nome||"").trim(); if(!nome){say&&say("Informe o nome da filial.","#b91c1c");return null;}
+  var novo=null;
+  if(window.db&&state.user&&state.user.orgId){
+    var r=await db.from("filiais").insert({org_id:state.user.orgId,nome:nome,cnpj:(cnpj||"").trim()||null,endereco:(end||"").trim()||null}).select().single();
+    if(r.error){say&&say("Falha ao criar: "+r.error.message,"#b91c1c");return null;}
+    novo=r.data;
+  } else { novo={id:_uidSetor(),nome:nome,cnpj:(cnpj||"").trim()||null,endereco:(end||"").trim()||null}; }
+  (state.filiais=state.filiais||[]).push(novo); try{localStorage.setItem("ciops:filiais",JSON.stringify(state.filiais));}catch(e){}
+  renderFilialSel(); if(typeof renderFiliaisList==="function")renderFiliaisList();
+  try{log("Criação de filial",nome);}catch(e){}
+  say&&say("Filial “"+nome+"” criada.","#15803d");
+  return novo;
+}
+async function addFilial(){
+  var m=document.getElementById("filial_msg"); function say(t,c){if(m){m.textContent=t;m.style.color=c||"var(--mut)";}}
+  var ok=await _criarFilialCore(val("nova_filial"),val("nova_filial_cnpj"),val("nova_filial_end"),say);
+  if(ok){["nova_filial","nova_filial_cnpj","nova_filial_end"].forEach(function(id){var e=document.getElementById(id);if(e)e.value="";}); var b=document.getElementById("novaFilialBox");if(b)b.style.display="none";}
+}
+async function addFilial2(){
+  var m=document.getElementById("filial_msg2"); function say(t,c){if(m){m.textContent=t;m.style.color=c||"var(--mut)";}}
+  var ok=await _criarFilialCore(val("nova_filial2"),val("nova_filial2_cnpj"),val("nova_filial2_end"),say);
+  if(ok){["nova_filial2","nova_filial2_cnpj","nova_filial2_end"].forEach(function(id){var e=document.getElementById(id);if(e)e.value="";});}
+}
+async function editFilial(id){
+  if(!isOwner())return; var f=(state.filiais||[]).find(function(x){return x.id===id;}); if(!f)return;
+  var nome=null; try{nome=prompt("Nome da filial:",f.nome);}catch(e){} if(nome==null)return; nome=(""+nome).trim(); if(!nome)return;
+  var cnpj=null; try{cnpj=prompt("CNPJ (opcional):",f.cnpj||"");}catch(e){} if(cnpj==null)cnpj=f.cnpj||"";
+  var end=null; try{end=prompt("Endereço (opcional):",f.endereco||"");}catch(e){} if(end==null)end=f.endereco||"";
+  if(window.db&&state.user&&state.user.orgId){ var r=await db.from("filiais").update({nome:nome,cnpj:(cnpj||"").trim()||null,endereco:(end||"").trim()||null}).eq("id",id).eq("org_id",state.user.orgId); if(r.error){alert("Falha ao salvar: "+r.error.message);return;} }
+  f.nome=nome; f.cnpj=(cnpj||"").trim()||null; f.endereco=(end||"").trim()||null;
+  try{localStorage.setItem("ciops:filiais",JSON.stringify(state.filiais));}catch(e){}
+  renderFilialSel(); renderFiliaisList(); try{log("Editou filial",nome);}catch(e){}
+}
+async function removeFilial(id){
+  if(!isOwner())return; var fs=state.filiais||[];
+  if(fs.length<=1){alert("Não é possível remover a única filial.");return;}
+  if((state.setores||[]).some(function(s){return s.filialId===id;})){alert("Esta filial ainda tem setores. Mova ou remova os setores dela antes.");return;}
+  var go=await new Promise(function(res){confirmModal({tone:"danger",icon:"🗑",title:"Remover filial",okTone:"danger",okLabel:"Remover",cancelLabel:"Cancelar",message:"Remover esta filial? Não pode ser desfeito.",onOk:function(){res(true);},onCancel:function(){res(false);}});});
+  if(!go)return;
+  if(window.db&&state.user&&state.user.orgId){ var r=await db.from("filiais").delete().eq("id",id).eq("org_id",state.user.orgId); if(r.error){alert("Falha ao remover: "+r.error.message);return;} }
+  state.filiais=fs.filter(function(f){return f.id!==id;}); try{localStorage.setItem("ciops:filiais",JSON.stringify(state.filiais));}catch(e){}
+  if(filialAtiva()===id){ await switchFilial(state.filiais[0].id); }
+  renderFilialSel(); renderFiliaisList(); try{log("Removeu filial","");}catch(e){}
+}
+function renderFiliaisList(){
+  var box=document.getElementById("filiais_list"); if(!box)return;
+  var fs=state.filiais||[]; var owner=(typeof isOwner==="function"&&isOwner());
+  box.innerHTML=fs.map(function(f){
+    var sub=[f.cnpj?("CNPJ: "+esc(f.cnpj)):"",f.endereco?esc(f.endereco):""].filter(Boolean).join(" · ");
+    return '<div class="oprow">'+(f.id===filialAtiva()?'▶ ':'')+'<b>'+esc(f.nome)+'</b>'+(sub?' <span class="tiny" style="color:var(--mut)">'+sub+'</span>':'')+(owner?(' <button class="mini" title="Editar" onclick="editFilial(\''+f.id+'\')">✏️</button>'+(fs.length>1?' <button class="mini" title="Remover" onclick="removeFilial(\''+f.id+'\')">🗑</button>':'')):'')+'</div>';
+  }).join("")||'<span class="tiny">nenhuma</span>';
+  var addbox=document.getElementById("filial_add"); if(addbox)addbox.style.display=owner?"flex":"none";
+}
+</script>
 </body>
 </html>
