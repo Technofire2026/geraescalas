@@ -331,7 +331,7 @@
 <meta http-equiv="Cache-Control" content="no-cache, no-store, must-revalidate">
 <meta http-equiv="Pragma" content="no-cache">
 <meta http-equiv="Expires" content="0">
-<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2.119.0/dist/umd/supabase.js"></script>
 </head>
 <body>
 <div id="authgate"><div id="authbox"></div></div>
@@ -654,14 +654,14 @@
     </div>
   </section>
 
-  <footer><span class="noprint">Confira a escala antes de publicar.<br>© 2026 <b>Gera Escalas</b> · <span class="lnk" onclick="openAbout()">Sobre &amp; Política de Privacidade</span> · <span style="color:var(--mut2)">v13.84</span></span></footer>
+  <footer><span class="noprint">Confira a escala antes de publicar.<br>© 2026 <b>Gera Escalas</b> · <span class="lnk" onclick="openAbout()">Sobre &amp; Política de Privacidade</span> · <span style="color:var(--mut2)">v13.85</span></span></footer>
 </main>
 
 <div id="aboutmodal" class="modal" style="display:none" onclick="if(event.target===this)closeAbout()">
   <div class="mbox">
     <button class="xbtn" onclick="closeAbout()">Fechar ✕</button>
     <h2>Gera Escalas</h2>
-    <p class="muted">Escalas de plantão, turno e giro · Versão 13.84 · 2026</p>
+    <p class="muted">Escalas de plantão, turno e giro · Versão 13.85 · 2026</p>
 
     <h3>Autoria e direitos autorais</h3>
     <p>© 2026 <b>Gera Escalas</b> — desenvolvido por Luís Cesar. Todos os direitos reservados.</p>
@@ -1611,7 +1611,7 @@ function salvarCabecalho(){state.config.cabecalho=val("cfg_cab");state.config.es
 function exportBackup(){
   var data={app:"escala-ciops",version:1,exportedAt:new Date().toISOString(),
     militares:localStorage.getItem("ciops:militares"),carry:localStorage.getItem("ciops:carry"),
-    config:localStorage.getItem("ciops:config"),log:localStorage.getItem("ciops:log"),auth:localStorage.getItem("ciops:auth"),schedule:localStorage.getItem("ciops:schedule")};
+    config:localStorage.getItem("ciops:config"),log:localStorage.getItem("ciops:log"),setor:(function(){try{var x=(state.setores||[]).find(function(z){return z.id===state.setorAtivo;});return x?x.nome:undefined;}catch(e){}})(),schedule:localStorage.getItem("ciops:schedule")};
   var blob=new Blob([JSON.stringify(data,null,2)],{type:"application/json"});var url=URL.createObjectURL(blob);var a=document.createElement("a");
   a.href=url;a.download="Backup_GeraEscalas_"+ymd(new Date())+".json";document.body.appendChild(a);a.click();a.remove();URL.revokeObjectURL(url);
   log("Backup exportado","");var m=document.getElementById("bkmsg");if(m){m.textContent="Backup baixado.";setTimeout(function(){m.textContent="";},2500);}
@@ -1627,10 +1627,11 @@ function importBackup(input){if(!isAdmin())return;
       onCancel:function(){input.value="";},
       onOk:function(){
         function put(k,v){if(v==null)return;try{localStorage.setItem(k,v);}catch(e){}}
-        put("ciops:militares",data.militares);put("ciops:carry",data.carry);put("ciops:config",data.config);put("ciops:log",data.log);put("ciops:auth",data.auth);put("ciops:schedule",data.schedule);
+        put("ciops:militares",data.militares);put("ciops:carry",data.carry);put("ciops:config",data.config);put("ciops:log",data.log);put("ciops:schedule",data.schedule);
         load();loadConfig();loadLog();
         log("Backup importado",f.name||"");
         renderUserbar();renderRoster();renderContControls();renderConfigForm();if(state.schedule)renderSchedule();
+        try{cloudPush("militares");cloudPush("config");cloudPush("carry");cloudPush("schedule");}catch(e){} // grava o que foi importado na nuvem (senão a próxima sincronização desfaria a importação)
         if(msg)msg.textContent="Backup importado com sucesso.";input.value="";
       }});
   };
@@ -1966,9 +1967,11 @@ function gerarFolga(mils,year,month,cfg,seed,phase){
   if(seed&&seed.folgaPer){for(var _bk in seed.folgaPer){_bancoPrev[_bk]=(seed.folgaPer[_bk]&&seed.folgaPer[_bk].banco)||0;}}
   var _bancoDev={};
   (function(){
-    var piso=Math.floor(N*flen/(work+flen));
-    if(piso<1)return;
+    if(Math.floor(N*flen/(work+flen))<1)return;
     st.forEach(function(s){
+      // piso proporcional aos dias em que a pessoa está disponível (férias/atestado não geram dívida de folga)
+      var _av=0;for(var _da=1;_da<=N;_da++){if(!unav(s.ref,_da))_av++;}
+      var piso=Math.floor(_av*flen/(work+flen));
       var tem=0,d; for(d=1;d<=N;d++){ if((folga[d]||[]).some(function(x){return x.id===s.ref.id;})) tem++; }
       var alvo=piso+(Number(_bancoPrev[s.ref.id])||0);
       var falta=alvo-tem, guard=0;
@@ -1988,6 +1991,32 @@ function gerarFolga(mils,year,month,cfg,seed,phase){
       var dev=Math.max(0, alvo-tem);
       if(dev>0)_bancoDev[s.ref.id]=dev;
     });
+    // ---- EQUILÍBRIO DO TOTAL: quem ficou devendo folga recebe uma folga de quem passou do piso ----
+    // (mesmo dia, troca 1 por 1: a quantidade de folgas por dia não muda; domingos/feriados fechados ficam fora)
+    var _off=function(r,d){return (folga[d]||[]).some(function(x){return x.id===r.id;});};
+    var _pisoDe=function(r){var av=0;for(var d=1;d<=N;d++){if(!unav(r,d))av++;}return Math.floor(av*flen/(work+flen))+(Number(_bancoPrev[r.id])||0);};
+    var _tem=function(r){var t=0;for(var d=1;d<=N;d++){if(_off(r,d))t++;}return t;};
+    var _run=function(r){var c=0,mx=0;for(var d=1;d<=N;d++){if(unav(r,d)||_off(r,d))c=0;else{c++;if(c>mx)mx=c;}}return mx;};
+    var _pisos={};st.forEach(function(s){_pisos[s.ref.id]=_pisoDe(s.ref);});
+    for(var _it=0;_it<300;_it++){
+      var _def=st.map(function(s){return {s:s,df:_pisos[s.ref.id]-_tem(s.ref)};});
+      var _pob=_def.filter(function(x){return x.df>0;}).sort(function(a,b){return b.df-a.df;});
+      var _feito=false;
+      for(var _pi=0;_pi<_pob.length&&!_feito;_pi++){var P=_pob[_pi].s.ref,dfp=_pob[_pi].df;
+        var _ric=_def.filter(function(x){return x.df<=dfp-2&&x.df<0;}).sort(function(a,b){return a.df-b.df;});
+        for(var _ri=0;_ri<_ric.length&&!_feito;_ri++){var R=_ric[_ri].s.ref,lim=Math.max(work,_run(R));
+          for(var t=1;t<=N&&!_feito;t++){
+            if(new Date(year,month,t).getDay()===0||_feriadoFechado(new Date(year,month,t)))continue;
+            if(!permit(t)||unav(P,t)||unav(R,t)||_off(P,t)||!_off(R,t))continue;
+            folga[t]=folga[t].filter(function(x){return x.id!==R.id;});folga[t].push(P);
+            if(_run(R)>lim){folga[t]=folga[t].filter(function(x){return x.id!==P.id;});folga[t].push(R);continue;}
+            _feito=true;
+          }
+        }
+      }
+      if(!_feito)break;
+    }
+    st.forEach(function(s){var dv=Math.max(0,_pisos[s.ref.id]-_tem(s.ref));if(dv>0)_bancoDev[s.ref.id]=dv;else delete _bancoDev[s.ref.id];});
   })();
   st.forEach(function(s){if(per[s.ref.id])per[s.ref.id].banco=_bancoDev[s.ref.id]||0;});
   // ---- FOLGA COMPENSATÓRIA: quem trabalha num feriado que FUNCIONA ganha +1 folga em outro dia ----
@@ -2075,6 +2104,50 @@ function gerarFolga(mils,year,month,cfg,seed,phase){
       }
     });
   })();
+  // ---- EQUILÍBRIO DE DOMINGOS: todos folgam ao menos o mínimo de domingos antes de alguém repetir ----
+  // Troca atômica: quem tem poucos domingos folga no domingo e trabalha numa folga sua da mesma
+  // semana (ou próxima); o colega com domingos de sobra faz o inverso. Total de folgas e máx/dia mantidos.
+  if(gDom){(function(){
+    var suns=[];for(var d=1;d<=N;d++){if(new Date(year,month,d).getDay()===0)suns.push(d);}
+    if(!suns.length)return;
+    var off=function(r,d){return (folga[d]||[]).some(function(x){return x.id===r.id;});};
+    var setOff=function(r,d){if(!off(r,d))folga[d].push(r);};
+    var setWork=function(r,d){folga[d]=(folga[d]||[]).filter(function(x){return x.id!==r.id;});};
+    var doms=function(r){return suns.filter(function(d){return !unav(r,d)&&off(r,d);}).length;};
+    var maxRun=function(r){var c=0,mx=0;for(var d=1;d<=N;d++){if(unav(r,d)||off(r,d))c=0;else{c++;if(c>mx)mx=c;}}return mx;};
+    var fixo=function(d){return new Date(year,month,d).getDay()===0||_feriadoFechado(new Date(year,month,d));};
+    // folgas de r em dias úteis, ordenadas pela proximidade do domingo S (mesma semana primeiro)
+    var uteis=function(r,S){var a=[];for(var d=1;d<=N;d++){if(!fixo(d)&&off(r,d)&&!unav(r,d))a.push(d);}
+      a.sort(function(x,y){var wx=weekOf(x)===weekOf(S)?0:1,wy=weekOf(y)===weekOf(S)?0:1;return wx-wy||Math.abs(x-S)-Math.abs(y-S);});return a;};
+    var tenta=function(fn,refs){var lim=refs.map(function(r){return Math.max(work,maxRun(r));});fn(true);
+      var ok=refs.every(function(r,i){return maxRun(r)<=lim[i];});if(!ok)fn(false);return ok;};
+    var ativos=st.filter(function(s){return suns.some(function(d){return !unav(s.ref,d);});});
+    for(var it=0;it<200;it++){
+      var pobres=ativos.filter(function(s){return doms(s.ref)<_domReqDe(s.ref);}).sort(function(a,b){return doms(a.ref)-doms(b.ref);});
+      var feito=false;
+      for(var pi=0;pi<pobres.length&&!feito;pi++){var P=pobres[pi].ref,dp=doms(P);
+        var Ss=suns.filter(function(S){return !unav(P,S)&&!off(P,S);});
+        for(var si=0;si<Ss.length&&!feito;si++){var S=Ss[si];
+          var Xs=uteis(P,S);
+          // (a) sobra vaga no domingo: P só muda uma folga útil para o domingo
+          if((folga[S]||[]).length<maxDia){
+            for(var xi=0;xi<Xs.length&&!feito;xi++){var X=Xs[xi];
+              feito=tenta(function(go){if(go){setOff(P,S);setWork(P,X);}else{setWork(P,S);setOff(P,X);}},[P]);}
+            if(feito)break;
+          }
+          // (b) troca com quem tem domingos de sobra
+          var ricos=(folga[S]||[]).filter(function(m){if(m.id===P.id||unav(m,S))return false;var dm=doms(m);return dm-1>=_domReqDe(m)||dm>=dp+2;})
+            .sort(function(a,b){return doms(b)-doms(a);});
+          for(var ri=0;ri<ricos.length&&!feito;ri++){var R=ricos[ri];
+            for(var xj=0;xj<Xs.length&&!feito;xj++){var X2=Xs[xj];
+              if(unav(R,X2)||off(R,X2))continue;
+              feito=tenta(function(go){if(go){setOff(P,S);setWork(R,S);setWork(P,X2);setOff(R,X2);}else{setWork(P,S);setOff(R,S);setOff(P,X2);setWork(R,X2);}},[P,R]);}
+          }
+        }
+      }
+      if(!feito)break;
+    }
+  })();}
   // ---- FOLGA DOMINICAL QUINZENAL DAS MULHERES (CLT art. 386) ----
   // Mulheres que trabalham aos domingos têm direito a folgar em um domingo a cada 15 dias
   // (domingos alternados): nunca trabalham dois domingos seguidos. A troca é atômica —
@@ -2114,6 +2187,12 @@ function gerarFolga(mils,year,month,cfg,seed,phase){
       _passMulheres();_passMulheres();
     }
   }
+  if(gDom){(function(){var su=[];for(var d=1;d<=N;d++){if(new Date(year,month,d).getDay()===0)su.push(d);}
+    var at=st.filter(function(s){return su.some(function(d){return !unav(s.ref,d);});});
+    var dc=function(r){return su.filter(function(d){return !unav(r,d)&&(folga[d]||[]).some(function(x){return x.id===r.id;});}).length;};
+    st.forEach(function(s){s.doms=dc(s.ref);});
+    semDom=at.filter(function(s){return s.doms===0;}).map(function(s){return s.ref.nome;});
+    domShort=at.filter(function(s){return s.doms<_domReqDe(s.ref);}).map(function(s){return s.ref.nome;});})();}
   return {N:N,tipo:"folga",folga:folga,cols:[{lab:"Folga(s)"}],durs:[0],cover:{},changed:{},vacant:[],_folgaPer:per,semDomingo:semDom,domShort:domShort,domTarget:domTarget,numDomingos:nDom,nEfetivo:st.length,excedeuMax:excedeuMax,estourou:estourou,estourouSem:estourouSem,cfg:{trab:work,folga:flen,maxDia:maxDia,domingo:gDom,domFolgas:domTarget,dias:diasP,hIni:(cfg.hIni||"18:00"),hFim:(cfg.hFim||"23:00"),interv:(cfg.interv||0),almIni:(cfg.almIni||""),maxSem:maxSem,folgaModo:modo,mulherDom:(cfg.mulherDom!==false)}};
 }
 
@@ -2490,9 +2569,10 @@ function gerarEscala(militares,year,month,seed,modo,tipo){
   const enter={};
   function choose(D){
     const date=dateOf(D),dateNext=dateOf(D+1);
-    const avail=st.filter(s=>!isUnavailable(s.ref,date)&&!isUnavailable(s.ref,dateNext)&&_diasOk(s.ref,date.getDay()));
-    let pool=[];for(const gap of[3,2]){pool=avail.filter(s=>D-s.lastEnter>=gap);if(pool.length)break;}
-    if(!pool.length)pool=avail.filter(s=>D-s.lastEnter>=2);
+    const _g3=(tipo==="3giros"),dateNext2=dateOf(D+2); // 3 giros: quem entra hoje trabalha hoje, amanhã e depois
+    const avail=st.filter(s=>!isUnavailable(s.ref,date)&&!isUnavailable(s.ref,dateNext)&&!(_g3&&isUnavailable(s.ref,dateNext2))&&_diasOk(s.ref,date.getDay()));
+    let pool=[];for(const gap of(_g3?[4,3]:[3,2])){pool=avail.filter(s=>D-s.lastEnter>=gap);if(pool.length)break;}
+    if(!pool.length&&!_g3)pool=avail.filter(s=>D-s.lastEnter>=2);
     if(!pool.length)return null;
     const sat=date.getDay()===6,we=(date.getDay()===0||date.getDay()===6);
     const fdsOn=!!(typeof state!=="undefined"&&state.config&&state.config.fdsRodizio!==false);
@@ -2513,9 +2593,11 @@ function gerarEscala(militares,year,month,seed,modo,tipo){
     if(we)chosen.lastSatDay=D;
     return chosen;
   }
+  var _semSeed2=!(seed&&seed.lastEntererId2!=null&&byId(seed.lastEntererId2));
+  if(tipo==="3giros"&&_semSeed2&&!(seed&&seed.lastEntererId!=null))enter[-1]=choose(-1); // 1º mês: alguém cobre o 3º giro do dia 1
   if(seed&&seed.lastEntererId!=null&&byId(seed.lastEntererId))enter[0]=byId(seed.lastEntererId);
   else enter[0]=choose(0);
-  if(seed&&seed.lastEntererId2!=null&&byId(seed.lastEntererId2))enter[-1]=byId(seed.lastEntererId2);
+  if(!_semSeed2)enter[-1]=byId(seed.lastEntererId2);
   for(let D=1;D<=N;D++)enter[D]=choose(D);
   const g1={},g2={},g3={},cover={};
   for(let D=1;D<=N;D++){g1[D]=enter[D]?enter[D].ref:null;g2[D]=(tipo==="24h"||tipo==="turno")?null:(enter[D-1]?enter[D-1].ref:null);g3[D]=(tipo==="3giros")?(enter[D-2]?enter[D-2].ref:null):null;}
@@ -5500,7 +5582,9 @@ async function cloudCreateOrg(){
   await _gravarRefAfiliado();
 }
 async function cloudEnter(){
-  var u=(await db.auth.getUser()).data.user;
+  // sessão já guardada no aparelho (sem ida ao servidor); o servidor continua validando tudo pelo RLS
+  var u=null;try{var _ss=(await db.auth.getSession()).data.session;u=_ss&&_ss.user;}catch(e){}
+  if(!u)u=(await db.auth.getUser()).data.user;
   var q=await db.from("members").select("role, org_id, nome, posto, email, pessoa_nome, setor, filial_id, organizations(nome,cnpj,status,trial_ends_at,assinatura_expira_em,plano_tier)").eq("user_id",u.id);
   if(q.error){cgmsg("Erro ao ler seus dados: "+q.error.message,"#b91c1c");return;}
   if(!q.data||!q.data.length){
@@ -5574,8 +5658,10 @@ async function cloudPullAll(){
   }catch(e){}
   var map={};
   var _qerr=false;
+  // filiais são buscadas em paralelo com os dados (uma espera a menos ao entrar)
+  try{state._filPre=Promise.resolve(db.from("filiais").select("id,nome,cnpj,endereco,ativo").eq("org_id",state.user.orgId).order("criado_em",{ascending:true}));}catch(e){state._filPre=null;}
   try{var q=await db.from("app_state").select("chave,dados").eq("org_id",state.user.orgId);if(q&&q.error)_qerr=true;(q.data||[]).forEach(function(r){map[r.chave]=r.dados;});}catch(e){_qerr=true;}
-  if(_qerr){ /* sem conexão: mantém os dados deste aparelho em vez de "zerar" */ try{if(typeof _syncPill==="function")_syncPill();}catch(e){} return; }
+  if(_qerr){ /* sem conexão: mantém os dados deste aparelho em vez de "zerar" */ state._filPre=null; try{if(typeof _syncPill==="function")_syncPill();}catch(e){} return; }
   /* setores (nível organização) */
   var setores=map["setores"];
   if(!setores||!setores.length)setores=[{id:"principal",nome:"Setor principal"}];
@@ -5763,7 +5849,7 @@ function filialAtiva(){return state.filialAtiva||((state.filiais&&state.filiais[
 function _filialDoSetorAtual(){try{var s=(state.setores||[]).find(function(x){return x.id===setorAtual();});return (s&&s.filialId)||filialAtiva()||null;}catch(e){return null;}}
 async function _carregarFiliais(map){
   var fs=null;
-  try{ if(db&&state.user&&state.user.orgId){ var q=await db.from("filiais").select("id,nome,cnpj,endereco,ativo").eq("org_id",state.user.orgId).order("criado_em",{ascending:true}); if(!q.error) fs=q.data||[]; } }catch(e){}
+  try{ if(db&&state.user&&state.user.orgId){ var _pre=state._filPre;state._filPre=null; var q=_pre?await _pre:await db.from("filiais").select("id,nome,cnpj,endereco,ativo").eq("org_id",state.user.orgId).order("criado_em",{ascending:true}); if(!q.error) fs=q.data||[]; } }catch(e){}
   try{ if(fs&&!fs.length&&db&&state.user&&state.user.orgId&&isAdmin()&&!(typeof isGerente==="function"&&isGerente())){ var _ins=await db.from("filiais").insert({org_id:state.user.orgId,nome:"Matriz"}).select().single(); if(!_ins.error&&_ins.data)fs=[_ins.data]; } }catch(e){}
   if(!fs||!fs.length){ var loc=null; try{loc=JSON.parse(localStorage.getItem("ciops:filiais")||"null");}catch(e){} fs=(loc&&loc.length)?loc:[{id:"matriz",nome:"Matriz"}]; }
   state.filiais=fs; try{localStorage.setItem("ciops:filiais",JSON.stringify(fs));}catch(e){}
