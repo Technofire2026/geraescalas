@@ -426,7 +426,7 @@
         </div>
         <label class="fld" id="add_time_wrap" style="display:none;margin-top:2px"><span>Time (escala por ciclo)</span><select id="add_time" style="width:100%;font:inherit;padding:8px;border:1px solid var(--line2);border-radius:8px"></select></label>
         <label class="fld" id="add_turno_wrap" style="display:none;margin-top:2px"><span>Turno</span><select id="add_turno" style="width:100%;font:inherit;padding:8px;border:1px solid var(--line2);border-radius:8px"></select></label>
-        <a class="lnk" id="maisdados_tgl" onclick="var m=document.getElementById('maisdados');var sh=(m.style.display==='none'||!m.style.display);m.style.display=sh?'block':'none';this.textContent=sh?'▲ menos dados':'＋ mais dados (e-mail, telefone, CPF, endereço)';" style="cursor:pointer;font-size:13px;color:var(--mut);display:inline-block;margin:4px 0">＋ mais dados (e-mail, telefone, CPF, endereço)</a>
+        <a class="lnk" id="maisdados_tgl" onclick="var m=document.getElementById('maisdados');var sh=(m.style.display==='none'||!m.style.display);m.style.display=sh?'block':'none';this.textContent=sh?'▲ menos dados':'＋ mais dados (e-mail, telefone, CPF, endereço)';" role="button" tabindex="0" onkeydown="if(event.key==='Enter'||event.key===' '){event.preventDefault();this.click();}" style="cursor:pointer;font-size:13.5px;font-weight:700;color:var(--cbm,#4f46e5);background:#eef2ff;border:1.5px solid #a5b4fc;border-radius:999px;padding:6px 14px;display:inline-flex;align-items:center;gap:6px;margin:6px 0;text-decoration:none;user-select:none">＋ mais dados (e-mail, telefone, CPF, endereço)</a>
         <div id="maisdados" style="display:none">
           <div class="two"><input id="email" placeholder="E-mail (para dar acesso ao app)" type="email" onkeydown="if(event.key==='Enter')addMilitar()"><input id="tel" placeholder="Telefone (opcional)" inputmode="tel"></div>
           <div class="two"><input id="cpf" placeholder="CPF (opcional)" inputmode="numeric"><input id="endereco" placeholder="Endereço (opcional)"></div>
@@ -654,14 +654,14 @@
     </div>
   </section>
 
-  <footer><span class="noprint">Confira a escala antes de publicar.<br>© 2026 <b>Gera Escalas</b> · <span class="lnk" onclick="openAbout()">Sobre &amp; Política de Privacidade</span> · <span style="color:var(--mut2)">v13.95</span></span></footer>
+  <footer><span class="noprint">Confira a escala antes de publicar.<br>© 2026 <b>Gera Escalas</b> · <span class="lnk" onclick="openAbout()">Sobre &amp; Política de Privacidade</span> · <span style="color:var(--mut2)">v13.96</span></span></footer>
 </main>
 
 <div id="aboutmodal" class="modal" style="display:none" onclick="if(event.target===this)closeAbout()">
   <div class="mbox">
     <button class="xbtn" onclick="closeAbout()">Fechar ✕</button>
     <h2>Gera Escalas</h2>
-    <p class="muted">Escalas de plantão, turno e giro · Versão 13.95 · 2026</p>
+    <p class="muted">Escalas de plantão, turno e giro · Versão 13.96 · 2026</p>
 
     <h3>Autoria e direitos autorais</h3>
     <p>© 2026 <b>Gera Escalas</b> — desenvolvido por Luís Cesar. Todos os direitos reservados.</p>
@@ -2849,7 +2849,7 @@ function addMilitar(){if(!isAdmin())return null;if(bloqueadoPro())return null;
   const _turno=((document.getElementById("add_turno")||{}).value)||"";
   var nid=uid();
   state.militares.push({id:nid,nome:nome,posto:posto,cpf:cpf,email:email,tel:tel,end:endereco,turmaId:_tid,turno:_turno,ferias:fer?[{id:uid(),start:fer}]:[],atestados:[]});
-  ["nome","posto","fer","cpf","email","tel","endereco"].forEach(function(id){var e=document.getElementById(id);if(e)e.value="";});var _md=document.getElementById("maisdados");if(_md)_md.style.display="none";
+  ["nome","posto","fer","cpf","email","tel","endereco"].forEach(function(id){var e=document.getElementById(id);if(e)e.value="";});var _md=document.getElementById("maisdados");if(_md)_md.style.display="none";var _mt=document.getElementById("maisdados_tgl");if(_mt)_mt.textContent="＋ mais dados (e-mail, telefone, CPF, endereço)";
   saveMil();renderRoster();log("Cadastro de pessoa",(posto?posto+" ":"")+nome+(fer?" (férias em "+fer+")":""));document.getElementById("nome").focus();
   return nid;
 }
