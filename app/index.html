@@ -654,14 +654,14 @@
     </div>
   </section>
 
-  <footer><span class="noprint">Confira a escala antes de publicar.<br>© 2026 <b>Gera Escalas</b> · <span class="lnk" onclick="openAbout()">Sobre &amp; Política de Privacidade</span> · <span style="color:var(--mut2)">v13.92</span></span></footer>
+  <footer><span class="noprint">Confira a escala antes de publicar.<br>© 2026 <b>Gera Escalas</b> · <span class="lnk" onclick="openAbout()">Sobre &amp; Política de Privacidade</span> · <span style="color:var(--mut2)">v13.93</span></span></footer>
 </main>
 
 <div id="aboutmodal" class="modal" style="display:none" onclick="if(event.target===this)closeAbout()">
   <div class="mbox">
     <button class="xbtn" onclick="closeAbout()">Fechar ✕</button>
     <h2>Gera Escalas</h2>
-    <p class="muted">Escalas de plantão, turno e giro · Versão 13.92 · 2026</p>
+    <p class="muted">Escalas de plantão, turno e giro · Versão 13.93 · 2026</p>
 
     <h3>Autoria e direitos autorais</h3>
     <p>© 2026 <b>Gera Escalas</b> — desenvolvido por Luís Cesar. Todos os direitos reservados.</p>
@@ -3555,10 +3555,10 @@ function _gradeFolgaTabela(fs){
       var _cover=(m.folguista&&!_fol&&res.usarFolguistas);
       var _expd=(_cover&&res.expediente&&(res.expediente[gd2]||[]).some(function(x){return String(x)===String(m.id);}));
       var _efCob=(!m.folguista&&_fol&&res.usarFolguistas&&res.cobertura&&res.cobertura[gd2]&&res.cobertura[gd2][m.id]);
-      var _cbg=_expd?';background:#ecfdf5':_cover?';background:#fef3c7':(_efCob?';background:#fef9c3':'');
+      var _cbg=_expd?'':_cover?';background:#fef3c7':(_efCob?';background:#fef9c3':'');
       var _covEf=null;if(_cover&&res.cobertura&&res.cobertura[gd2]){var _cbm=res.cobertura[gd2];for(var _ck in _cbm){if(String(_cbm[_ck])===String(m.id)){_covEf=byMil(_ck);break;}}}
-      var _tip=_fer?'Férias':(_ate?'Atestado/afastado':(_expd?'No expediente (sem folga para cobrir neste dia)':_cover?(_covEf?('Cobrindo a folga de: '+((_covEf.posto?_covEf.posto+' ':'')+(_covEf.nome||''))):'De reserva (sem folga para cobrir neste dia)'):(_fol?(_efCob?('Folga coberta por: '+((byMil(res.cobertura[gd2][m.id])||{}).nome||'—')):'Folga'):'Em serviço')));
-      var cell=_fer?'<span style="font-size:'+_em+'px">🏖️</span>':(_ate?'<span style="font-size:'+_em+'px">🩹</span>':(_expd?'<b style="color:#047857">E</b>':_cover?'<b style="color:#b45309">C</b>':(_fol?'<b style="color:#2563eb">F</b>':'<b style="color:#16a34a">S</b>')));
+      var _tip=_fer?'Férias':(_ate?'Atestado/afastado':(_expd?'Em serviço (expediente)':_cover?(_covEf?('Cobrindo a folga de: '+((_covEf.posto?_covEf.posto+' ':'')+(_covEf.nome||''))):'De reserva (sem folga para cobrir neste dia)'):(_fol?(_efCob?('Folga coberta por: '+((byMil(res.cobertura[gd2][m.id])||{}).nome||'—')):'Folga'):'Em serviço')));
+      var cell=_fer?'<span style="font-size:'+_em+'px">🏖️</span>':(_ate?'<span style="font-size:'+_em+'px">🩹</span>':(_expd?'<b style="color:#16a34a">S</b>':_cover?'<b style="color:#b45309">C</b>':(_fol?'<b style="color:#2563eb">F</b>':'<b style="color:#16a34a">S</b>')));
       var _wd2=new Date(year,month,gd2).getDay();
       var _exc=((res.extras&&res.extras[gd2])||[]).filter(function(e){return String(e.id)===String(m.id);});
       var _exh=_exc.reduce(function(a,e){return a+(+e.horas||0);},0);
@@ -3571,7 +3571,7 @@ function _gradeFolgaTabela(fs){
   });
   gh+='</tbody></table></div>';return gh;
 }
-function _gradeFolgaLegenda(){return '<div class="tiny" style="margin-top:6px;color:var(--mut)"><b style="color:#16a34a">S</b> serviço · <b style="color:#2563eb">F</b> folga · '+(_temExpediente()?'<b style="color:#b45309">C</b> cobrindo folga · <b style="color:#047857">E</b> expediente (folguista) · ':'')+'<span style="background:#b45309;color:#fff;border-radius:3px;padding:0 4px">\u2605</span> feriado · 🏖️ férias · 🩹 atestado · <b style="color:#ea580c">+Xh</b> hora extra'+(isAdmin()?' · <span class="noprint">clique numa célula para lançar hora extra</span>':'')+'</div>';}
+function _gradeFolgaLegenda(){return '<div class="tiny" style="margin-top:6px;color:var(--mut)"><b style="color:#16a34a">S</b> serviço · <b style="color:#2563eb">F</b> folga · '+(_temExpediente()?'<b style="color:#b45309">C</b> cobrindo folga · ':'')+'<span style="background:#b45309;color:#fff;border-radius:3px;padding:0 4px">\u2605</span> feriado · 🏖️ férias · 🩹 atestado · <b style="color:#ea580c">+Xh</b> hora extra'+(isAdmin()?' · <span class="noprint">clique numa célula para lançar hora extra</span>':'')+'</div>';}
 function setEscView(v){state._escView=v;renderSchedule();}
 function _medById(){var b={};(state.militares||[]).forEach(function(m){b[m.id]=m;});return b;}
 function _sobreArr(res,d){var v=res&&res.sobreaviso&&res.sobreaviso[d];return v==null?[]:(Array.isArray(v)?v:[v]);}
@@ -6312,7 +6312,7 @@ function _temExpediente(){try{var sc=state.schedule;if(!sc)return false;var rs=s
     var fc=state.config.folgaCfg||{};if(!fc.multiTurno||!fc.usarFolguistas)return r;var box=document.getElementById("fg_turnos");if(!box)return r;
     var old=document.getElementById("fg_expbox");if(old)old.parentNode.removeChild(old);
     var st='font:inherit;padding:3px 5px;border:1px solid var(--line2);border-radius:6px';
-    var h='<div id="fg_expbox" style="margin-top:9px;padding:8px 10px;border:1px dashed #a7f3d0;border-radius:8px;background:#f0fdf4"><div class="tiny" style="font-weight:800;color:#047857">🔁 Folguista do expediente (por turno)</div><div class="tiny" style="color:var(--mut);margin:2px 0 6px;line-height:1.4">Marque quando o folguista do turno é um funcionário do expediente: nos dias úteis em que não há folga para cobrir ele trabalha no expediente (<b>E</b>), e folga o mesmo número de dias que a equipe — sempre dentro de 42h/semana, 186h/mês e 11h de descanso entre jornadas.</div>';
+    var h='<div id="fg_expbox" style="margin-top:9px;padding:8px 10px;border:1px dashed #a7f3d0;border-radius:8px;background:#f0fdf4"><div class="tiny" style="font-weight:800;color:#047857">🔁 Folguista do expediente (por turno)</div><div class="tiny" style="color:var(--mut);margin:2px 0 6px;line-height:1.4">Marque quando o folguista do turno é um funcionário do expediente: nos dias úteis em que não há folga para cobrir ele fica de serviço no expediente (<b>S</b>), e folga o mesmo número de dias que a equipe — sempre dentro de 42h/semana, 186h/mês e 11h de descanso entre jornadas.</div>';
     (fc.turnos||[]).forEach(function(t){var on=!!t.fgExp;
       h+='<div style="display:flex;align-items:center;gap:6px;flex-wrap:wrap;margin:3px 0"><label class="tiny" style="display:flex;align-items:center;gap:5px;min-width:130px;cursor:pointer"><input type="checkbox" '+(on?'checked':'')+' onchange="turnoSetField(\''+t.id+'\',\'fgExp\',this.checked);renderTurnosEditor()"> <b>'+esc(t.nome||'Turno')+'</b></label>'
         +(on?('<span class="tiny" style="color:var(--mut)">expediente</span><input type="time" value="'+esc(t.fgExpIni||'08:00')+'" onchange="turnoSetField(\''+t.id+'\',\'fgExpIni\',this.value)" style="'+st+'"><span class="tiny">–</span><input type="time" value="'+esc(t.fgExpFim||'17:00')+'" onchange="turnoSetField(\''+t.id+'\',\'fgExpFim\',this.value)" style="'+st+'"><span class="tiny" style="color:var(--mut)">🍽️ refeição</span><input type="number" min="0" max="240" step="5" value="'+(t.fgExpInterv!=null?t.fgExpInterv:60)+'" onchange="turnoSetField(\''+t.id+'\',\'fgExpInterv\',+this.value)" style="width:56px;'+st+'"><span class="tiny">min · seg a sex</span>'):'<span class="tiny" style="color:var(--mut)">folguista só cobre folgas (nos outros dias, folga)</span>')+'</div>';});
