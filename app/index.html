@@ -607,7 +607,7 @@
         <label class="fld"><span>Nome</span><input id="op_nome"></label>
         <label class="fld"><span>Posto</span><input id="op_posto" style="width:110px"></label>
         <label class="fld"><span>E-mail</span><input id="op_login" type="email" placeholder="email@exemplo.com"></label>
-        <label class="fld"><span>Senha</span><div class="pwwrap"><input id="op_senha" type="password"><button type="button" class="eye" onclick="togglePw('op_senha',this)" aria-label="Mostrar senha"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M1 12s4-7 11-7 11 7 11 7-4 7-11 7-11-7-11-7z"></path><circle cx="12" cy="12" r="3"></circle></svg></button></div></label><label class="fld"><span>Acesso</span><select id="op_role" style="font:inherit;padding:6px;border:1px solid var(--line2);border-radius:6px"><option value="view">Visualização</option><option value="admin">Administrador</option><option value="membro">Funcionário</option></select></label><label class="fld"><span>Pessoa na escala (funcionário)</span><input id="op_pessoa" placeholder="nome exato na escala"></label><label class="fld"><span>Setor (funcionário)</span><select id="op_setor_sel" style="font:inherit;padding:6px;border:1px solid var(--line2);border-radius:6px"></select></label>
+        <label class="fld"><span>Senha</span><div class="pwwrap"><input id="op_senha" type="password"><button type="button" class="eye" onclick="togglePw('op_senha',this)" aria-label="Mostrar senha"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M1 12s4-7 11-7 11 7 11 7-4 7-11 7-11-7-11-7z"></path><circle cx="12" cy="12" r="3"></circle></svg></button></div></label><label class="fld"><span>Acesso</span><select id="op_role" onchange="_opRoleChange()" style="font:inherit;padding:6px;border:1px solid var(--line2);border-radius:6px"><option value="view">Visualização</option><option value="admin">Administrador</option><option value="membro">Funcionário</option><option value="gerente">Gerente de filial</option></select></label><label class="fld" id="op_filial_wrap" style="display:none"><span>Filial (gerente)</span><select id="op_filial_sel" style="font:inherit;padding:6px;border:1px solid var(--line2);border-radius:6px"></select></label><label class="fld"><span>Pessoa na escala (funcionário)</span><input id="op_pessoa" placeholder="nome exato na escala"></label><label class="fld"><span>Setor (funcionário)</span><select id="op_setor_sel" style="font:inherit;padding:6px;border:1px solid var(--line2);border-radius:6px"></select></label>
         <button class="btn dark" onclick="criarOperador()">Adicionar operador</button>
       </div>
       <span class="tiny" id="cfg_opmsg"></span>
@@ -653,14 +653,14 @@
     </div>
   </section>
 
-  <footer><span class="noprint">Confira a escala antes de publicar.<br>© 2026 <b>Gera Escalas</b> · <span class="lnk" onclick="openAbout()">Sobre &amp; Política de Privacidade</span> · <span style="color:var(--mut2)">v13.73</span></span></footer>
+  <footer><span class="noprint">Confira a escala antes de publicar.<br>© 2026 <b>Gera Escalas</b> · <span class="lnk" onclick="openAbout()">Sobre &amp; Política de Privacidade</span> · <span style="color:var(--mut2)">v13.74</span></span></footer>
 </main>
 
 <div id="aboutmodal" class="modal" style="display:none" onclick="if(event.target===this)closeAbout()">
   <div class="mbox">
     <button class="xbtn" onclick="closeAbout()">Fechar ✕</button>
     <h2>Gera Escalas</h2>
-    <p class="muted">Escalas de plantão, turno e giro · Versão 13.73 · 2026</p>
+    <p class="muted">Escalas de plantão, turno e giro · Versão 13.74 · 2026</p>
 
     <h3>Autoria e direitos autorais</h3>
     <p>© 2026 <b>Gera Escalas</b> — desenvolvido por Luís Cesar. Todos os direitos reservados.</p>
@@ -1096,14 +1096,14 @@ function reiniciarApp(){
 async function logout(){try{stopNotifRealtime();}catch(e){}try{stopDataRealtime();}catch(e){}try{if(db)await db.auth.signOut();}catch(e){}try{["ciops:militares","ciops:carry","ciops:config","ciops:log","ciops:schedule","ciops:relhist","ciops:setores","ciops:setorAtivo","ciops:orgId"].forEach(function(k){localStorage.removeItem(k);});}catch(e){}state.user=null;state.editing=null;state.militares=[];state.schedule=null;state.carry={};document.getElementById("app").style.display="none";document.getElementById("authgate").style.display="flex";renderCloudGate("entrar");}
 function showApp(){document.getElementById("authgate").style.display="none";document.getElementById("app").style.display="";var _cc=document.getElementById("configcard");if(_cc)_cc.style.display="none";renderUserbar();renderSetorSel();renderAddSetor();renderRoster();renderContControls();applyPerms();renderProBanner();var _m=state.config.modo||"auto";var _r=document.querySelector('input[name="modo"][value="'+_m+'"]');if(_r)_r.checked=true;var _sf=document.getElementById("satfolga");if(_sf)_sf.checked=!!state.config.satFolga2c;var _tp=document.getElementById("tipo");if(_tp)_tp.value=(state.schedule&&state.schedule.result&&state.schedule.result.tipo)||state.config.tipo||"giro";var _ts=document.getElementById("turnosel");if(_ts&&state.config.hor&&state.config.hor.turno)_ts.value=state.config.hor.turno.sel||"dia";setTipo();if(state.schedule){var _ms=document.getElementById("mes");if(_ms)_ms.value=state.schedule.month;var _an=document.getElementById("ano");if(_an)_an.value=state.schedule.year;renderSchedule();renderStats();}showTab(state.schedule?"escala":"efetivo");try{state._somOff=localStorage.getItem("ge_som")==="off";}catch(e){}try{refreshNotifCount();}catch(e){}try{startNotifRealtime();}catch(e){}try{startDataRealtime();}catch(e){}try{if(!state._audioHooked){state._audioHooked=true;document.addEventListener("click",_unlockAudio);document.addEventListener("touchstart",_unlockAudio);document.addEventListener("visibilitychange",function(){if(!document.hidden){_unlockAudio();try{startDataRealtime();}catch(e){}try{_remotePeek();}catch(e){}}});}}catch(e){}try{checkNovidades();}catch(e){}}
 function isOwner(){return !!(state.user&&state.user.role==="owner");}
-function isAdmin(){return !!(state.user&&(state.user.role==="admin"||state.user.role==="owner"));}
+function isAdmin(){return !!(state.user&&(state.user.role==="admin"||state.user.role==="owner"||state.user.role==="gerente"));}
 var ADMIN_EMAILS=["lcsmbm@gmail.com","geraescalas@gmail.com"];
 function isPlatformAdmin(){return !!(state.user&&ADMIN_EMAILS.indexOf(((state.user.login)||"").toLowerCase())>=0);}
 function applyPerms(){var admin=isAdmin();var cc=document.getElementById("configcard");if(cc&&!admin)cc.style.display="none";var g=document.getElementById("btngerar");if(g)g.style.display=admin?"":"none";var c=document.getElementById("btncob");if(c)c.style.display=admin?"":"none";try{document.querySelectorAll(".adminonly").forEach(function(b){b.style.display=admin?"":"none";});}catch(e){}var _tst=document.getElementById("tab-stat");if(_tst)_tst.style.display=admin?"":"none";if(!admin&&state._tab==="stat"){try{showTab("escala");}catch(e){}}var cont=document.querySelector(".card .cont");if(cont)cont.style.display=admin?"":"none";try{_syncCadastroUI();}catch(e){}}
 function _syncCadastroUI(){var admin=(typeof isAdmin==="function")&&isAdmin();var aa=document.getElementById("addActions");var fw=document.getElementById("addFormWrap");var aberto=!!(state&&state._cadAberto)&&admin;if(fw)fw.style.display=aberto?"":"none";if(aa)aa.style.display=(admin&&!aberto)?"":"none";}
 function abrirCadastro(){if(typeof isAdmin==="function"&&!isAdmin())return;state._cadAberto=true;_syncCadastroUI();var i=document.getElementById("nome");if(i)setTimeout(function(){try{i.focus();}catch(e){}},30);}
 function fecharCadastro(){state._cadAberto=false;_syncCadastroUI();}
-function renderUserbar(){var u=state.user;if(!u)return;var admin=(u.role==="admin"||u.role==="owner");var tag=(u.role==="owner")?' <span class="rotag" style="background:rgba(231,199,102,.25);color:#ffe9a8">Proprietário</span>':(admin?'':(u.role==="membro"?' <span class="rotag">Funcionário</span>':' <span class="rotag">somente leitura</span>'));document.getElementById("userbar").innerHTML='<span class="who">'+esc((u.posto?u.posto+" ":"")+u.nome)+tag+'</span>'+'<button class="ubtn" title="Manual de uso" aria-label="Manual" onclick="openHelp()">📖 Manual</button>'+'<button class="ubtn" title="Avisos" onclick="openNotif()">🔔'+(state.notifCount?(' <b style="color:#b91c1c">'+state.notifCount+'</b>'):'')+'</button>'+'<button class="ubtn" title="Permutas de serviço" onclick="openPermuta()">🔁 Permutas</button>'+(admin?'<button class="ubtn" title="Controle de ponto (quiosque facial)" onclick="openPonto()">🕒 Ponto</button>':'')+((isPlatformAdmin()&&admin)?'<button class="ubtn" title="Painel de clientes (dono)" onclick="openClientes()">👥 Clientes</button>':'')+(admin?'<button class="ubtn ico-only" title="Configurações" aria-label="Configurações" onclick="openConfig()">⚙</button>':'')+'<button class="ubtn ico-only" title="Sair" aria-label="Sair" onclick="logout()">⎋</button>';}
+function renderUserbar(){var u=state.user;if(!u)return;var admin=(u.role==="admin"||u.role==="owner");var tag=(u.role==="gerente")?(' <span class="rotag" style="background:rgba(52,211,153,.22);color:#a7f3d0">Gerente'+((typeof _filialObj==="function"&&_filialObj())?(" · "+esc(_filialObj().nome)):"")+'</span>'):(u.role==="owner")?' <span class="rotag" style="background:rgba(231,199,102,.25);color:#ffe9a8">Proprietário</span>':(admin?'':(u.role==="membro"?' <span class="rotag">Funcionário</span>':' <span class="rotag">somente leitura</span>'));document.getElementById("userbar").innerHTML='<span class="who">'+esc((u.posto?u.posto+" ":"")+u.nome)+tag+'</span>'+'<button class="ubtn" title="Manual de uso" aria-label="Manual" onclick="openHelp()">📖 Manual</button>'+'<button class="ubtn" title="Avisos" onclick="openNotif()">🔔'+(state.notifCount?(' <b style="color:#b91c1c">'+state.notifCount+'</b>'):'')+'</button>'+'<button class="ubtn" title="Permutas de serviço" onclick="openPermuta()">🔁 Permutas</button>'+(admin?'<button class="ubtn" title="Controle de ponto (quiosque facial)" onclick="openPonto()">🕒 Ponto</button>':'')+((isPlatformAdmin()&&admin)?'<button class="ubtn" title="Painel de clientes (dono)" onclick="openClientes()">👥 Clientes</button>':'')+(admin?'<button class="ubtn ico-only" title="Configurações" aria-label="Configurações" onclick="openConfig()">⚙</button>':'')+'<button class="ubtn ico-only" title="Sair" aria-label="Sair" onclick="logout()">⎋</button>';}
 
 /* ===== REGISTRO / AUDITORIA ===== */
 function loadLog(){try{var l=localStorage.getItem("ciops:log");state.logArr=l?JSON.parse(l):[];}catch(e){state.logArr=[];}}
@@ -1170,7 +1170,7 @@ function signatureBlockHTML(){
 async function renderOperadoresCloud(){
   var box=document.getElementById("cfg_operadores");if(!box)return;
   if(!db||!state.user||!state.user.orgId){box.innerHTML="";return;}
-  var q=await db.from("members").select("user_id,nome,posto,role,email,pessoa_nome,setor").eq("org_id",state.user.orgId);
+  var q=await db.from("members").select("user_id,nome,posto,role,email,pessoa_nome,setor,filial_id").eq("org_id",state.user.orgId);
   if(q.error){box.innerHTML='<span class="tiny">Erro ao listar: '+esc(q.error.message)+'</span>';return;}
   var owner=isOwner(),oh="";
   (q.data||[]).forEach(function(u){
@@ -1182,12 +1182,13 @@ async function renderOperadoresCloud(){
       oh+='<div class="oprow">\ud83d\udc77 '+ident+' <span class="tiny">(Funcion\u00e1rio'+(u.pessoa_nome?' \u2014 '+esc(u.pessoa_nome):'')+')</span>'+(owner?(' <span class="tiny">Setor:</span> <select onchange="setOperSetor(\''+u.user_id+'\',this.value)">'+_sol+'</select> <button class="mini" title="Remover" onclick="removeOperadorCloud(\''+u.user_id+'\')">\ud83d\uddd1</button>'):(u.setor?(' <span class="tiny">\u00b7 '+esc(u.setor)+'</span>'):''))+'</div>';return;
     }
     if(owner){
-      oh+='<div class="oprow">'+ident+' <select onchange="setOperRoleCloud(\''+u.user_id+'\',this.value)"><option value="admin"'+(u.role==="admin"?" selected":"")+'>Administrador</option><option value="view"'+(u.role!=="admin"?" selected":"")+'>Visualiza\u00e7\u00e3o</option></select> <button class="mini" title="Remover" onclick="removeOperadorCloud(\''+u.user_id+'\')">🗑</button></div>';
+      oh+='<div class="oprow">'+ident+' <select onchange="setOperRoleCloud(\''+u.user_id+'\',this.value)"><option value="admin"'+(u.role==="admin"?" selected":"")+'>Administrador</option><option value="view"'+((u.role!=="admin"&&u.role!=="gerente")?" selected":"")+'>Visualiza\u00e7\u00e3o</option><option value="gerente"'+(u.role==="gerente"?" selected":"")+'>Gerente de filial</option></select>'+(u.role==="gerente"?(' <span class="tiny">Filial:</span> <select onchange="setOperFilial(\''+u.user_id+'\',this.value)">'+(u.filial_id?'':'<option value="">— escolha —</option>')+_filialOpts(u.filial_id)+'</select>'):'')+' <button class="mini" title="Remover" onclick="removeOperadorCloud(\''+u.user_id+'\')">🗑</button></div>';
     }else{
-      oh+='<div class="oprow">'+ident+' <span class="tiny">('+(u.role==="admin"?"Administrador":"Visualiza\u00e7\u00e3o")+')</span></div>';
+      oh+='<div class="oprow">'+ident+' <span class="tiny">('+(u.role==="admin"?"Administrador":(u.role==="gerente"?"Gerente de filial":"Visualiza\u00e7\u00e3o"))+')</span></div>';
     }
   });
   box.innerHTML=oh||'<span class="tiny">nenhum</span>';
+  try{var _ofs=document.getElementById("op_filial_sel");if(_ofs)_ofs.innerHTML=_filialOpts(filialAtiva());}catch(e){}
   try{var ss=document.getElementById("op_setor_sel");if(ss){var ls=(state.setores||[{id:"principal",nome:"Setor principal"}]);ss.innerHTML=ls.map(function(x){return '<option value="'+esc(x.nome)+'">'+esc(x.nome)+'</option>';}).join("");}}catch(e){}
 }
 async function criarOperador(){
@@ -1205,6 +1206,7 @@ async function criarOperador(){
   var newId=r.data.user&&r.data.user.id;
   if(!newId){say("N\u00e3o foi poss\u00edvel criar (o 'Confirm email' pode estar ligado no Supabase).","#b91c1c");return;}
   var _ins={org_id:state.user.orgId,user_id:newId,nome:nome,posto:posto,role:role,email:email};
+  if(role==="gerente"){_ins.filial_id=(val("op_filial_sel")||"")||null;if(!_ins.filial_id){say("Escolha a filial do gerente.","#b91c1c");return;}}
   if(role==="membro"){_ins.pessoa_nome=(val("op_pessoa")||"").trim()||null;_ins.setor=(val("op_setor_sel")||"").trim()||null;}
   var r2=await db.from("members").insert(_ins);
   if(r2.error){say("Usu\u00e1rio criado, mas falhou vincular \u00e0 organiza\u00e7\u00e3o: "+r2.error.message,"#b91c1c");return;}
@@ -1214,8 +1216,8 @@ async function criarOperador(){
   renderOperadoresCloud();
 }
 async function setOperRoleCloud(userId,role){
-  if(!isOwner())return; if(role!=="admin"&&role!=="view")return;
-  var r=await db.from("members").update({role:role}).eq("org_id",state.user.orgId).eq("user_id",userId);
+  if(!isOwner())return; if(role!=="admin"&&role!=="view"&&role!=="gerente")return;
+  var r=await db.from("members").update(role==="gerente"?{role:role,filial_id:(filialAtiva()||null)}:{role:role,filial_id:null}).eq("org_id",state.user.orgId).eq("user_id",userId);
   if(r.error){alert("Falha: "+r.error.message);return;}
   log("Altera\u00e7\u00e3o de acesso",userId+" \u2192 "+role);renderOperadoresCloud();
 }
@@ -4652,7 +4654,7 @@ async function renderMapa(){
   var pp=dstr.split("-");var Y=+pp[0],Mo=+pp[1]-1,Dy=+pp[2];
   body.innerHTML='<div class="tiny">Carregando…</div>';
   var map=await fetchMapaData();
-  var lista=state.setores||[{id:"principal",nome:"Setor principal"}];
+  var lista=(state.setores||[{id:"principal",nome:"Setor principal"}]).filter(function(s){return !(typeof isGerente==="function"&&isGerente())||s.filialId===(state.user&&state.user.filialId);});
   var cards=lista.map(function(s){
     var sched=map["schedule@"+s.id],mils=map["militares@"+s.id];
     if(sched==null&&s.id==="principal")sched=map["schedule"];
@@ -5489,7 +5491,7 @@ async function cloudCreateOrg(){
 }
 async function cloudEnter(){
   var u=(await db.auth.getUser()).data.user;
-  var q=await db.from("members").select("role, org_id, nome, posto, email, pessoa_nome, setor, organizations(nome,cnpj,status,trial_ends_at,assinatura_expira_em,plano_tier)").eq("user_id",u.id);
+  var q=await db.from("members").select("role, org_id, nome, posto, email, pessoa_nome, setor, filial_id, organizations(nome,cnpj,status,trial_ends_at,assinatura_expira_em,plano_tier)").eq("user_id",u.id);
   if(q.error){cgmsg("Erro ao ler seus dados: "+q.error.message,"#b91c1c");return;}
   if(!q.data||!q.data.length){
     var box=document.getElementById("authbox");
@@ -5497,7 +5499,7 @@ async function cloudEnter(){
     return;
   }
   var m=q.data[0];
-  var _o=m.organizations||{};state.user={login:u.email,uid:u.id,nome:m.nome||u.email,posto:m.posto||"",role:m.role||"view",pessoa:m.pessoa_nome||"",setor:m.setor||"",orgId:m.org_id,orgNome:_o.nome||"",orgCnpj:_o.cnpj||"",orgStatus:_o.status||"trial",trialEnds:_o.trial_ends_at||null,assinaturaExpira:_o.assinatura_expira_em||null,planoTier:_o.plano_tier||""};
+  var _o=m.organizations||{};state.user={login:u.email,uid:u.id,nome:m.nome||u.email,posto:m.posto||"",role:m.role||"view",pessoa:m.pessoa_nome||"",setor:m.setor||"",filialId:m.filial_id||null,orgId:m.org_id,orgNome:_o.nome||"",orgCnpj:_o.cnpj||"",orgStatus:_o.status||"trial",trialEnds:_o.trial_ends_at||null,assinaturaExpira:_o.assinatura_expira_em||null,planoTier:_o.plano_tier||""};
   try{if(!m.email){await db.from("members").update({email:u.email}).eq("org_id",m.org_id).eq("user_id",u.id);}}catch(e){}
   await cloudPullAll();
   loadConfig();loadLog();load();if(typeof restoreSchedule==="function")restoreSchedule();
@@ -5534,6 +5536,7 @@ function setorAtual(){return state.setorAtivo||"principal";}
 async function cloudPush(base){
   if(!db||!state.user||!state.user.orgId)return;
   if(!isAdmin())return; /* visualização não grava */
+  if((typeof isGerente==="function"&&isGerente())&&!SEC_KEYS[base])return; /* gerente só grava dados da filial dele */
   try{
     var ck = SEC_KEYS[base] ? (base+"@"+setorAtual()) : base;   /* dados de escala são por setor */
     var raw=localStorage.getItem("ciops:"+base);
@@ -5579,7 +5582,7 @@ async function cloudPullAll(){
       if(b==="schedule"&&isAdmin()){
         var _lr=null;try{_lr=JSON.parse(localStorage.getItem(ls)||"null");}catch(e){}
         if(_lr&&_lr.N&&!!_lr.multiTurno===!!v.multiTurno&&_lr.year===v.year&&_lr.month===v.month&&(typeof _schedFillScore==="function")&&_schedFillScore(_lr)>_schedFillScore(v)){
-          try{await db.from("app_state").upsert({org_id:state.user.orgId,chave:"schedule@"+sa,dados:_lr,atualizado_em:new Date().toISOString()},{onConflict:"org_id,chave"});}catch(e){}
+          try{await db.from("app_state").upsert({org_id:state.user.orgId,chave:"schedule@"+sa,dados:_lr,filial_id:(typeof _filialDoSetorAtual==="function"?_filialDoSetorAtual():null),atualizado_em:new Date().toISOString()},{onConflict:"org_id,chave"});}catch(e){}
           continue;
         }
       }
@@ -5587,7 +5590,7 @@ async function cloudPullAll(){
     }
     else{
       var local=localStorage.getItem(ls);
-      if(local&&sa==="principal"&&isAdmin()&&setores.length<=1){try{await db.from("app_state").upsert({org_id:state.user.orgId,chave:b+"@principal",dados:JSON.parse(local),atualizado_em:new Date().toISOString()},{onConflict:"org_id,chave"});}catch(e){}}
+      if(local&&sa==="principal"&&isAdmin()&&setores.length<=1){try{await db.from("app_state").upsert({org_id:state.user.orgId,chave:b+"@principal",dados:JSON.parse(local),filial_id:(typeof _filialDoSetorAtual==="function"?_filialDoSetorAtual():null),atualizado_em:new Date().toISOString()},{onConflict:"org_id,chave"});}catch(e){}}
       else{try{localStorage.removeItem(ls);}catch(e){}}
     }
   }
@@ -5624,7 +5627,7 @@ async function switchSetor(id){
 }
 function renderSetoresList(){
   var box=document.getElementById("setores_list");if(!box)return;
-  var lista=state.setores||[];var owner=isOwner();
+  var lista=(state.setores||[]).filter(function(s){return !(typeof isGerente==="function"&&isGerente())||s.filialId===(state.user&&state.user.filialId);});var owner=isOwner();
   box.innerHTML=lista.map(function(s){
     return '<div class="oprow">'+(s.id===setorAtual()?'▶ ':'')+esc(s.nome)+(owner?(' <button class="mini" title="Renomear" onclick="renameSetor(\''+s.id+'\')">✏️</button>'+(lista.length>1?' <button class="mini" title="Remover" onclick="removeSetor(\''+s.id+'\')">🗑</button>':'')):'')+'</div>';
   }).join("")||'<span class="tiny">nenhum</span>';
@@ -5743,6 +5746,7 @@ async function _carregarFiliais(map){
   try{ if(window.db&&state.user&&state.user.orgId){ var q=await db.from("filiais").select("id,nome,cnpj,endereco,ativo").eq("org_id",state.user.orgId).order("criado_em",{ascending:true}); if(!q.error) fs=q.data||[]; } }catch(e){}
   if(!fs||!fs.length){ var loc=null; try{loc=JSON.parse(localStorage.getItem("ciops:filiais")||"null");}catch(e){} fs=(loc&&loc.length)?loc:[{id:"matriz",nome:"Matriz"}]; }
   state.filiais=fs; try{localStorage.setItem("ciops:filiais",JSON.stringify(fs));}catch(e){}
+  if((typeof isGerente==="function"&&isGerente())){_travarGerente(fs);return;}
   var def=fs[0]&&fs[0].id, ch=false;
   (state.setores||[]).forEach(function(s){ if(!s.filialId){s.filialId=def;ch=true;} else if(!fs.some(function(f){return f.id===s.filialId;})){s.filialId=def;ch=true;} });
   if(ch){ try{localStorage.setItem("ciops:setores",JSON.stringify(state.setores));}catch(e){} try{if(window.db&&isAdmin())await cloudPush("setores");}catch(e){} }
@@ -5750,11 +5754,13 @@ async function _carregarFiliais(map){
 function renderFilialSel(){
   var sel=document.getElementById("filialSel"); var fs=state.filiais||[{id:"matriz",nome:"Matriz"}];
   if(sel)sel.innerHTML=fs.map(function(f){return '<option value="'+f.id+'"'+(f.id===filialAtiva()?' selected':'')+'>'+esc(f.nome)+'</option>';}).join("");
+  if(sel)sel.disabled=(typeof isGerente==="function"&&isGerente());
   var bn=document.getElementById("btnNovaFilial"); if(bn)bn.style.display=(typeof isOwner==="function"&&isOwner())?"":"none";
   var h=document.getElementById("filialHint"); if(h)h.textContent=fs.length>1?("· "+fs.length+" filiais"):"";
 }
 async function switchFilial(id){
   if(!id||id===filialAtiva())return;
+  if((typeof isGerente==="function"&&isGerente())&&id!==(state.user&&state.user.filialId))return;
   state.filialAtiva=id; try{localStorage.setItem("ciops:filialAtiva",id);}catch(e){}
   var sets=(state.setores||[]).filter(function(s){return s.filialId===id;});
   if(!sets.length){
@@ -5824,6 +5830,40 @@ function renderFiliaisList(){
   }).join("")||'<span class="tiny">nenhuma</span>';
   var addbox=document.getElementById("filial_add"); if(addbox)addbox.style.display=owner?"flex":"none";
 }
+
+/* ---- Fase 4: gerente por filial ---- */
+function isGerente(){return !!(state.user&&state.user.role==="gerente");}
+function _travarGerente(fs){
+  var fid=state.user&&state.user.filialId;
+  var mine=(fs||[]).filter(function(f){return f.id===fid;});
+  state.filiais=mine; try{localStorage.setItem("ciops:filiais",JSON.stringify(mine));}catch(e){}
+  var sets=(state.setores||[]).filter(function(s){return s.filialId===fid;});
+  var cur=null; try{cur=localStorage.getItem("ciops:setorAtivo");}catch(e){}
+  if(sets.length&&!sets.some(function(s){return s.id===cur;})){try{localStorage.setItem("ciops:setorAtivo",sets[0].id);}catch(e){}}
+  state._gerenteSemFilial=(!fid||!mine.length||!sets.length);
+}
+function _filialOpts(sel){return (state.filiais||[]).map(function(f){return '<option value="'+f.id+'"'+(f.id===sel?' selected':'')+'>'+esc(f.nome)+'</option>';}).join("");}
+async function setOperFilial(userId,fid){
+  if(!isOwner())return;
+  var r=await db.from("members").update({filial_id:fid||null}).eq("org_id",state.user.orgId).eq("user_id",userId);
+  if(r.error){alert("Falha ao salvar a filial: "+r.error.message);return;}
+  var f=(state.filiais||[]).find(function(x){return x.id===fid;});
+  try{log("Filial do gerente",userId+" → "+(f?f.nome:fid));}catch(e){}
+  renderOperadoresCloud();
+}
+function _opRoleChange(){
+  var r=(document.getElementById("op_role")||{}).value;
+  var w=document.getElementById("op_filial_wrap"); if(w)w.style.display=(r==="gerente")?"":"none";
+  var sl=document.getElementById("op_filial_sel"); if(sl&&!sl.options.length)sl.innerHTML=_filialOpts(filialAtiva());
+}
+(function(){ if(typeof applyPerms!=="function")return; var _ap=applyPerms;
+  applyPerms=function(){ _ap.apply(this,arguments); try{
+    if(!isGerente())return;
+    ["assin_box","assin_pix","docbox","cfg_operadores","filial_add","setor_add","takeoverbox"].forEach(function(id){var e=document.getElementById(id);if(e)e.style.display="none";});
+    var opr=document.getElementById("op_role"); var c=opr&&opr.closest(".fld"); if(c&&c.parentElement)c.parentElement.style.display="none";
+    var fh=document.getElementById("filialHint"); if(fh&&state._gerenteSemFilial)fh.textContent="· seu acesso ainda não foi vinculado a uma filial com setor — fale com o proprietário";
+  }catch(e){} };
+})();
 </script>
 </body>
 </html>
