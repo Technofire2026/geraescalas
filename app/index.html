@@ -654,14 +654,14 @@
     </div>
   </section>
 
-  <footer><span class="noprint">Confira a escala antes de publicar.<br>© 2026 <b>Gera Escalas</b> · <span class="lnk" onclick="openAbout()">Sobre &amp; Política de Privacidade</span> · <span style="color:var(--mut2)">v13.94</span></span></footer>
+  <footer><span class="noprint">Confira a escala antes de publicar.<br>© 2026 <b>Gera Escalas</b> · <span class="lnk" onclick="openAbout()">Sobre &amp; Política de Privacidade</span> · <span style="color:var(--mut2)">v13.95</span></span></footer>
 </main>
 
 <div id="aboutmodal" class="modal" style="display:none" onclick="if(event.target===this)closeAbout()">
   <div class="mbox">
     <button class="xbtn" onclick="closeAbout()">Fechar ✕</button>
     <h2>Gera Escalas</h2>
-    <p class="muted">Escalas de plantão, turno e giro · Versão 13.94 · 2026</p>
+    <p class="muted">Escalas de plantão, turno e giro · Versão 13.95 · 2026</p>
 
     <h3>Autoria e direitos autorais</h3>
     <p>© 2026 <b>Gera Escalas</b> — desenvolvido por Luís Cesar. Todos os direitos reservados.</p>
@@ -2288,7 +2288,7 @@ function gerarFolgaBase(mils,year,month,cfg,seed,phase){
   for(var d=1;d<=res.N;d++){res.folga[d]=(res.folga[d]||[]).slice();folg.forEach(function(m){res.folga[d].push(m);});}
   return res;
 }
-function setFolguista(id,ck){var m=byMil(id);if(!m)return;m.folguista=!!ck;saveMil();renderRoster();try{renderCfgResumo();}catch(e){}}
+function setFolguista(id,ck){var m=byMil(id);if(!m)return;m.folguista=!!ck;if(!ck)m.coringa=false;saveMil();renderRoster();try{renderCfgResumo();}catch(e){}}
 // feriado em que o estabelecimento FECHA: todos folgam e não há o que cobrir
 function _fechadoNoDia(d){try{return !!(state.schedule&&_feriadoFechado(new Date(state.schedule.year,state.schedule.month,d)));}catch(e){return false;}}
 function _folguistasNecessarios(res,cfg){
@@ -2978,10 +2978,10 @@ function _gerarCore(forcar){
       var _cfgBase=state.config.folgaCfg||{trab:6,folga:1,maxDia:1,domingo:true};
       var _seedT=cont?state.carry[mkey(year,month)]:null;
       var _trG=[],_semTurno=[];
-      state.militares.forEach(function(m){if((!m.turno||!_turnosG.some(function(t){return t.id===m.turno;}))&&!m.coringa)_semTurno.push(m);});
+      state.militares.forEach(function(m){if((!m.turno||!_turnosG.some(function(t){return t.id===m.turno;}))&&!(m.folguista&&m.coringa))_semTurno.push(m);});
       var _escal=(_cfgBase.escalonarTurnos!==false),_nTur=_turnosG.length,_wTur=Math.max(1,(_cfgBase.trab||5));
       _turnosG.forEach(function(t,_ti){
-        var _mils=state.militares.filter(function(m){return m.turno===t.id&&!m.coringa;});
+        var _mils=state.militares.filter(function(m){return m.turno===t.id&&!(m.folguista&&m.coringa);});
         if(!_mils.length)return;
         var _cfgT=Object.assign({},_cfgBase,{hIni:t.hIni,hFim:t.hFim,interv:(t.interv||0),almIni:(t.almIni||"")});
         var _sd=(_seedT&&_seedT.turnos&&_seedT.turnos[t.id])?{folgaPer:_seedT.turnos[t.id]}:null;
