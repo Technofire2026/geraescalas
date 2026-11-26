@@ -366,7 +366,7 @@
   <!-- PASSO 1 · SETOR -->
   <section class="card" id="config">
     <div class="bd">
-      <div class="passo-hd"><span class="passo-n">1</span> Setor <span class="tiny" id="setorHint" style="color:var(--mut);font-weight:400;margin-left:2px"></span></div>
+      <div class="passo-hd"><span class="passo-n">1</span> Filial e setor <span class="tiny" id="setorHint" style="color:var(--mut);font-weight:400;margin-left:2px"></span></div>
       <div class="filialbar" style="display:flex;align-items:center;gap:8px;flex-wrap:wrap;margin-bottom:8px">
         <span class="tiny" style="color:var(--mut);min-width:34px;font-weight:600">Filial</span>
         <select id="filialSel" onchange="switchFilial(this.value)" style="font:inherit;padding:8px 10px;border:1px solid var(--line2);border-radius:8px;min-width:180px;flex:1 1 200px"></select>
@@ -388,7 +388,7 @@
         <input id="novo_setor_f" placeholder="Nome do setor (ex.: UTI, Portaria, Salão)" style="flex:1;min-width:180px" onkeydown="if(event.key==='Enter')addSetorFlow()">
         <button class="btn dark" onclick="addSetorFlow()">Criar setor</button>
       </div>
-      <div class="tiny" id="setor_msg_f" style="margin-top:6px;color:var(--mut)">Use o <b>Setor principal</b> ou crie setores para separar equipes e escalas <b>(recurso Pro)</b>.</div>
+      <div class="tiny" id="setor_msg_f" style="margin-top:6px;color:var(--mut)">Cada filial (loja/unidade) tem seus setores, e cada setor tem sua equipe e escala. <b>Vários setores na mesma filial:</b> plano Profissional.</div>
     </div>
   </section>
 
@@ -653,14 +653,14 @@
     </div>
   </section>
 
-  <footer><span class="noprint">Confira a escala antes de publicar.<br>© 2026 <b>Gera Escalas</b> · <span class="lnk" onclick="openAbout()">Sobre &amp; Política de Privacidade</span> · <span style="color:var(--mut2)">v13.77</span></span></footer>
+  <footer><span class="noprint">Confira a escala antes de publicar.<br>© 2026 <b>Gera Escalas</b> · <span class="lnk" onclick="openAbout()">Sobre &amp; Política de Privacidade</span> · <span style="color:var(--mut2)">v13.78</span></span></footer>
 </main>
 
 <div id="aboutmodal" class="modal" style="display:none" onclick="if(event.target===this)closeAbout()">
   <div class="mbox">
     <button class="xbtn" onclick="closeAbout()">Fechar ✕</button>
     <h2>Gera Escalas</h2>
-    <p class="muted">Escalas de plantão, turno e giro · Versão 13.77 · 2026</p>
+    <p class="muted">Escalas de plantão, turno e giro · Versão 13.78 · 2026</p>
 
     <h3>Autoria e direitos autorais</h3>
     <p>© 2026 <b>Gera Escalas</b> — desenvolvido por Luís Cesar. Todos os direitos reservados.</p>
@@ -5605,6 +5605,7 @@ async function cloudPullAll(){
 function _uidSetor(){return "s"+Date.now().toString(36)+Math.floor(Math.random()*1000);}
 function renderSetorSel(){
   try{if(typeof renderFilialSel==="function")renderFilialSel();}catch(e){}
+  try{if(typeof _renderPrimeirosPassos==="function")setTimeout(_renderPrimeirosPassos,0);}catch(e){}
   var sel=document.getElementById("setorSel");if(!sel)return;
   var _fa=(typeof filialAtiva==="function")?filialAtiva():null;
   var lista=(state.setores||[{id:"principal",nome:"Setor principal"}]).filter(function(s){return !_fa||!s.filialId||s.filialId===_fa;});
@@ -5639,6 +5640,7 @@ function renderSetoresList(){
 }
 async function addSetor(){
   if(!isOwner())return;var m=document.getElementById("setor_msg");
+  var _nm1=(val("novo_setor")||"").trim(); if(_nm1&&typeof _renomearSetorPadrao==="function"&&await _renomearSetorPadrao(_nm1,m,"novo_setor"))return;
   if(!_podeMultiSetor()){if(m){m.textContent="Vários setores é um recurso do plano Profissional. Faça upgrade para liberar.";m.style.color="#b91c1c";}if(typeof irParaAssinatura==="function")irParaAssinatura();return;}
   var nome=(val("novo_setor")||"").trim();if(!nome){return;}
   var lista=state.setores||[];lista.push({id:_uidSetor(),nome:nome,filialId:(typeof filialAtiva==="function"?filialAtiva():null)});state.setores=lista;
@@ -5657,6 +5659,7 @@ function toggleNovoSetor(){
 }
 async function addSetorFlow(){
   if(!isOwner())return;var m=document.getElementById("setor_msg_f");
+  var _nm0=(val("novo_setor_f")||"").trim(); if(_nm0&&typeof _renomearSetorPadrao==="function"&&await _renomearSetorPadrao(_nm0,m,"novo_setor_f"))return;
   if(!_podeMultiSetor()){if(m){m.textContent="Vários setores é um recurso do plano Profissional. Faça upgrade para liberar.";m.style.color="#b91c1c";}if(typeof irParaAssinatura==="function")irParaAssinatura();return;}
   var nome=(val("novo_setor_f")||"").trim();if(!nome){return;}
   var lista=state.setores||[];lista.push({id:_uidSetor(),nome:nome,filialId:(typeof filialAtiva==="function"?filialAtiva():null)});state.setores=lista;
@@ -5748,6 +5751,7 @@ function _filialDoSetorAtual(){try{var s=(state.setores||[]).find(function(x){re
 async function _carregarFiliais(map){
   var fs=null;
   try{ if(db&&state.user&&state.user.orgId){ var q=await db.from("filiais").select("id,nome,cnpj,endereco,ativo").eq("org_id",state.user.orgId).order("criado_em",{ascending:true}); if(!q.error) fs=q.data||[]; } }catch(e){}
+  try{ if(fs&&!fs.length&&db&&state.user&&state.user.orgId&&isAdmin()&&!(typeof isGerente==="function"&&isGerente())){ var _ins=await db.from("filiais").insert({org_id:state.user.orgId,nome:"Matriz"}).select().single(); if(!_ins.error&&_ins.data)fs=[_ins.data]; } }catch(e){}
   if(!fs||!fs.length){ var loc=null; try{loc=JSON.parse(localStorage.getItem("ciops:filiais")||"null");}catch(e){} fs=(loc&&loc.length)?loc:[{id:"matriz",nome:"Matriz"}]; }
   state.filiais=fs; try{localStorage.setItem("ciops:filiais",JSON.stringify(fs));}catch(e){}
   if((typeof isGerente==="function"&&isGerente())){_travarGerente(fs);return;}
@@ -5782,6 +5786,17 @@ function toggleNovaFilial(){ var b=document.getElementById("novaFilialBox"); if(
 async function _criarFilialCore(nome,cnpj,end,say){
   if(!isOwner()){say&&say("Apenas o proprietário pode criar filiais.","#b91c1c");return null;}
   nome=(nome||"").trim(); if(!nome){say&&say("Informe o nome da filial.","#b91c1c");return null;}
+  if(typeof _orgNova==="function"&&_orgNova()){
+    var f0=state.filiais[0], _cn=(cnpj||"").trim()||null, _en=(end||"").trim()||null;
+    if(db&&state.user&&state.user.orgId&&f0.id!=="matriz"){ var ru=await db.from("filiais").update({nome:nome,cnpj:_cn,endereco:_en}).eq("id",f0.id).eq("org_id",state.user.orgId); if(ru&&ru.error){say&&say("Falha ao salvar: "+ru.error.message,"#b91c1c");return null;} }
+    f0.nome=nome; f0.cnpj=_cn; f0.endereco=_en;
+    try{localStorage.setItem("ciops:filiais",JSON.stringify(state.filiais));}catch(e){}
+    renderFilialSel(); if(typeof renderFiliaisList==="function")renderFiliaisList();
+    try{log("Cadastro da filial",nome);}catch(e){}
+    say&&say("Filial \u201c"+nome+"\u201d cadastrada.","#15803d");
+    setTimeout(function(){if(typeof _abrirPasso2Setor==="function")_abrirPasso2Setor();},60);
+    return f0;
+  }
   var novo=null;
   if(db&&state.user&&state.user.orgId){
     var r=await db.from("filiais").insert({org_id:state.user.orgId,nome:nome,cnpj:(cnpj||"").trim()||null,endereco:(end||"").trim()||null}).select().single();
@@ -5835,6 +5850,49 @@ function renderFiliaisList(){
   var addbox=document.getElementById("filial_add"); if(addbox)addbox.style.display=owner?"flex":"none";
 }
 
+/* ---- Primeiros passos: filial -> setor (sem duplicar os padrões) ---- */
+function _setorPadraoVazio(){
+  var fa=filialAtiva(); var sets=(state.setores||[]).filter(function(s){return !s.filialId||s.filialId===fa;});
+  if(sets.length!==1)return null; var s0=sets[0];
+  if(["Setor principal","Principal"].indexOf(s0.nome)<0)return null;
+  if(s0.id!==setorAtual())return null;
+  if((state.militares||[]).length||state.schedule)return null;
+  return s0;
+}
+function _orgNova(){
+  var fs=state.filiais||[]; if(fs.length!==1)return false; var f=fs[0];
+  if(f.nome!=="Matriz"||f.cnpj||f.endereco)return false;
+  if((state.setores||[]).length!==1)return false;
+  return !!_setorPadraoVazio();
+}
+function _guiaBox(html){return '<div style="background:#eef2ff;border:1px solid #c7d2fe;color:#3730a3;border-radius:8px;padding:10px 12px;font-size:13px;line-height:1.55">'+html+'</div>';}
+function _renderPrimeirosPassos(){
+  if(!(typeof isOwner==="function"&&isOwner()))return;
+  var m=document.getElementById("setor_msg_f"); if(!m)return;
+  if(_orgNova()){
+    m.innerHTML=_guiaBox('👋 <b>Primeiros passos</b><br><b>1.</b> Cadastre sua <b>filial</b> — a loja/unidade (nome, CNPJ e endereço) — em <b>＋ Nova filial</b>.<br><b>2.</b> Depois crie o <b>setor</b> (ex.: Salão, Cozinha, Portaria) em <b>＋ Novo setor</b>.');
+    if(!state._ppAberto){state._ppAberto=true;var b=document.getElementById("novaFilialBox");if(b&&(b.style.display==="none"||!b.style.display)){b.style.display="flex";var i=document.getElementById("nova_filial");if(i)setTimeout(function(){try{i.focus();}catch(e){}},50);}}
+  }else if(_setorPadraoVazio()){
+    m.innerHTML=_guiaBox('<b>Passo 2:</b> crie o <b>setor</b> desta filial (ex.: Salão, Cozinha, Portaria) em <b>＋ Novo setor</b>.');
+  }
+}
+function _abrirPasso2Setor(){
+  var b=document.getElementById("novoSetorBox"); if(b)b.style.display="flex";
+  var i=document.getElementById("novo_setor_f"); if(i)setTimeout(function(){try{i.focus();}catch(e){}},50);
+  var m=document.getElementById("setor_msg_f"); if(m)m.innerHTML=_guiaBox('✅ Filial cadastrada. <b>Passo 2:</b> dê o nome do <b>setor</b> (ex.: Salão, Cozinha, Portaria) e clique em <b>Criar setor</b>.');
+}
+async function _renomearSetorPadrao(nome,m,inputId){
+  var s0=_setorPadraoVazio(); if(!s0)return false;
+  s0.nome=nome;
+  try{localStorage.setItem("ciops:setores",JSON.stringify(state.setores));}catch(e){}
+  await cloudPush("setores");
+  var el=document.getElementById(inputId); if(el)el.value="";
+  var bx=document.getElementById("novoSetorBox"); if(bx&&inputId==="novo_setor_f")bx.style.display="none";
+  renderSetorSel(); if(typeof renderSetoresList==="function")renderSetoresList();
+  if(m){m.textContent="Setor “"+nome+"” criado! Agora cadastre os funcionários (passo 3).";m.style.color="#15803d";}
+  try{log("Criação de setor",nome);}catch(e){}
+  return true;
+}
 /* ---- Fase 4: gerente por filial ---- */
 function isGerente(){return !!(state.user&&state.user.role==="gerente");}
 function _travarGerente(fs){
