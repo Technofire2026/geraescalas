@@ -654,14 +654,14 @@
     </div>
   </section>
 
-  <footer><span class="noprint">Confira a escala antes de publicar.<br>© 2026 <b>Gera Escalas</b> · <span class="lnk" onclick="openAbout()">Sobre &amp; Política de Privacidade</span> · <span style="color:var(--mut2)">v13.86</span></span></footer>
+  <footer><span class="noprint">Confira a escala antes de publicar.<br>© 2026 <b>Gera Escalas</b> · <span class="lnk" onclick="openAbout()">Sobre &amp; Política de Privacidade</span> · <span style="color:var(--mut2)">v13.87</span></span></footer>
 </main>
 
 <div id="aboutmodal" class="modal" style="display:none" onclick="if(event.target===this)closeAbout()">
   <div class="mbox">
     <button class="xbtn" onclick="closeAbout()">Fechar ✕</button>
     <h2>Gera Escalas</h2>
-    <p class="muted">Escalas de plantão, turno e giro · Versão 13.86 · 2026</p>
+    <p class="muted">Escalas de plantão, turno e giro · Versão 13.87 · 2026</p>
 
     <h3>Autoria e direitos autorais</h3>
     <p>© 2026 <b>Gera Escalas</b> — desenvolvido por Luís Cesar. Todos os direitos reservados.</p>
@@ -2405,19 +2405,22 @@ function _folguistaAviso(res){
   var h='<div style="background:#f5f3ff;border:1px solid #c7d2fe;color:#3730a3;border-radius:8px;padding:10px 12px;margin:8px 0;font-size:13px">';
   h+='<div style="font-weight:800;margin-bottom:4px">🔁 Cobertura de folgas por folguistas</div>';
   h+='<div>Folgas da equipe no mês: <b>'+totalGap+'</b> · já cobertas: <b>'+coberto+'</b>'+(falta>0?(' · <b style="color:#b45309">faltam '+falta+'</b>'):(totalGap>0?' · <b style="color:#15803d">todas cobertas ✓</b>':''))+'</div>';
-  if(falta>0&&nCor>0&&state.schedule&&state.schedule.coringas&&state.schedule.coringas.plano){h+='<div style="margin-top:3px;font-size:12px;color:#9a3412">As folgas que faltam não foram entregues aos coringas porque eles já chegaram ao limite legal (até '+limiteLegal(state.schedule.year,state.schedule.month).sem+'h/semana e '+limiteLegal(state.schedule.year,state.schedule.month).mes+'h/mês). Para cobrir: cadastre mais um coringa ou folguista, ou pague hora extra.</div>';}
   // Composicao real de quem esta cobrindo (lida da cobertura montada)
   var _us={};for(var _dc=1;_dc<=res.N;_dc++){var _cb=(res.cobertura&&res.cobertura[_dc])||{};Object.keys(_cb).forEach(function(ef){if(efIds[ef])_us[_cb[ef]]=1;});}
   var _corUsed=0,_fgUsed=0;Object.keys(_us).forEach(function(id){var m=byMil(id);if(!m)return;if(m.coringa)_corUsed++;else _fgUsed++;});
-  if(coberto>0){h+='<div style="margin-top:3px">Cobrindo as folgas: <b>'+_fgUsed+'</b> folguista(s) de turno'+(_corUsed>0?(' e <b>'+_corUsed+'</b> coringa'+(_corUsed>1?'s':'')):'')+(falta===0?' <span style="color:#15803d">\u2014 tudo coberto \u2713</span>':'')+'.</div>';}
+  if(coberto>0){var _qm=[];if(_corUsed>0)_qm.push('<b>'+_corUsed+'</b> coringa'+(_corUsed>1?'s':''));if(_fgUsed>0)_qm.push('<b>'+_fgUsed+'</b> folguista'+(_fgUsed>1?'s':'')+' do turno');h+='<div style="margin-top:3px">Quem está cobrindo: '+_qm.join(' e ')+(falta===0?' <span style="color:#15803d">— tudo coberto ✓</span>':'')+'.</div>';}
   var _G=(state.schedule&&state.schedule.multiTurno&&nCor>0&&(typeof _coringaCoberturaGlobal==="function"))?_coringaCoberturaGlobal():null;
-  if(falta>0){
-    if(_G){
-      h+='<div style="margin-top:3px">Cadastrados: <b>'+nFg+'</b> folguista(s) de turno + <b>'+nCor+'</b> coringa'+(nCor>1?'s':'')+' \u00b7 necess\u00e1rios p/ cobrir <b>todos os turnos</b>: <b>~'+_G.necessario+'</b>'+((_G.totalCobridores<_G.necessario)?(' <span style="color:#b45309">(cadastre mais '+(_G.necessario-_G.totalCobridores)+' \u2014 coringa ou folguista de turno)</span>'):'')+'</div>';
-      if(_G.totalCobridores<_G.necessario){h+='<div style="margin-top:3px;color:#9a3412;font-size:12px">\u26a0 Um coringa cobre no m\u00e1ximo ~'+_G.capFolg+' folgas/m\u00eas e <b>s\u00f3 uma por dia</b>. Nesta escala s\u00e3o <b>'+_G.total+'</b> folgas (todos os turnos) e em alguns dias <b>'+_G.peak+'</b> pessoas folgam ao mesmo tempo \u2014 por isso sobram folgas sem cobertura. Cadastre mais coringas (ou folguistas de turno) para fechar tudo.</div>';}
-    }else{
-      h+='<div style="margin-top:3px">Folguistas cadastrados: <b>'+nFg+'</b> de turno'+(nCor>0?(' + <b>'+nCor+'</b> coringa'+(nCor>1?'s':'')):'')+' \u00b7 necess\u00e1rios p/ cobrir dentro da lei: <b>~'+nec.necessario+'</b>'+((totCad<nec.necessario)?(' <span style="color:#b45309">(cadastre mais '+(nec.necessario-totCad)+' \u2014 folguista de turno ou coringa)</span>'):'')+'</div>';
-    }
+  // resumo de quantos folguistas são precisos — no multiturno aparece UMA vez (no 1º turno), porque os coringas atendem todos os turnos
+  var _prim=true;if(state.schedule&&state.schedule.multiTurno){var _t1=(state.schedule.turnos||[]).filter(function(x){return x.result&&x.result.usarFolguistas;})[0];_prim=!!(_t1&&_t1.result===res);}
+  if(((_G&&_G.falta>0)||(!_G&&falta>0))&&_prim){
+    var _tem=_G?_G.totalCobridores:totCad,_prec=_G?_G.necessario:nec.necessario,_tot=_G?_G.total:totalGap,_cap=_G?_G.capFolg:null;
+    var _comp=[];var _nc=_G?_G.nCoringas:nCor,_nf=_G?_G.nFolguistasTurno:nFg;if(_nc>0)_comp.push(_nc+' coringa'+(_nc>1?'s':''));if(_nf>0)_comp.push(_nf+' folguista'+(_nf>1?'s':'')+' de turno');
+    h+='<div style="margin-top:6px;padding:8px 10px;background:#fff;border:1px solid #e0e7ff;border-radius:7px">';
+    h+='<div><b>Folguistas'+(_G?' (todos os turnos)':'')+':</b> você tem <b>'+_tem+'</b>'+(_comp.length?(' ('+_comp.join(' + ')+')'):'')+'. '+(_G?('Faltam cobrir <b>'+_G.falta+'</b> de <b>'+_tot+'</b> folgas (somando os turnos). '):'')+'Para cobrir as <b>'+_tot+'</b> folgas do mês dentro da lei são precisos <b>cerca de '+_prec+'</b>.</div>';
+    if(_tem<_prec)h+='<div style="margin-top:3px;color:#b45309"><b>Cadastre mais '+(_prec-_tem)+'</b> (coringa ou folguista de turno) para fechar a cobertura'+(_cap?(' — cada um cobre no máximo ~'+_cap+' folgas por mês e só uma por dia'):'')+'.</div>';
+    else h+='<div style="margin-top:3px;color:#15803d">A quantidade é suficiente: clique em <b>Preencher folguistas automaticamente</b>.</div>';
+    if(_G&&state.schedule.coringas&&state.schedule.coringas.plano)h+='<div style="margin-top:3px;font-size:12px;color:#6b7280">Os coringas já estão no limite legal (até '+limiteLegal(state.schedule.year,state.schedule.month).sem+'h/semana e '+limiteLegal(state.schedule.year,state.schedule.month).mes+'h/mês), por isso não pegam as '+_G.falta+' folga(s) que faltam. Enquanto não houver mais gente, a alternativa é hora extra.</div>';
+    h+='</div>';
   }
   h+='<div style="margin-top:8px;display:flex;gap:8px;flex-wrap:wrap"><button class="btn" style="background:var(--cbm,#4f46e5);color:#fff;padding:6px 12px;font-size:13px" onclick="preencherFolguistasAuto()">🔁 Preencher folguistas automaticamente</button>'+(coberto>0?'<button class="btn ghost" style="padding:6px 12px;font-size:13px" onclick="imprimirCobertura()">🖨️ Imprimir cobertura</button><button class="btn ghost" style="padding:6px 12px;font-size:13px" onclick="limparCobertura()">Limpar cobertura</button>':'')+'</div>';
   h+='<div style="margin-top:6px;color:#6b7280;font-size:12px">Ou clique numa <b>folga (F)</b> na grade para escolher o folguista manualmente. A cobertura aparece como <b style="color:#b45309">C</b> (cor própria).</div>';
@@ -2425,7 +2428,7 @@ function _folguistaAviso(res){
   return h;
 }
 function setCoringa(id,ck){var m=byMil(id);if(!m)return;m.coringa=!!ck;if(ck)m.folguista=true;saveMil();renderRoster();try{renderCfgResumo();}catch(e){}}
-function _coringasList(){return (state.militares||[]).filter(function(m){return m.folguista&&m.coringa;});}
+function _coringasList(){return (state._milAll||state.militares||[]).filter(function(m){return m.folguista&&m.coringa;});}
 function _fillCoringas(){
   if(!state.schedule||!state.schedule.multiTurno){if(state.schedule)state.schedule.coringas=null;return;}
   var coringas=_coringasList();
