@@ -654,14 +654,14 @@
     </div>
   </section>
 
-  <footer><span class="noprint">Confira a escala antes de publicar.<br>© 2026 <b>Gera Escalas</b> · <span class="lnk" onclick="openAbout()">Sobre &amp; Política de Privacidade</span> · <span style="color:var(--mut2)">v13.93</span></span></footer>
+  <footer><span class="noprint">Confira a escala antes de publicar.<br>© 2026 <b>Gera Escalas</b> · <span class="lnk" onclick="openAbout()">Sobre &amp; Política de Privacidade</span> · <span style="color:var(--mut2)">v13.94</span></span></footer>
 </main>
 
 <div id="aboutmodal" class="modal" style="display:none" onclick="if(event.target===this)closeAbout()">
   <div class="mbox">
     <button class="xbtn" onclick="closeAbout()">Fechar ✕</button>
     <h2>Gera Escalas</h2>
-    <p class="muted">Escalas de plantão, turno e giro · Versão 13.93 · 2026</p>
+    <p class="muted">Escalas de plantão, turno e giro · Versão 13.94 · 2026</p>
 
     <h3>Autoria e direitos autorais</h3>
     <p>© 2026 <b>Gera Escalas</b> — desenvolvido por Luís Cesar. Todos os direitos reservados.</p>
@@ -6312,11 +6312,12 @@ function _temExpediente(){try{var sc=state.schedule;if(!sc)return false;var rs=s
     var fc=state.config.folgaCfg||{};if(!fc.multiTurno||!fc.usarFolguistas)return r;var box=document.getElementById("fg_turnos");if(!box)return r;
     var old=document.getElementById("fg_expbox");if(old)old.parentNode.removeChild(old);
     var st='font:inherit;padding:3px 5px;border:1px solid var(--line2);border-radius:6px';
-    var h='<div id="fg_expbox" style="margin-top:9px;padding:8px 10px;border:1px dashed #a7f3d0;border-radius:8px;background:#f0fdf4"><div class="tiny" style="font-weight:800;color:#047857">🔁 Folguista do expediente (por turno)</div><div class="tiny" style="color:var(--mut);margin:2px 0 6px;line-height:1.4">Marque quando o folguista do turno é um funcionário do expediente: nos dias úteis em que não há folga para cobrir ele fica de serviço no expediente (<b>S</b>), e folga o mesmo número de dias que a equipe — sempre dentro de 42h/semana, 186h/mês e 11h de descanso entre jornadas.</div>';
+    var h='<div id="fg_expbox" style="margin-top:9px;padding:9px 11px;border:1px dashed #a7f3d0;border-radius:8px;background:#f0fdf4"><div class="tiny" style="font-weight:800;color:#047857">🔁 Folguista: o que faz quando não está cobrindo folga</div><div class="tiny" style="color:#334155;margin:2px 0 7px;line-height:1.4">Escolha, para cada turno, o que o folguista faz nos dias em que ninguém do turno está de folga.</div>';
     (fc.turnos||[]).forEach(function(t){var on=!!t.fgExp;
-      h+='<div style="display:flex;align-items:center;gap:6px;flex-wrap:wrap;margin:3px 0"><label class="tiny" style="display:flex;align-items:center;gap:5px;min-width:130px;cursor:pointer"><input type="checkbox" '+(on?'checked':'')+' onchange="turnoSetField(\''+t.id+'\',\'fgExp\',this.checked);renderTurnosEditor()"> <b>'+esc(t.nome||'Turno')+'</b></label>'
-        +(on?('<span class="tiny" style="color:var(--mut)">expediente</span><input type="time" value="'+esc(t.fgExpIni||'08:00')+'" onchange="turnoSetField(\''+t.id+'\',\'fgExpIni\',this.value)" style="'+st+'"><span class="tiny">–</span><input type="time" value="'+esc(t.fgExpFim||'17:00')+'" onchange="turnoSetField(\''+t.id+'\',\'fgExpFim\',this.value)" style="'+st+'"><span class="tiny" style="color:var(--mut)">🍽️ refeição</span><input type="number" min="0" max="240" step="5" value="'+(t.fgExpInterv!=null?t.fgExpInterv:60)+'" onchange="turnoSetField(\''+t.id+'\',\'fgExpInterv\',+this.value)" style="width:56px;'+st+'"><span class="tiny">min · seg a sex</span>'):'<span class="tiny" style="color:var(--mut)">folguista só cobre folgas (nos outros dias, folga)</span>')+'</div>';});
-    h+='<div class="tiny" style="color:var(--mut);margin-top:4px">Depois de mudar, clique em <b>Preencher folguistas automaticamente</b> na escala.</div></div>';
+      h+='<div style="display:flex;align-items:center;gap:6px;flex-wrap:wrap;margin:4px 0"><b class="tiny" style="min-width:70px;color:#1e293b">'+esc(t.nome||'Turno')+'</b>'
+        +'<select onchange="turnoSetField(\''+t.id+'\',\'fgExp\',this.value===\'1\');renderTurnosEditor()" style="'+st+'"><option value="0"'+(on?'':' selected')+'>Fica de folga</option><option value="1"'+(on?' selected':'')+'>Trabalha no expediente</option></select>'
+        +(on?('<span class="tiny" style="color:#334155">das</span><input type="time" value="'+esc(t.fgExpIni||'08:00')+'" onchange="turnoSetField(\''+t.id+'\',\'fgExpIni\',this.value)" style="'+st+'"><span class="tiny">às</span><input type="time" value="'+esc(t.fgExpFim||'17:00')+'" onchange="turnoSetField(\''+t.id+'\',\'fgExpFim\',this.value)" style="'+st+'"><span class="tiny" style="color:#334155">· refeição</span><input type="number" min="0" max="240" step="5" value="'+(t.fgExpInterv!=null?t.fgExpInterv:60)+'" onchange="turnoSetField(\''+t.id+'\',\'fgExpInterv\',+this.value)" style="width:56px;'+st+'"><span class="tiny">min · de segunda a sexta</span>'):'')+'</div>';});
+    h+='<div class="tiny" style="color:var(--mut);margin-top:6px;line-height:1.4">Com "Trabalha no expediente", o folguista folga o mesmo número de dias que a equipe e o app respeita 42h por semana, 186h por mês e 11h de descanso entre um serviço e outro. Depois de mudar, clique em <b>Preencher folguistas automaticamente</b>.</div></div>';
     box.insertAdjacentHTML("beforeend",h);}catch(e){}return r;};}
 })();
 </script>
