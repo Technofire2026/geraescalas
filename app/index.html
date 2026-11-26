@@ -653,14 +653,14 @@
     </div>
   </section>
 
-  <footer><span class="noprint">Confira a escala antes de publicar.<br>© 2026 <b>Gera Escalas</b> · <span class="lnk" onclick="openAbout()">Sobre &amp; Política de Privacidade</span> · <span style="color:var(--mut2)">v13.74</span></span></footer>
+  <footer><span class="noprint">Confira a escala antes de publicar.<br>© 2026 <b>Gera Escalas</b> · <span class="lnk" onclick="openAbout()">Sobre &amp; Política de Privacidade</span> · <span style="color:var(--mut2)">v13.75</span></span></footer>
 </main>
 
 <div id="aboutmodal" class="modal" style="display:none" onclick="if(event.target===this)closeAbout()">
   <div class="mbox">
     <button class="xbtn" onclick="closeAbout()">Fechar ✕</button>
     <h2>Gera Escalas</h2>
-    <p class="muted">Escalas de plantão, turno e giro · Versão 13.74 · 2026</p>
+    <p class="muted">Escalas de plantão, turno e giro · Versão 13.75 · 2026</p>
 
     <h3>Autoria e direitos autorais</h3>
     <p>© 2026 <b>Gera Escalas</b> — desenvolvido por Luís Cesar. Todos os direitos reservados.</p>
@@ -5601,6 +5601,7 @@ async function cloudPullAll(){
 /* ---- Setores ---- */
 function _uidSetor(){return "s"+Date.now().toString(36)+Math.floor(Math.random()*1000);}
 function renderSetorSel(){
+  try{if(typeof renderFilialSel==="function")renderFilialSel();}catch(e){}
   var sel=document.getElementById("setorSel");if(!sel)return;
   var _fa=(typeof filialAtiva==="function")?filialAtiva():null;
   var lista=(state.setores||[{id:"principal",nome:"Setor principal"}]).filter(function(s){return !_fa||!s.filialId||s.filialId===_fa;});
