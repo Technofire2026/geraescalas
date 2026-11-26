@@ -653,14 +653,14 @@
     </div>
   </section>
 
-  <footer><span class="noprint">Confira a escala antes de publicar.<br>© 2026 <b>Gera Escalas</b> · <span class="lnk" onclick="openAbout()">Sobre &amp; Política de Privacidade</span> · <span style="color:var(--mut2)">v13.79</span></span></footer>
+  <footer><span class="noprint">Confira a escala antes de publicar.<br>© 2026 <b>Gera Escalas</b> · <span class="lnk" onclick="openAbout()">Sobre &amp; Política de Privacidade</span> · <span style="color:var(--mut2)">v13.80</span></span></footer>
 </main>
 
 <div id="aboutmodal" class="modal" style="display:none" onclick="if(event.target===this)closeAbout()">
   <div class="mbox">
     <button class="xbtn" onclick="closeAbout()">Fechar ✕</button>
     <h2>Gera Escalas</h2>
-    <p class="muted">Escalas de plantão, turno e giro · Versão 13.79 · 2026</p>
+    <p class="muted">Escalas de plantão, turno e giro · Versão 13.80 · 2026</p>
 
     <h3>Autoria e direitos autorais</h3>
     <p>© 2026 <b>Gera Escalas</b> — desenvolvido por Luís Cesar. Todos os direitos reservados.</p>
@@ -1113,7 +1113,7 @@ function fmtTs(iso){var d=new Date(iso);return pad(d.getDate())+"/"+pad(d.getMon
 function _shareText(){var url=location.href.split("#")[0].split("?")[0];return "Gera Escalas — monte escalas de servi\u00e7o (plant\u00f5es, turnos, giros) em minutos.\nCrie sua conta e comece com 14 dias gr\u00e1tis:\n"+url;}
 function shareApp(){var url=location.href.split("#")[0].split("?")[0];var txt=_shareText();if(navigator.share){navigator.share({title:"Gera Escalas",text:txt,url:url}).catch(function(){});}else{copiarLink();}}
 function _copiarPix(btn,txt){function fb(ok){if(!btn)return;var orig=btn.getAttribute("data-orig")||btn.innerHTML;btn.setAttribute("data-orig",orig);btn.innerHTML=ok?"\u2713 Copiado!":"\u26a0 Selecione o texto e copie";btn.style.transition="transform .15s, background .15s, color .15s";btn.style.background=ok?"#16a34a":"#b45309";btn.style.color="#fff";btn.style.transform="scale(1.06)";setTimeout(function(){try{btn.style.transform="scale(1)";}catch(e){}},170);setTimeout(function(){try{btn.innerHTML=orig;btn.style.background="";btn.style.color="";}catch(e){}},1800);}function fallback(){try{var ta=document.createElement("textarea");ta.value=txt;ta.setAttribute("readonly","");ta.style.position="fixed";ta.style.left="-9999px";ta.style.top="0";document.body.appendChild(ta);ta.focus();ta.select();try{ta.setSelectionRange(0,ta.value.length);}catch(e){}var ok=false;try{ok=document.execCommand("copy");}catch(e){ok=false;}document.body.removeChild(ta);fb(ok);}catch(e){fb(false);}}try{if(navigator.clipboard&&navigator.clipboard.writeText){navigator.clipboard.writeText(txt).then(function(){fb(true);},fallback);}else{fallback();}}catch(e){fallback();}}
-function copiarLink(){var txt=_shareText();var m=document.getElementById("sharemsg");function ok(){if(m){m.textContent="Mensagem copiada!";setTimeout(function(){m.textContent="";},2500);}}try{if(navigator.clipboard&&navigator.clipboard.writeText){navigator.clipboard.writeText(txt).then(ok,function(){prompt("Copie a mensagem:",txt);});}else{prompt("Copie a mensagem:",txt);}}catch(e){prompt("Copie a mensagem:",txt);}}
+function copiarLink(){var txt=_shareText();var m=document.getElementById("sharemsg");function ok(){if(m){m.textContent="Mensagem copiada!";setTimeout(function(){m.textContent="";},2500);}}try{if(navigator.clipboard&&navigator.clipboard.writeText){navigator.clipboard.writeText(txt).then(ok,function(){pedirTexto({title:"Copie a mensagem",icon:"📋",message:"Selecione o texto abaixo e copie (Ctrl+C).",fields:[{label:"",value:txt,multiline:true,rows:5,readonly:true}],okLabel:"Fechar",hideCancel:true});});}else{pedirTexto({title:"Copie a mensagem",icon:"📋",message:"Selecione o texto abaixo e copie (Ctrl+C).",fields:[{label:"",value:txt,multiline:true,rows:5,readonly:true}],okLabel:"Fechar",hideCancel:true});}}catch(e){pedirTexto({title:"Copie a mensagem",icon:"📋",message:"Selecione o texto abaixo e copie (Ctrl+C).",fields:[{label:"",value:txt,multiline:true,rows:5,readonly:true}],okLabel:"Fechar",hideCancel:true});}}
 function openConfig(){if(!isAdmin())return;document.getElementById("configcard").style.display="";var _cd=document.getElementById("cfg_dono");if(_cd)_cd.style.display=(typeof isPlatformAdmin==="function"&&isPlatformAdmin())?"":"none";renderConfigForm();renderAudit();var _c=document.getElementById("configcard");if(_c.scrollIntoView)_c.scrollIntoView({behavior:"smooth"});}
 function closeConfig(){document.getElementById("configcard").style.display="none";}
 function openAudit(){openConfig();var _a=document.getElementById("auditbody");if(_a&&_a.scrollIntoView)_a.scrollIntoView({behavior:"smooth"});}
@@ -1478,9 +1478,9 @@ function addTurma(){
   state.config.turmas=state.config.turmas||[];state.config.turmas.push({id:_uidTurma(),nome:nome});saveConfig();
   var el=document.getElementById("nova_turma");if(el)el.value="";renderTurmas();log("Criação de time",nome);
 }
-function renameTurma(id){
+async function renameTurma(id){
   if(!isAdmin())return;var t=(state.config.turmas||[]).find(function(x){return x.id===id;});if(!t)return;
-  var nv=null;try{nv=prompt("Novo nome do time:",t.nome);}catch(e){}if(nv==null)return;nv=(""+nv).trim();if(!nv)return;
+  var nv=await pedirTexto({title:"Renomear time",icon:"✏️",label:"Novo nome do time",value:t.nome,okLabel:"Salvar"});if(nv==null)return;nv=(""+nv).trim();if(!nv)return;
   t.nome=nv;saveConfig();renderTurmas();
 }
 function removeTurma(id){
@@ -1683,11 +1683,11 @@ function addOperador(){if(!isOwner())return;
   log("Criação de operador",login+" ("+nome+")");renderConfigForm();if(msg)msg.textContent="Operador adicionado.";
 }
 function verifyMaster(pwd){var a=loadAuth();if(a.masterHash&&a.masterSalt&&pwd){return hashSenha(a.masterSalt,pwd)===a.masterHash;}return false;}
-function assumirPropriedade(){
+async function assumirPropriedade(){
   if(!state.user)return;
   var a0=loadAuth();
   if(!(a0.masterHash&&a0.masterSalt)){try{alert("Não há senha-mestra de recuperação definida para esta corporação. A propriedade só pode ser recuperada pelo Proprietário atual (Configurações → Operadores) ou restaurando um Backup.");}catch(e){}return;}
-  var code=null;try{code=prompt("Digite a senha-mestra de recuperação para assumir a propriedade:");}catch(e){}
+  var code=await pedirTexto({title:"Assumir a propriedade",icon:"🔑",label:"Senha-mestra de recuperação",type:"password",okLabel:"Confirmar"});
   if(code==null)return;
   if(!verifyMaster(code)){try{alert("Senha-mestra incorreta. Nada foi alterado.");}catch(e){}return;}
   var a=loadAuth();a.users.forEach(function(u){if(u.role==="owner")u.role="admin";});
@@ -4724,7 +4724,7 @@ function openClientes(){var m=document.getElementById("clientesmodal");if(!m)ret
 function closeClientes(){var m=document.getElementById("clientesmodal");if(m)m.style.display="none";}
 async function liberarAcesso(orgId,nome){
   if(!db)return;
-  var v=prompt('Liberar acesso GRÁTIS (cortesia) para "'+nome+'" por quantos meses?',"12");
+  var v=await pedirTexto({title:"Liberar acesso grátis (cortesia)",icon:"🎁",message:'Para "'+nome+'".',label:"Por quantos meses?",value:"12",inputmode:"numeric",okLabel:"Liberar"});
   if(v===null)return;
   var meses=parseInt(v,10);
   if(isNaN(meses)||meses<1||meses>120){alert("Informe um número de 1 a 120 meses.");return;}
@@ -4808,7 +4808,7 @@ function _contatoHTML(c){
   return '<button class="ubtn" style="background:#ecfdf5;color:#047857;padding:2px 8px;font-size:11px;margin-top:2px" onclick="editarTel(\''+c.org_id+'\',\''+nm+'\')">+ WhatsApp</button>';
 }
 async function editarTel(orgId,nome){
-  var t=prompt("WhatsApp/telefone de "+nome+" (com DDD):","");
+  var t=await pedirTexto({title:"WhatsApp / telefone",icon:"📱",label:"Telefone de "+nome+" (com DDD)",placeholder:"(98) 9 0000-0000",inputmode:"tel",okLabel:"Salvar"});
   if(t==null)return;t=t.trim();
   try{var r=await db.rpc("admin_set_tel",{p_org_id:orgId,p_tel:t||null});if(r&&r.error){alert("Não foi possível salvar: "+r.error.message);return;}}catch(e){alert("Erro: "+(e.message||e));return;}
   renderClientesTabela();
@@ -5229,7 +5229,7 @@ async function avisarEquipe(){
   if(!isAdmin())return;
   var setor=(typeof setorNome==="function"?setorNome():"")||"";
   var alvo=setor?("o setor "+setor):"a equipe toda";
-  var t=prompt("Aviso de alteração na escala para "+alvo+":","Escala atualizada — confiram a nova versão.");
+  var t=await pedirTexto({title:"Avisar a equipe",icon:"🔔",label:"Aviso para "+alvo,value:"Escala atualizada — confiram a nova versão.",multiline:true,rows:3,okLabel:"Enviar"});
   if(t==null)return;t=t.trim();if(!t)return;
   try{
     var r;
@@ -5393,7 +5393,7 @@ async function renderPermuta(){
 async function decidirSolic(id,aprovar){
   if(!isAdmin())return;
   var resp="";
-  if(!aprovar){resp=prompt("Motivo da recusa (opcional):","")||"";}
+  if(!aprovar){resp=(await pedirTexto({title:"Recusar pedido",icon:"✋",label:"Motivo da recusa (opcional)",multiline:true,rows:3,okLabel:"Recusar"}))||"";}
   try{var r=await db.rpc("decidir_solicitacao",{p_id:id,p_aprovar:!!aprovar,p_resposta:resp});if(r&&r.error){alert("Falha: "+r.error.message);return;}}catch(e){alert("Erro: "+(e.message||e));return;}
   if(aprovar){
     var p=_solicPayloads&&_solicPayloads[id];
@@ -5673,7 +5673,7 @@ async function addSetorFlow(){
 }
 async function renameSetor(id){
   if(!isOwner())return;var lista=state.setores||[];var s=lista.find(function(x){return x.id===id;});if(!s)return;
-  var nv=null;try{nv=prompt("Novo nome do setor:",s.nome);}catch(e){}if(nv==null)return;nv=(""+nv).trim();if(!nv)return;
+  var nv=await pedirTexto({title:"Renomear setor",icon:"✏️",label:"Novo nome do setor",value:s.nome,okLabel:"Salvar"});if(nv==null)return;nv=(""+nv).trim();if(!nv)return;
   s.nome=nv;state.setores=lista;try{localStorage.setItem("ciops:setores",JSON.stringify(lista));}catch(e){}
   await cloudPush("setores");renderSetorSel();renderSetoresList();log("Renomeou setor",nv);
 }
@@ -5821,9 +5821,8 @@ async function addFilial2(){
 }
 async function editFilial(id){
   if(!isOwner())return; var f=(state.filiais||[]).find(function(x){return x.id===id;}); if(!f)return;
-  var nome=null; try{nome=prompt("Nome da filial:",f.nome);}catch(e){} if(nome==null)return; nome=(""+nome).trim(); if(!nome)return;
-  var cnpj=null; try{cnpj=prompt("CNPJ (opcional):",f.cnpj||"");}catch(e){} if(cnpj==null)cnpj=f.cnpj||"";
-  var end=null; try{end=prompt("Endereço (opcional):",f.endereco||"");}catch(e){} if(end==null)end=f.endereco||"";
+  var _vals=await pedirTexto({title:"Editar filial",icon:"🏢",okLabel:"Salvar",fields:[{label:"Nome da filial",value:f.nome},{label:"CNPJ (opcional)",value:f.cnpj||"",inputmode:"numeric"},{label:"Endereço (opcional)",value:f.endereco||""}]});
+  if(!_vals)return; var nome=(_vals[0]||"").trim(); if(!nome)return; var cnpj=_vals[1]||""; var end=_vals[2]||"";
   if(db&&state.user&&state.user.orgId){ var r=await db.from("filiais").update({nome:nome,cnpj:(cnpj||"").trim()||null,endereco:(end||"").trim()||null}).eq("id",id).eq("org_id",state.user.orgId); if(r.error){alert("Falha ao salvar: "+r.error.message);return;} }
   f.nome=nome; f.cnpj=(cnpj||"").trim()||null; f.endereco=(end||"").trim()||null;
   try{localStorage.setItem("ciops:filiais",JSON.stringify(state.filiais));}catch(e){}
@@ -5856,6 +5855,34 @@ function renderFiliaisList(){
   var addbox=document.getElementById("filial_add"); if(addbox)addbox.style.display=owner?"flex":"none";
 }
 
+/* ---- Janela de digitação do app (substitui o prompt do navegador) ---- */
+function pedirTexto(o){o=o||{};return new Promise(function(resolve){
+  var old=document.getElementById("pmodal");if(old&&old.parentNode)old.parentNode.removeChild(old);
+  var ov=document.createElement("div");ov.id="pmodal";
+  ov.setAttribute("style","position:fixed;inset:0;z-index:99999;background:rgba(15,23,42,.55);display:flex;align-items:center;justify-content:center;padding:16px;overflow:auto;-webkit-overflow-scrolling:touch");
+  var fields=o.fields||[{label:o.label||"",value:o.value||"",placeholder:o.placeholder||"",multiline:o.multiline,rows:o.rows,readonly:o.readonly,inputmode:o.inputmode,type:o.type}];
+  var st="width:100%;box-sizing:border-box;padding:10px 11px;border:1px solid #cbd5e1;border-radius:8px;font:inherit;font-size:14px;margin-top:5px;color:#0f172a;background:#fff";
+  var fh=fields.map(function(f,i){
+    var ctl=f.multiline?('<textarea data-k="'+i+'" rows="'+(f.rows||4)+'" style="'+st+';resize:vertical"'+(f.readonly?' readonly':'')+' placeholder="'+esc(f.placeholder||"")+'">'+esc(f.value==null?"":f.value)+'</textarea>')
+      :('<input data-k="'+i+'" type="'+(f.type||"text")+'" value="'+esc(f.value==null?"":f.value)+'" placeholder="'+esc(f.placeholder||"")+'"'+(f.inputmode?' inputmode="'+f.inputmode+'"':'')+(f.readonly?' readonly':'')+' autocomplete="off" style="'+st+'">');
+    return '<label style="display:block;margin-top:'+(i?"12px":"10px")+';font-size:13px;color:#334155;font-weight:600">'+esc(f.label||"")+ctl+'</label>';}).join("");
+  var head='<div style="display:flex;align-items:center;gap:9px">'+(o.icon?'<span style="font-size:22px;line-height:1">'+o.icon+'</span>':'')+'<b style="font-size:15.5px;color:#1e293b">'+esc(o.title||"")+'</b></div>'+(o.message?'<p style="margin:6px 0 0;font-size:13.5px;color:#334155;line-height:1.5">'+esc(o.message)+'</p>':'');
+  var bb="padding:10px 16px;border-radius:9px;font:inherit;font-weight:700;cursor:pointer;min-width:120px;flex:1 1 auto;max-width:220px";
+  ov.innerHTML='<div role="dialog" aria-modal="true" style="background:#fff;border-radius:14px;max-width:460px;width:100%;max-height:88vh;display:flex;flex-direction:column;box-shadow:0 20px 50px rgba(0,0,0,.35)">'+
+    '<div style="padding:16px 18px;overflow:auto">'+head+fh+'</div>'+
+    '<div style="border-top:1px solid #eef2f7;padding:12px 16px;display:flex;gap:9px;justify-content:flex-end;flex-wrap:wrap">'+
+      (o.hideCancel?'':'<button id="pm_cancel" style="'+bb+';background:#fff;color:#334155;border:1px solid #cbd5e1">'+esc(o.cancelLabel||"Cancelar")+'</button>')+
+      '<button id="pm_ok" style="'+bb+';background:#4f46e5;color:#fff;border:1px solid #4f46e5">'+esc(o.okLabel||"OK")+'</button></div></div>';
+  document.body.appendChild(ov);
+  var els=ov.querySelectorAll("[data-k]");
+  function fim(v){if(ov.parentNode)ov.parentNode.removeChild(ov);resolve(v);}
+  function ok(){var vals=Array.prototype.map.call(els,function(e){return e.value;});fim(o.fields?vals:(vals[0]==null?"":vals[0]));}
+  document.getElementById("pm_ok").onclick=ok;
+  var c=document.getElementById("pm_cancel");if(c)c.onclick=function(){fim(null);};
+  ov.addEventListener("click",function(e){if(e.target===ov)fim(null);});
+  Array.prototype.forEach.call(els,function(e){e.addEventListener("keydown",function(ev){if(ev.key==="Enter"&&e.tagName!=="TEXTAREA"){ev.preventDefault();ok();}else if(ev.key==="Escape"){fim(null);}});});
+  setTimeout(function(){var f0=els[0];if(f0){try{f0.focus();f0.select();}catch(e){}}},40);
+});}
 /* ---- Avisos na janela do app (substitui o alert do navegador) ---- */
 function _msgAmigavel(t){
   t=String(t==null?"":t);
