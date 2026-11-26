@@ -653,14 +653,14 @@
     </div>
   </section>
 
-  <footer><span class="noprint">Confira a escala antes de publicar.<br>© 2026 <b>Gera Escalas</b> · <span class="lnk" onclick="openAbout()">Sobre &amp; Política de Privacidade</span> · <span style="color:var(--mut2)">v13.75</span></span></footer>
+  <footer><span class="noprint">Confira a escala antes de publicar.<br>© 2026 <b>Gera Escalas</b> · <span class="lnk" onclick="openAbout()">Sobre &amp; Política de Privacidade</span> · <span style="color:var(--mut2)">v13.76</span></span></footer>
 </main>
 
 <div id="aboutmodal" class="modal" style="display:none" onclick="if(event.target===this)closeAbout()">
   <div class="mbox">
     <button class="xbtn" onclick="closeAbout()">Fechar ✕</button>
     <h2>Gera Escalas</h2>
-    <p class="muted">Escalas de plantão, turno e giro · Versão 13.75 · 2026</p>
+    <p class="muted">Escalas de plantão, turno e giro · Versão 13.76 · 2026</p>
 
     <h3>Autoria e direitos autorais</h3>
     <p>© 2026 <b>Gera Escalas</b> — desenvolvido por Luís Cesar. Todos os direitos reservados.</p>
@@ -4051,7 +4051,7 @@ async function assinarAFD(){
   if(!isAdmin())return;
   var sm=document.getElementById("afd_sigmsg");function say(t,c){if(sm){sm.textContent=t;sm.style.color=c||"#a7b0d0";}}
   if(!_ponto.afdTxt){say("Gere o AFD primeiro (📄 Gerar AFD).","#fca5a5");return;}
-  if(!cloudReady()||!window.db){say("Sem conexão com a nuvem para assinar.","#fca5a5");return;}
+  if(!cloudReady()||!db){say("Sem conexão com a nuvem para assinar.","#fca5a5");return;}
   say("Assinando… (requer o certificado A1 configurado no Supabase).");
   var bytes=_afdBytes(_ponto.afdTxt),bin="";for(var i=0;i<bytes.length;i++)bin+=String.fromCharCode(bytes[i]&0xff);
   var b64=btoa(bin);
@@ -4071,7 +4071,7 @@ async function assinarAFD(){
 }
 async function loadCertStatus(){
   var st=document.getElementById("cert_status"),rm=document.getElementById("cert_rm"),mm=document.getElementById("cert_msg");if(mm)mm.textContent="";
-  if(!cloudReady()||!window.db){if(st)st.textContent="Sem conexão com a nuvem.";return;}
+  if(!cloudReady()||!db){if(st)st.textContent="Sem conexão com a nuvem.";return;}
   if(st)st.textContent="Verificando…";
   var r;try{r=await db.functions.invoke("cert-salvar",{body:{acao:"status"}});}catch(e){if(st){st.textContent="Erro ao consultar: "+(e.message||e);st.style.color="#fca5a5";}return;}
   var d=r&&r.data;
@@ -4086,7 +4086,7 @@ async function loadCertStatus(){
 }
 async function salvarCert(){
   if(!isAdmin())return;var mm=document.getElementById("cert_msg");function say(t,c){if(mm){mm.textContent=t;mm.style.color=c||"#a7b0d0";}}
-  if(!cloudReady()||!window.db){say("Sem conexão com a nuvem.","#fca5a5");return;}
+  if(!cloudReady()||!db){say("Sem conexão com a nuvem.","#fca5a5");return;}
   var f=document.getElementById("cert_file"),senha=val("cert_senha");
   var file=f&&f.files&&f.files[0];
   if(!file){say("Anexe o arquivo .pfx/.p12 do certificado.","#fca5a5");return;}
@@ -5744,13 +5744,13 @@ function filialAtiva(){return state.filialAtiva||((state.filiais&&state.filiais[
 function _filialDoSetorAtual(){try{var s=(state.setores||[]).find(function(x){return x.id===setorAtual();});return (s&&s.filialId)||filialAtiva()||null;}catch(e){return null;}}
 async function _carregarFiliais(map){
   var fs=null;
-  try{ if(window.db&&state.user&&state.user.orgId){ var q=await db.from("filiais").select("id,nome,cnpj,endereco,ativo").eq("org_id",state.user.orgId).order("criado_em",{ascending:true}); if(!q.error) fs=q.data||[]; } }catch(e){}
+  try{ if(db&&state.user&&state.user.orgId){ var q=await db.from("filiais").select("id,nome,cnpj,endereco,ativo").eq("org_id",state.user.orgId).order("criado_em",{ascending:true}); if(!q.error) fs=q.data||[]; } }catch(e){}
   if(!fs||!fs.length){ var loc=null; try{loc=JSON.parse(localStorage.getItem("ciops:filiais")||"null");}catch(e){} fs=(loc&&loc.length)?loc:[{id:"matriz",nome:"Matriz"}]; }
   state.filiais=fs; try{localStorage.setItem("ciops:filiais",JSON.stringify(fs));}catch(e){}
   if((typeof isGerente==="function"&&isGerente())){_travarGerente(fs);return;}
   var def=fs[0]&&fs[0].id, ch=false;
   (state.setores||[]).forEach(function(s){ if(!s.filialId){s.filialId=def;ch=true;} else if(!fs.some(function(f){return f.id===s.filialId;})){s.filialId=def;ch=true;} });
-  if(ch){ try{localStorage.setItem("ciops:setores",JSON.stringify(state.setores));}catch(e){} try{if(window.db&&isAdmin())await cloudPush("setores");}catch(e){} }
+  if(ch){ try{localStorage.setItem("ciops:setores",JSON.stringify(state.setores));}catch(e){} try{if(db&&isAdmin())await cloudPush("setores");}catch(e){} }
 }
 function renderFilialSel(){
   var sel=document.getElementById("filialSel"); var fs=state.filiais||[{id:"matriz",nome:"Matriz"}];
@@ -5768,7 +5768,7 @@ async function switchFilial(id){
     var ns={id:_uidSetor(),nome:"Principal",filialId:id};
     (state.setores=state.setores||[]).push(ns);
     try{localStorage.setItem("ciops:setores",JSON.stringify(state.setores));}catch(e){}
-    try{if(window.db&&isAdmin())await cloudPush("setores");}catch(e){}
+    try{if(db&&isAdmin())await cloudPush("setores");}catch(e){}
     sets=[ns];
   }
   renderFilialSel(); renderSetorSel();
@@ -5780,7 +5780,7 @@ async function _criarFilialCore(nome,cnpj,end,say){
   if(!isOwner()){say&&say("Apenas o proprietário pode criar filiais.","#b91c1c");return null;}
   nome=(nome||"").trim(); if(!nome){say&&say("Informe o nome da filial.","#b91c1c");return null;}
   var novo=null;
-  if(window.db&&state.user&&state.user.orgId){
+  if(db&&state.user&&state.user.orgId){
     var r=await db.from("filiais").insert({org_id:state.user.orgId,nome:nome,cnpj:(cnpj||"").trim()||null,endereco:(end||"").trim()||null}).select().single();
     if(r.error){say&&say("Falha ao criar: "+r.error.message,"#b91c1c");return null;}
     novo=r.data;
@@ -5806,7 +5806,7 @@ async function editFilial(id){
   var nome=null; try{nome=prompt("Nome da filial:",f.nome);}catch(e){} if(nome==null)return; nome=(""+nome).trim(); if(!nome)return;
   var cnpj=null; try{cnpj=prompt("CNPJ (opcional):",f.cnpj||"");}catch(e){} if(cnpj==null)cnpj=f.cnpj||"";
   var end=null; try{end=prompt("Endereço (opcional):",f.endereco||"");}catch(e){} if(end==null)end=f.endereco||"";
-  if(window.db&&state.user&&state.user.orgId){ var r=await db.from("filiais").update({nome:nome,cnpj:(cnpj||"").trim()||null,endereco:(end||"").trim()||null}).eq("id",id).eq("org_id",state.user.orgId); if(r.error){alert("Falha ao salvar: "+r.error.message);return;} }
+  if(db&&state.user&&state.user.orgId){ var r=await db.from("filiais").update({nome:nome,cnpj:(cnpj||"").trim()||null,endereco:(end||"").trim()||null}).eq("id",id).eq("org_id",state.user.orgId); if(r.error){alert("Falha ao salvar: "+r.error.message);return;} }
   f.nome=nome; f.cnpj=(cnpj||"").trim()||null; f.endereco=(end||"").trim()||null;
   try{localStorage.setItem("ciops:filiais",JSON.stringify(state.filiais));}catch(e){}
   renderFilialSel(); renderFiliaisList(); try{log("Editou filial",nome);}catch(e){}
@@ -5817,7 +5817,7 @@ async function removeFilial(id){
   if((state.setores||[]).some(function(s){return s.filialId===id;})){alert("Esta filial ainda tem setores. Mova ou remova os setores dela antes.");return;}
   var go=await new Promise(function(res){confirmModal({tone:"danger",icon:"🗑",title:"Remover filial",okTone:"danger",okLabel:"Remover",cancelLabel:"Cancelar",message:"Remover esta filial? Não pode ser desfeito.",onOk:function(){res(true);},onCancel:function(){res(false);}});});
   if(!go)return;
-  if(window.db&&state.user&&state.user.orgId){ var r=await db.from("filiais").delete().eq("id",id).eq("org_id",state.user.orgId); if(r.error){alert("Falha ao remover: "+r.error.message);return;} }
+  if(db&&state.user&&state.user.orgId){ var r=await db.from("filiais").delete().eq("id",id).eq("org_id",state.user.orgId); if(r.error){alert("Falha ao remover: "+r.error.message);return;} }
   state.filiais=fs.filter(function(f){return f.id!==id;}); try{localStorage.setItem("ciops:filiais",JSON.stringify(state.filiais));}catch(e){}
   if(filialAtiva()===id){ await switchFilial(state.filiais[0].id); }
   renderFilialSel(); renderFiliaisList(); try{log("Removeu filial","");}catch(e){}
