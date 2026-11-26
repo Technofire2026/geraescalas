@@ -653,14 +653,14 @@
     </div>
   </section>
 
-  <footer><span class="noprint">Confira a escala antes de publicar.<br>© 2026 <b>Gera Escalas</b> · <span class="lnk" onclick="openAbout()">Sobre &amp; Política de Privacidade</span> · <span style="color:var(--mut2)">v13.78</span></span></footer>
+  <footer><span class="noprint">Confira a escala antes de publicar.<br>© 2026 <b>Gera Escalas</b> · <span class="lnk" onclick="openAbout()">Sobre &amp; Política de Privacidade</span> · <span style="color:var(--mut2)">v13.79</span></span></footer>
 </main>
 
 <div id="aboutmodal" class="modal" style="display:none" onclick="if(event.target===this)closeAbout()">
   <div class="mbox">
     <button class="xbtn" onclick="closeAbout()">Fechar ✕</button>
     <h2>Gera Escalas</h2>
-    <p class="muted">Escalas de plantão, turno e giro · Versão 13.78 · 2026</p>
+    <p class="muted">Escalas de plantão, turno e giro · Versão 13.79 · 2026</p>
 
     <h3>Autoria e direitos autorais</h3>
     <p>© 2026 <b>Gera Escalas</b> — desenvolvido por Luís Cesar. Todos os direitos reservados.</p>
@@ -5681,7 +5681,7 @@ async function removeSetor(id){
   if(!isOwner())return;var lista=state.setores||[];if(lista.length<=1)return;
   var _go=await new Promise(function(res){confirmModal({tone:"danger",icon:"🗑",title:"Remover setor",okTone:"danger",okLabel:"Remover",cancelLabel:"Cancelar",message:"Remover este setor e a escala dele? Não pode ser desfeito.",onOk:function(){res(true);},onCancel:function(){res(false);}});});
   if(!_go)return;
-  try{await Promise.all(["militares","config","carry","schedule"].map(function(b){return db.from("app_state").delete().eq("org_id",state.user.orgId).eq("chave",b+"@"+id);}));}catch(e){}
+  try{await Promise.all(["militares","config","carry","schedule","relhist"].map(function(b){return db.from("app_state").delete().eq("org_id",state.user.orgId).eq("chave",b+"@"+id);}));}catch(e){}
   var novo=lista.filter(function(x){return x.id!==id;});state.setores=novo;try{localStorage.setItem("ciops:setores",JSON.stringify(novo));}catch(e){}
   await cloudPush("setores");
   if(setorAtual()===id){await switchSetor(novo[0].id);}
@@ -5835,7 +5835,13 @@ async function removeFilial(id){
   if((state.setores||[]).some(function(s){return s.filialId===id;})){alert("Esta filial ainda tem setores. Mova ou remova os setores dela antes.");return;}
   var go=await new Promise(function(res){confirmModal({tone:"danger",icon:"🗑",title:"Remover filial",okTone:"danger",okLabel:"Remover",cancelLabel:"Cancelar",message:"Remover esta filial? Não pode ser desfeito.",onOk:function(){res(true);},onCancel:function(){res(false);}});});
   if(!go)return;
-  if(db&&state.user&&state.user.orgId){ var r=await db.from("filiais").delete().eq("id",id).eq("org_id",state.user.orgId); if(r.error){alert("Falha ao remover: "+r.error.message);return;} }
+  if(db&&state.user&&state.user.orgId){
+    try{ var gq=await db.from("members").select("nome,filial_id").eq("org_id",state.user.orgId).eq("filial_id",id);
+      var gs=(gq&&gq.data)||[]; if(gs.length){alert("Esta filial tem "+gs.length+" gerente(s) vinculado(s): "+gs.map(function(x){return x.nome||"(sem nome)";}).join(", ")+". Em Configurações → Operadores, mude a filial ou o acesso deles antes de remover.");return;} }catch(e){}
+    /* dados antigos de setores já removidos desta filial */
+    try{ await db.from("app_state").delete().eq("org_id",state.user.orgId).eq("filial_id",id); }catch(e){}
+    var r=await db.from("filiais").delete().eq("id",id).eq("org_id",state.user.orgId); if(r.error){alert("Falha ao remover: "+r.error.message);return;}
+  }
   state.filiais=fs.filter(function(f){return f.id!==id;}); try{localStorage.setItem("ciops:filiais",JSON.stringify(state.filiais));}catch(e){}
   if(filialAtiva()===id){ await switchFilial(state.filiais[0].id); }
   renderFilialSel(); renderFiliaisList(); try{log("Removeu filial","");}catch(e){}
@@ -5850,6 +5856,30 @@ function renderFiliaisList(){
   var addbox=document.getElementById("filial_add"); if(addbox)addbox.style.display=owner?"flex":"none";
 }
 
+/* ---- Avisos na janela do app (substitui o alert do navegador) ---- */
+function _msgAmigavel(t){
+  t=String(t==null?"":t);
+  var regras=[
+    [/violates foreign key constraint/i,"ainda existem dados ligados a este item."],
+    [/row-level security|permission denied|not allowed/i,"você não tem permissão para fazer isso. Fale com o proprietário da conta."],
+    [/duplicate key|already exists/i,"já existe um registro com esses dados."],
+    [/Failed to fetch|NetworkError|Load failed|network/i,"sem conexão com a internet. Verifique a rede e tente de novo."],
+    [/JWT|token.*expired|not authenticated/i,"sua sessão expirou. Saia e entre de novo."]
+  ];
+  for(var i=0;i<regras.length;i++){ if(regras[i][0].test(t)){ var k=t.indexOf(":"); return (k>0&&k<60)?(t.slice(0,k+1)+" "+regras[i][1]):(regras[i][1].charAt(0).toUpperCase()+regras[i][1].slice(1)); } }
+  return t;
+}
+(function(){
+  var _nativo=window.alert;
+  window.alert=function(msg){
+    try{
+      if(typeof confirmModal!=="function")return _nativo.call(window,msg);
+      var t=_msgAmigavel(msg);
+      var erro=/falha|erro|não foi possível|nao foi possivel|não é possível|inválid|sem conexão|permissão|expirou/i.test(t);
+      confirmModal({tone:erro?"danger":undefined,icon:erro?"⚠":"ℹ️",title:erro?"Atenção":"Aviso",message:t,okLabel:"OK",hideCancel:true});
+    }catch(e){ try{_nativo.call(window,msg);}catch(_){} }
+  };
+})();
 /* ---- Primeiros passos: filial -> setor (sem duplicar os padrões) ---- */
 function _setorPadraoVazio(){
   var fa=filialAtiva(); var sets=(state.setores||[]).filter(function(s){return !s.filialId||s.filialId===fa;});
