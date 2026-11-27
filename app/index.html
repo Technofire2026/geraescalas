@@ -654,14 +654,14 @@
     </div>
   </section>
 
-  <footer><span class="noprint">Confira a escala antes de publicar.<br>© 2026 <b>Gera Escalas</b> · <span class="lnk" onclick="openAbout()">Sobre &amp; Política de Privacidade</span> · <span style="color:var(--mut2)">v13.96</span></span></footer>
+  <footer><span class="noprint">Confira a escala antes de publicar.<br>© 2026 <b>Gera Escalas</b> · <span class="lnk" onclick="openAbout()">Sobre &amp; Política de Privacidade</span> · <span style="color:var(--mut2)">v13.97</span></span></footer>
 </main>
 
 <div id="aboutmodal" class="modal" style="display:none" onclick="if(event.target===this)closeAbout()">
   <div class="mbox">
     <button class="xbtn" onclick="closeAbout()">Fechar ✕</button>
     <h2>Gera Escalas</h2>
-    <p class="muted">Escalas de plantão, turno e giro · Versão 13.96 · 2026</p>
+    <p class="muted">Escalas de plantão, turno e giro · Versão 13.97 · 2026</p>
 
     <h3>Autoria e direitos autorais</h3>
     <p>© 2026 <b>Gera Escalas</b> — desenvolvido por Luís Cesar. Todos os direitos reservados.</p>
@@ -2187,6 +2187,31 @@ function gerarFolga(mils,year,month,cfg,seed,phase){
       _passMulheres();_passMulheres();
     }
   }
+  // ---- LIMITE DE DIAS SEGUIDOS (garantia final): ninguém passa de "trab" dias seguidos de trabalho ----
+  // Se sobrou uma sequência longa (ex.: o feriado consumiu a cota e o último domingo ficou sem folga), põe folga
+  // no dia permitido mais tarde da janela; depois tenta devolver uma folga "sobrando" em outro ponto, sem criar nova sequência longa.
+  (function(){
+    var off=function(r,d){return (folga[d]||[]).some(function(x){return x.id===r.id;});};
+    var run=function(r){var c=0,mx=0;for(var d=1;d<=N;d++){if(unav(r,d)||off(r,d))c=0;else{c++;if(c>mx)mx=c;}}return mx;};
+    var tot=function(r){var t=0;for(var d=1;d<=N;d++){if(off(r,d))t++;}return t;};
+    st.forEach(function(s){var r=s.ref;if(run(r)<=work)return;var antes=tot(r),guard=0;
+      while(run(r)>work&&guard++<12){
+        var c=0,fim=0;for(var d=1;d<=N;d++){if(unav(r,d)||off(r,d))c=0;else{c++;if(c>work){fim=d;break;}}}
+        if(!fim)break;var ok=false;
+        for(var y=fim;y>=Math.max(1,fim-work)&&!ok;y--){var dt=new Date(year,month,y);
+          if(off(r,y)||unav(r,y)||!permit(y)||(folga[y]||[]).length>=maxDia)continue;
+          folga[y]=folga[y]||[];folga[y].push(r);ok=true;}
+        if(!ok)break;
+      }
+      // devolve folgas extras (se houver) sem quebrar a regra
+      for(var g=0;g<6&&tot(r)>antes;g++){var tirou=false;
+        for(var x=N;x>=1&&!tirou;x--){var dx=new Date(year,month,x);if(!off(r,x)||dx.getDay()===0||_feriadoFechado(dx))continue;
+          folga[x]=folga[x].filter(function(z){return z.id!==r.id;});
+          if(run(r)<=work)tirou=true;else folga[x].push(r);}
+        if(!tirou)break;}
+    });
+    estourou=st.some(function(s){return run(s.ref)>work;});st.forEach(function(s){s.total=tot(s.ref);});
+  })();
   if(gDom){(function(){var su=[];for(var d=1;d<=N;d++){if(new Date(year,month,d).getDay()===0)su.push(d);}
     var at=st.filter(function(s){return su.some(function(d){return !unav(s.ref,d);});});
     var dc=function(r){return su.filter(function(d){return !unav(r,d)&&(folga[d]||[]).some(function(x){return x.id===r.id;});}).length;};
